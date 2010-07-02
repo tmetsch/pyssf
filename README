@@ -1,6 +1,27 @@
 Platform - Service Sharing Facility (SSF)
 
 --------
+Summary
+--------
+This software package is a collection of modules which form an uniform
+integration point for Platform's products. If provides several front-ends which
+can easily be used to build complete Services or integrate Platform's products
+with your products. The following module exist:
+
+  * pyLSF - Provides a Python Interface for Platform LSF
+  * ssf - The Service Sharing Facility modules is the core module which 
+          orchestrates all the others.
+
+--------
+BUILDING
+--------
+
+Normally a 'python setup.py build' should do. The 'dist' target will also work
+and build all modules including the SWIG and GCC runs needed for pyLSF. There 
+is no need to run make. Although you can build the pyLSF modul using the 
+Makefile if you want. 
+
+--------
 PREREQUISITES
 --------
 Needed to building and installing SSF are:
@@ -16,12 +37,13 @@ For developing with SSF you can use:
   * Eclipse with PyDev for coding
   * Nosetest for easy unit testing
   * Firefox to view the kanban board (misc/platform_ssf_kanban.html)
+  * make to build standalone documentation and pylsf shared library
 
 --------
 TESTING
 --------
-Either run nosetests or the testsuite.py file in the tests/ directory. You might
-need to add the build _lsf.so file to the PYTHONPATH (In my case: 
+Either run nosetests or the testsuite.py file in the tests/ directory. You 
+might need to add the build _lsf.so file to the PYTHONPATH (In my case: 
 build/lib.linux-i686-2.6/pylsf)
 
 (c) 2010 Platform Computing
