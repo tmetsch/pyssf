@@ -6,6 +6,9 @@
 <pydev_property name="org.python.pydev.PYTHON_PROJECT_VERSION">python 2.6</pydev_property>
 
 <pydev_pathproperty name="org.python.pydev.PROJECT_SOURCE_PATH">
+<path>/platform_ssf/pyocci</path>
+<path>/platform_ssf/pylsf</path>
+<path>/platform_ssf/ssf</path>
 <path>/platform_ssf/build/lib.linux-x86_64-2.6</path>
 </pydev_pathproperty>
 </pydev_project>
