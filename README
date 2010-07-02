@@ -40,6 +40,21 @@ For developing with SSF you can use:
   * make to build standalone documentation and pylsf shared library
 
 --------
+TECHNICAL NOTES
+--------
+The following paths are configured and you might need to take a look at them
+if you encounter any problems:
+
+  * library_dirs in setup.py which should point to the lib dir of the Platform
+    LSF installation (Default set to /opt/lsf/7.0/linux2.6-glibc2.3-x86_64/lib)
+  * include statements in lsf.i in the pylsf module - Should point to the
+    concrete files in the Platform LSF installation. (Defaults set to 
+    /opt/lsf/7.0/include/lsf/lsf.h and /opt/lsf/7.0/include/lsf/lsbatch.h)
+  * The library directory in the Makefile of the pyLSF module if you want to 
+    build it stand alone. No need to change it when building using setup.py 
+    script. Default is set to /opt/lsf/7.0/linux2.6-glibc2.3-x86_64/lib. 
+
+--------
 TESTING
 --------
 Either run nosetests or the testsuite.py file in the tests/ directory. You 
