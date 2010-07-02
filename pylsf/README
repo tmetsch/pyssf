@@ -1,0 +1,31 @@
+--------
+Python wrapper for LSF APIs
+--------
+
+This library allows you to call the LSF APIs from Python. The wrapper is created
+by using SWIG. Some commands are left out and some typemaps are defined. Still
+not all API calls are supported yet. Please see the following list for
+tested and support calls.
+
+The following calls are tested and known to work reasonably well:
+
+ * ls_getclustername
+ * ls_initrex
+ * ls_rexecv
+
+ * lsb_init
+ * lsb_lsb_submit
+ * lsb_signaljob
+ * lsb_peekjob
+
+The project is structured as follows
+
+Name            Description
+--------
+README          This file
+/src/lsf.i      SWIK Interface
+/src/Makefile   Makefile for creation of the shared library.
+/src/run.py     Sample Python script to submit a job
+/src/main.py    Script for testing purposes.
+
+(c) 2010 Platform Computing

@@ -1,0 +1,3 @@
+include run README
+recursive-include pylsf/ *
+recursive-include ssf/ *
