@@ -33,9 +33,10 @@ Needed to building and installing SSF are:
 
 For developing with SSF you can use:
 
-  * Sphinx for building documents
+  * Sphinx for building documents (python-sphinx)
   * Eclipse with PyDev for coding
-  * Nosetest for easy unit testing
+  * Nosetest for easy unit testing (python-nose)
+  * Python-paste for testing Restful Service (python-paste)
   * Firefox to view the kanban board (misc/platform_ssf_kanban.html)
   * make to build standalone documentation and pylsf shared library
 

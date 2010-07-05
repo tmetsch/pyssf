@@ -39,6 +39,6 @@ def run_job(command):
     return jobId
 
 if __name__ == '__main__':
-    print(lsf.ls_getclustername())
+    print("LSF Clustername is :", lsf.ls_getclustername())
     run_job("/bin/sleep 10")
 

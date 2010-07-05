@@ -3,8 +3,9 @@ Created on Jun 28, 2010
 
 @author: tmetsch
 '''
-import unittest
 from ssf import main
+import unittest
+import sys
 
 class Test(unittest.TestCase):
 
@@ -25,5 +26,5 @@ class Test(unittest.TestCase):
         pass
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testName']
+    print(sys.path)
     unittest.main()

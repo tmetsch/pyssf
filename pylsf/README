@@ -23,9 +23,7 @@ The project is structured as follows
 Name            Description
 --------
 README          This file
-/src/lsf.i      SWIK Interface
-/src/Makefile   Makefile for creation of the shared library.
-/src/run.py     Sample Python script to submit a job
-/src/main.py    Script for testing purposes.
+lsf.i      SWIK Interface
+Makefile   Makefile for creation of the shared library.
 
 (c) 2010 Platform Computing
