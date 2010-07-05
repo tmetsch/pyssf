@@ -15,7 +15,6 @@ with your products. The following module exist:
 --------
 BUILDING
 --------
-
 Normally a 'python setup.py build' should do. The 'dist' target will also work
 and build all modules including the SWIG and GCC runs needed for pyLSF. There 
 is no need to run make. Although you can build the pyLSF modul using the 
@@ -36,7 +35,6 @@ For developing with SSF you can use:
   * Sphinx for building documents (python-sphinx)
   * Eclipse with PyDev for coding
   * Nosetest for easy unit testing (python-nose)
-  * Python-paste for testing Restful Service (python-paste)
   * Firefox to view the kanban board (misc/platform_ssf_kanban.html)
   * make to build standalone documentation and pylsf shared library
 

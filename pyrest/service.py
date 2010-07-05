@@ -27,7 +27,7 @@ class ResourceHandler:
 
     def GET(self, *data):
         # return resource representation (and act based on mime-types)
-        return 'resource' + str(data)
+        return 'Hello World'
 
     def PUT(self, *data):
         # update a resource
