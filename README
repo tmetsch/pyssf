@@ -1,16 +1,19 @@
-Platform - Service Sharing Facility (SSF)
+Service Sharing Facility (SSF)
 
 --------
 Summary
 --------
 This software package is a collection of modules which form an uniform
-integration point for Platform's products. If provides several front-ends which
-can easily be used to build complete Services or integrate Platform's products
-with your products. The following module exist:
+integration point for Grid/Cloud/Cluster products. If provides several
+front-ends which can easily be used to build complete Services or integrate
+products with your products. It aims to deliver an distributed ecosystem where
+multiple Grid/Cloud/Clusters sites can federate. It is developed under a LGPL
+license for the DGSI Project. The following module exist:
 
-  * pyLSF - Provides a Python Interface for Platform LSF
   * ssf - The Service Sharing Facility modules is the core module which 
           orchestrates all the others.
+  * pylsf - Provides a Python Interface for Platform LSF
+  * pyrest - A RESTful interface for SSF
 
 --------
 BUILDING
@@ -59,5 +62,11 @@ TESTING
 Either run nosetests or the testsuite.py file in the tests/ directory. You 
 might need to add the build _lsf.so file to the PYTHONPATH (In my case: 
 build/lib.linux-i686-2.6/pylsf)
+
+--------
+LICENSE
+--------
+Please review the file LICENSE in the root directory. Everything published
+within this project is licensed under a GNU LESSER GENERAL PUBLIC LICENSE.
 
 (c) 2010 Platform Computing

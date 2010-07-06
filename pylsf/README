@@ -20,9 +20,9 @@ The following calls are tested and known to work reasonably well:
 
 The project is structured as follows
 
-Name            Description
+Name       Description
 --------
-README          This file
+README     This file
 lsf.i      SWIK Interface
 Makefile   Makefile for creation of the shared library.
 

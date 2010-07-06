@@ -1,3 +1,4 @@
 include run README
+recursive-include pyrest/ *
 recursive-include pylsf/ *
 recursive-include ssf/ *
