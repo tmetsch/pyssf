@@ -23,7 +23,7 @@ Created on Jul 5, 2010
 from pyrest import service
 import unittest
 
-class RestTest(unittest.TestCase):
+class ResourceCreationTests(unittest.TestCase):
 
     # request("/hello",
     #        method = 'GET',
@@ -37,19 +37,40 @@ class RestTest(unittest.TestCase):
     # --------
 
     def test_post_for_success(self):
-        response = service.app.request("/123", method = "POST")
+        # simple post on entry point should return 200 OK
+        heads = {'Category': 'compute;scheme="http://purl.org/occi/kind#";label="Compute Resource", myimage;scheme="http://example.com/user/categories/templates#"; label="My very special server"'}
+        response = service.app.request("/", method = "POST", headers = heads)
         self.assertEquals(response.status, '200 OK')
+
+        #response = service.app.request("/job/", method = "POST")
+        #self.assertEquals(response.status, '200 OK')
 
     def test_get_for_success(self):
-        response = service.app.request("/123")
+        # simple post and get on the returned location should return 200 OK
+        response = service.app.request("/", method = "POST")
+        loc = response.headers['Location']
+        response = service.app.request(loc)
         self.assertEquals(response.status, '200 OK')
 
+        # get on */ should return listing
+        response = service.app.request("/")
+        self.assertEquals(response.status, '200 OK')
+        self.assertEquals(response.data, 'TODO: Listing sub resources...')
+
     def test_put_for_success(self):
+        # Put on specified resource should return 200 OK (non-existent)
         response = service.app.request("/123", method = "PUT")
         self.assertEquals(response.status, '200 OK')
 
+        # put on existent should update
+        response = service.app.request("/123", method = "PUT", data = "hello")
+        self.assertEquals(response.status, '200 OK')
+
     def test_delete_for_success(self):
-        response = service.app.request("/123", method = "DELETE")
+        # Del on created resource should return 200 OK
+        response = service.app.request("/", method = "POST")
+        loc = response.headers['Location']
+        response = service.app.request(loc, method = "DELETE")
         self.assertEquals(response.status, '200 OK')
 
     # --------
@@ -57,32 +78,87 @@ class RestTest(unittest.TestCase):
     # --------
 
     def test_post_for_failure(self):
-        pass
+        # post to non-existent resource should return 404
+        response = service.app.request("/123", method = "POST")
+        self.assertEquals(response.status, '404 Not Found')
 
     def test_get_for_failure(self):
-        pass
+        # get on non existent should return 404
+        response = service.app.request("/123")
+        self.assertEquals(response.status, '404 Not Found')
 
     def test_put_for_failure(self):
+        # maybe test invalid data ?
         pass
 
     def test_delete_for_failure(self):
-        pass
+        # delete of non existent should return 404
+        response = service.app.request("/123", method = "DELETE")
+        self.assertEquals(response.status, '404 Not Found')
 
     # --------
     # TEST FOR SANITY
     # --------
 
     def test_post_for_sanity(self):
-        pass
+        # first create (post) then get
+        response = service.app.request("/", method = "POST", data = "occi.job.executable=/bin/sleep")
+        self.assertEquals(response.status, '200 OK')
+        loc = response.headers['Location']
+        response = service.app.request(loc)
+        self.assertEquals(response.data, 'occi.job.executable=/bin/sleep')
+
+        # post to existent url should create sub resource 
+        # TODO
 
     def test_get_for_sanity(self):
-        pass
+        # first create (put) than test get on parent for listing
+        service.app.request("/job/123", method = "PUT", data = "hello")
+        response = service.app.request("/job/")
+        self.assertEquals(response.data, 'TODO: Listing sub resources...')
 
     def test_put_for_sanity(self):
-        pass
+        # put on existent should update
+        response = service.app.request("/", method = "POST", data = "occi.job.executable=/bin/sleep")
+        self.assertEquals(response.status, '200 OK')
+        loc = response.headers['Location']
+        response = service.app.request(loc)
+        self.assertEquals(response.data, "occi.job.executable=/bin/sleep")
+        response = service.app.request(loc, method = "PUT", data = "occi.job.executable=/bin/echo")
+        self.assertEquals(response.status, '200 OK')
+        response = service.app.request(loc)
+        self.assertEquals(response.data, "occi.job.executable=/bin/echo")
+
+        # put on non-existent should create
+        response = service.app.request("/abc", method = "PUT", data = "occi.job.executable=/bin/sleep")
+        self.assertEquals(response.status, '200 OK')
+        response = service.app.request("/abc")
+        self.assertEquals(response.status, '200 OK')
 
     def test_delete_for_sanity(self):
-        pass
+        # create and delete an entry than try get
+        response = service.app.request("/", method = "POST", data = "occi.job.executable=/bin/sleep")
+        self.assertEquals(response.status, '200 OK')
+        loc = response.headers['Location']
+        service.app.request(loc, method = "DELETE")
+        response = service.app.request(loc)
+        self.assertEquals(response.status, "404 Not Found")
+
+class SecurityTests(unittest.TestCase):
+    pass
+
+class CategoriesTests(unittest.TestCase):
+    pass
+
+class ActionsTests(unittest.TestCase):
+    pass
+
+class LinkTests(unittest.TestCase):
+    pass
+
+class QueryTests(unittest.TestCase):
+    pass
+
 
 if __name__ == "__main__":
     unittest.main()
