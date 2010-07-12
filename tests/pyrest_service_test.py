@@ -36,11 +36,11 @@ class ResourceCreationTests(unittest.TestCase):
     # TEST FOR SUCCESS
     # --------
 
+    heads = {'Category': 'compute;scheme="http://purl.org/occi/kind#";label="Compute Resource"'}
+
     def test_post_for_success(self):
         # simple post on entry point should return 200 OK
-        heads = {'Category': 'compute;scheme="http://purl.org/occi/kind#";label="Compute Resource", myimage;scheme="http://example.com/user/categories/templates#"; label="My very special server"'}
-        response = service.app.request("/", method = "POST", headers = heads)
-        response = service.app.request("/", method = "POST")
+        response = service.app.request("/", method = "POST", headers = self.heads)
         self.assertEquals(response.status, '200 OK')
 
         #response = service.app.request("/job/", method = "POST")
@@ -48,28 +48,28 @@ class ResourceCreationTests(unittest.TestCase):
 
     def test_get_for_success(self):
         # simple post and get on the returned location should return 200 OK
-        response = service.app.request("/", method = "POST")
+        response = service.app.request("/", method = "POST", headers = self.heads)
         loc = response.headers['Location']
         response = service.app.request(loc)
         self.assertEquals(response.status, '200 OK')
 
         # get on */ should return listing
-        response = service.app.request("/")
+        response = service.app.request("/", headers = self.heads)
         self.assertEquals(response.status, '200 OK')
         self.assertEquals(response.data, 'TODO: Listing sub resources...')
 
     def test_put_for_success(self):
         # Put on specified resource should return 200 OK (non-existent)
-        response = service.app.request("/123", method = "PUT")
+        response = service.app.request("/123", method = "PUT", headers = self.heads)
         self.assertEquals(response.status, '200 OK')
 
         # put on existent should update
-        response = service.app.request("/123", method = "PUT", data = "hello")
+        response = service.app.request("/123", method = "PUT", headers = self.heads, data = "hello")
         self.assertEquals(response.status, '200 OK')
 
     def test_delete_for_success(self):
         # Del on created resource should return 200 OK
-        response = service.app.request("/", method = "POST")
+        response = service.app.request("/", method = "POST", headers = self.heads)
         loc = response.headers['Location']
         response = service.app.request(loc, method = "DELETE")
         self.assertEquals(response.status, '200 OK')
@@ -80,7 +80,7 @@ class ResourceCreationTests(unittest.TestCase):
 
     def test_post_for_failure(self):
         # post to non-existent resource should return 404
-        response = service.app.request("/123", method = "POST")
+        response = service.app.request("/123", method = "POST", headers = self.heads)
         self.assertEquals(response.status, '404 Not Found')
 
     def test_get_for_failure(self):
@@ -103,7 +103,7 @@ class ResourceCreationTests(unittest.TestCase):
 
     def test_post_for_sanity(self):
         # first create (post) then get
-        response = service.app.request("/", method = "POST", data = "some data")
+        response = service.app.request("/", method = "POST", headers = self.heads, data = "some data")
         self.assertEquals(response.status, '200 OK')
         loc = response.headers['Location']
         response = service.app.request(loc)
@@ -114,31 +114,31 @@ class ResourceCreationTests(unittest.TestCase):
 
     def test_get_for_sanity(self):
         # first create (put) than test get on parent for listing
-        service.app.request("/job/123", method = "PUT", data = "hello")
+        service.app.request("/job/123", method = "PUT", headers = self.heads, data = "hello")
         response = service.app.request("/job/")
         self.assertEquals(response.data, 'TODO: Listing sub resources...')
 
     def test_put_for_sanity(self):
         # put on existent should update
-        response = service.app.request("/", method = "POST", data = "some data")
+        response = service.app.request("/", method = "POST", headers = self.heads, data = "some data")
         self.assertEquals(response.status, '200 OK')
         loc = response.headers['Location']
         response = service.app.request(loc)
         self.assertEquals(response.data, "some data")
-        response = service.app.request(loc, method = "PUT", data = "other data")
+        response = service.app.request(loc, method = "PUT", headers = self.heads, data = "other data")
         self.assertEquals(response.status, '200 OK')
         response = service.app.request(loc)
         self.assertEquals(response.data, "other data")
 
         # put on non-existent should create
-        response = service.app.request("/abc", method = "PUT", data = "some data")
+        response = service.app.request("/abc", method = "PUT", headers = self.heads, data = "some data")
         self.assertEquals(response.status, '200 OK')
         response = service.app.request("/abc")
         self.assertEquals(response.status, '200 OK')
 
     def test_delete_for_sanity(self):
         # create and delete an entry than try get
-        response = service.app.request("/", method = "POST", data = "some data")
+        response = service.app.request("/", method = "POST", headers = self.heads, data = "some data")
         self.assertEquals(response.status, '200 OK')
         loc = response.headers['Location']
         service.app.request(loc, method = "DELETE")
