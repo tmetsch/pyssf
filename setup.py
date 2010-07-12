@@ -20,7 +20,7 @@
 
 from distutils.core import setup, Extension
 
-setup(name = 'Platform SSF',
+setup(name = 'Service Sharing Facility',
       version = '0.1',
       license = 'LICENSE',
       description = 'Service Sharing Facility',
