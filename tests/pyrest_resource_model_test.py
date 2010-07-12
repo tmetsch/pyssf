@@ -20,15 +20,49 @@ Created on Jul 12, 2010
 
 @author: tmetsch
 '''
+from resource_model import Link, Resource
 import unittest
-
 
 class Test(unittest.TestCase):
 
+    # --------
+    # TEST FOR SUCCESS
+    # --------
 
-    def testName(self):
-        pass
+    def test_get_action_links_for_success(self):
+        actionLink = Link()
+        resource = Resource()
+        actionLink.target = "http://example.com/123/#tada"
+        actionLink.link_class = "action"
+        resource.links.append(actionLink)
+        res = resource.get_action_links()
+        self.assertEquals(res[0].link_class, actionLink.link_class)
 
+    # --------
+    # TEST FOR FAILUTE
+    # --------
+
+    def test_get_action_links_for_failure(self):
+        actionLink = Link()
+        resource = Resource()
+        actionLink.link_class = "action"
+        resource.links.append(actionLink)
+        self.assertEquals([], resource.get_action_links())
+    # --------
+    # TEST FOR SANITY
+    # --------
+
+    def test_get_action_links_for_sanity(self):
+        actionLink = Link()
+        otherLink = Link()
+        resource = Resource()
+        actionLink.target = "http://example.com/123/#tada"
+        actionLink.link_class = "action"
+        otherLink.target = "http://example.com/abc/#job"
+        otherLink.link_class = "category"
+        resource.links.append(actionLink)
+        resource.links.append(otherLink)
+        self.assertEquals(1, len(resource.get_action_links()))
 
 if __name__ == "__main__":
     unittest.main()
