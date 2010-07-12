@@ -3,7 +3,8 @@ syntax: glob
 docs/_build
 build/*
 dist/*
-.*/html/*
+*html/*
+
 pylsf/lsf.py
 pylsf/lsf_wrap.c
 *.pyc
