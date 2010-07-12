@@ -6,10 +6,10 @@
 <pydev_property name="org.python.pydev.PYTHON_PROJECT_VERSION">python 2.6</pydev_property>
 
 <pydev_pathproperty name="org.python.pydev.PROJECT_SOURCE_PATH">
-<path>/pyssf/pylsf</path>
-<path>/pyssf/ssf</path>
-<path>/pyssf/pyrest</path>
-<path>/pyssf/tests</path>
-<path>/pyssf/build/lib.linux-i686-2.6</path>
+<path>/platform_ssf/pylsf</path>
+<path>/platform_ssf/ssf</path>
+<path>/platform_ssf/pyrest</path>
+<path>/platform_ssf/tests</path>
+<path>/platform_ssf/build/lib.linux-i686-2.6</path>
 </pydev_pathproperty>
 </pydev_project>
