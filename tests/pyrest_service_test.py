@@ -38,8 +38,8 @@ class ResourceCreationTests(unittest.TestCase):
 
     def test_post_for_success(self):
         # simple post on entry point should return 200 OK
-        #heads = {'Category': 'compute;scheme="http://purl.org/occi/kind#";label="Compute Resource", myimage;scheme="http://example.com/user/categories/templates#"; label="My very special server"'}
-        #response = service.app.request("/", method = "POST", headers = heads)
+        heads = {'Category': 'compute;scheme="http://purl.org/occi/kind#";label="Compute Resource", myimage;scheme="http://example.com/user/categories/templates#"; label="My very special server"'}
+        response = service.app.request("/", method = "POST", headers = heads)
         response = service.app.request("/", method = "POST")
         self.assertEquals(response.status, '200 OK')
 
@@ -149,15 +149,23 @@ class SecurityTests(unittest.TestCase):
     pass
 
 class AttributeTests(unittest.TestCase):
+
+    # Note: more tests are done in the resource model tests
+
     pass
 
 class CategoriesTests(unittest.TestCase):
+
+    # Note: more tests are done in the resource model tests
+
     pass
 
 class ActionsTests(unittest.TestCase):
     pass
 
 class LinkTests(unittest.TestCase):
+
+    # Note: can only be tested here because of backend adding links not client!
     pass
 
 class QueryTests(unittest.TestCase):

@@ -23,7 +23,7 @@ Created on Jul 12, 2010
 from resource_model import Link, Resource
 import unittest
 
-class Test(unittest.TestCase):
+class ActionLinkTest(unittest.TestCase):
 
     # --------
     # TEST FOR SUCCESS
@@ -43,6 +43,7 @@ class Test(unittest.TestCase):
     # --------
 
     def test_get_action_links_for_failure(self):
+        # when a action link is given without target -> res = 0!
         actionLink = Link()
         resource = Resource()
         actionLink.link_class = "action"
