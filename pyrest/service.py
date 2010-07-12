@@ -16,6 +16,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 # 
 '''
+This module contains the RESTful service itself.
+
 Created on Jul 2, 2010
 
 @author: tmetsch
@@ -65,11 +67,22 @@ class PersistentResourceDictionary(dict):
     pass
 
 class HTTPHandler:
+    """
+    Handles the very basic HTTP operations. The logic when a resource is
+    created, updated or delete is handle in here.
+    """
     # TODO: overall add auth, and key validation
     # TODO: queries
     # TODO: handle actions
 
     def POST(self, name, *data):
+        """
+        Handles the POST request - triggers creation of a resource. Will
+        return a location of the newly created resource.
+        
+        name -- the id of the resource.
+        *data -- if available (this it the body of the HTTP message).
+        """
         # create a new sub resource
         request = HTTPData(web.ctx.env, web.data())
         name = str(name)
@@ -80,6 +93,12 @@ class HTTPHandler:
             return web.NotFound("Couldn't create sub resource of non-existing resource.")
 
     def GET(self, name, *data):
+        """
+        Handles the GET request - triggers the service to return information.
+        
+        name -- the id of the resource.
+        *data -- if available (this it the body of the HTTP message).
+        """
         # return resource representation (and act based on mime-types)
         try:
             request = HTTPData(web.ctx.env, web.data())
@@ -89,6 +108,13 @@ class HTTPHandler:
         return self.return_resource(name, request)
 
     def PUT(self, name = None, *data):
+        """
+        Handles the PUT request - triggers either the creation or updates a 
+        resource.
+        
+        name -- if available (the id of the resource).
+        *data -- if available (this it the body of the HTTP message).
+        """
         # if exists - update; else create
         request = HTTPData(web.ctx.env, web.data())
         name = str(name)
@@ -98,6 +124,11 @@ class HTTPHandler:
             return self.create_resource(name, request)
 
     def DELETE(self, name):
+        """
+        Handles the DELETE request.
+        
+        name -- the id of the resource).
+        """
         # delete a resource representation
         if self.resource_exists(name):
             return self.delete_resource(str(name))
@@ -105,16 +136,34 @@ class HTTPHandler:
             return web.NotFound("Resource doesn't exist.")
 
 class ResourceHandler(HTTPHandler):
+    """
+    Manages the resources and stores them. Also triggers backend operations.
+    """
     #TODO insert backend here
 
     resources = NonPersistentResourceDictionary()
+    """
+    The list with resource - currently a non persistent one is used.
+    """
 
     def create_resource(self, key, data):
+        """
+        Creates a resource.
+        
+        key -- the unique id.
+        data -- the data.
+        """
         # trigger backend to do his magic
         self.resources[key] = data
         return web.header('Location', '/' + key)
 
     def return_resource(self, key, data):
+        """
+        Returns a resource.
+        
+        key -- the unique id.
+        data -- the data.
+        """
         # TODO: handle results based on data gives...
         if key is '' or key[-1:] is '/':
             return 'TODO: Listing sub resources...'
@@ -128,10 +177,22 @@ class ResourceHandler(HTTPHandler):
                 return web.NotFound()
 
     def update_resource(self, key, data):
+        """
+        Updates a resource.
+        
+        key -- the unique id.
+        data -- the data.
+        """
         # trigger backend and tell him there was an update
         self.resources[key] = data
 
     def delete_resource(self, key):
+        """
+        Deletes a resource.
+        
+        key -- the unique id.
+        data -- the data.
+        """
         try:
             # trigger backend to delete
             del(self.resources[key])
@@ -139,6 +200,11 @@ class ResourceHandler(HTTPHandler):
             return web.NotFound()
 
     def resource_exists(self, key):
+        """
+        Tests if an resource exists.
+        
+        key -- the id to look for...
+        """
         if self.resources.has_key(key) or key is '':
             return True
         else:

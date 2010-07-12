@@ -16,10 +16,31 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 # 
 '''
-This package contains a RESTful interface for SSF. It can be easily used for
-several objectives like Job Submission or VM management.
+This module contains all backends.
 
-Created on Jul 5, 2010
+Created on Jul 9, 2010
 
 @author: tmetsch
 '''
+
+class Handler:
+
+    def create(self, resource):
+        # add links to resource
+        raise NotImplementedError
+
+    def update(self, resource):
+        # update attributes
+        raise NotImplementedError
+
+    def get(self, resource):
+        # return updated attributes & links
+        raise NotImplementedError
+
+    def delete(self, resource):
+        # update attributes & cleanup
+        pass
+
+    def action(self, resource):
+        # trigger action & update state/attributes
+        pass
