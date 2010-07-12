@@ -4,7 +4,7 @@ docs/_build
 build/*
 dist/*
 *html/*
-
+.settings/*
 pylsf/lsf.py
 pylsf/lsf_wrap.c
 *.pyc
