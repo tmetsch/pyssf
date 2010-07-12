@@ -27,22 +27,47 @@ from resource_model import JobResource, Link
 class Handler(object):
 
     def create(self, resource):
+        """
+        Do something with the newly created resource.
+        
+        resource -- the new resource.
+        """
         # add links to resource
         raise NotImplementedError
 
     def update(self, resource):
+        """
+        An update on the resource has occurred - map it to the backend.
+        
+        resource -- the updated resource
+        """
         # update attributes
         raise NotImplementedError
 
     def get(self, resource):
+        """
+        A get was called - return new values if needed.
+        
+        resource -- the resource which wants to be updated.
+        """
         # return updated attributes & links
         raise NotImplementedError
 
     def delete(self, resource):
+        """
+        Also delete the resource in the backend
+        
+        resource -- the resource which should be deleted.
+        """
         # update attributes & cleanup
         pass
 
-    def action(self, resource):
+    def action(self, resource, action):
+        """
+        An action was called upon an resource - handle it.
+        
+        resource -- the resource.
+        """
         # trigger action & update state/attributes
         pass
 
@@ -58,7 +83,4 @@ class SSFHandler(Handler):
             resource.links.append(link)
         else:
             pass
-
-        # add a link
-
 

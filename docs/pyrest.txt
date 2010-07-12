@@ -26,6 +26,11 @@ all kinds of operations. For now it supports Job submission.
     When using the pyrest module for other stuff then job submission you need
     to create a new **resource** kind and update the rendering parsers. 
 
+ * TODO: code description
+ * currently does not handle schemes of links & categories
+ * HTTP header parser is very basic!
+ * links are always created by the backend - never the user!
+
 pyrest follows the principales described in [OCCI]_.
 
 .. [OCCI] OCCI website - http://www.occi-wg.org
