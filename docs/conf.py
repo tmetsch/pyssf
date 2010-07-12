@@ -38,7 +38,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Service Sharing Facility'
-copyright = u'2010, Thijs Metsch'
+copyright = u'2010, Platform Computing'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -173,7 +173,7 @@ htmlhelp_basename = 'ServiceSharingFacilitydoc'
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'ServiceSharingFacility.tex', u'Service Sharing Facility Documentation',
-   u'Thijs Metsch', 'manual'),
+   u'Platform Computing', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

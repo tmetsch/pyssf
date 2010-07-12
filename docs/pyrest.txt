@@ -16,20 +16,16 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
    
 
-Welcome to Service Sharing Facility's documentation!
-====================================================
+The pyREST module
+=================
 
-Contents:
+This module implements a generic RESTful interface. It can be used for
+all kinds of operations. For now it supports Job submission.
 
-.. toctree::
-   :maxdepth: 2
-   
-   pyrest.txt
+.. note::
+    When using the pyrest module for other stuff then job submission you need
+    to create a new **resource** kind and update the rendering parsers. 
 
-Indices and tables
-==================
+pyrest follows the principales described in [OCCI]_.
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+.. [OCCI] OCCI website - http://www.occi-wg.org
