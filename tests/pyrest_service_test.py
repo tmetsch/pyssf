@@ -54,7 +54,7 @@ class ResourceCreationTests(unittest.TestCase):
         self.assertEquals(response.status, '200 OK')
 
         # get on */ should return listing
-        response = service.app.request("/", headers = self.heads)
+        response = service.app.request("/")
         self.assertEquals(response.status, '200 OK')
         self.assertEquals(response.data, 'TODO: Listing sub resources...')
 

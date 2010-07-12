@@ -24,6 +24,7 @@ Created on Jul 2, 2010
 '''
 
 from rendering_parsers import HTTPHeaderParser, HTTPData
+from backends import SSFHandler
 import uuid
 import web
 
@@ -58,6 +59,12 @@ class NonPersistentResourceDictionary(dict):
     def __delitem__(self, key):
         return dict.__delitem__(self, key)
 
+    def get_resource(self, key):
+        """
+        Returns the resource without parsing it back to HTTP data.
+        """
+        return dict.__getitem__(self, key)
+
 class PersistentResourceDictionary(dict):
     """
     Persistently stores the dictionary to a database to be failsafe.
@@ -66,7 +73,7 @@ class PersistentResourceDictionary(dict):
     """
     pass
 
-class HTTPHandler:
+class HTTPHandler(object):
     """
     Handles the very basic HTTP operations. The logic when a resource is
     created, updated or delete is handle in here.
@@ -105,7 +112,15 @@ class HTTPHandler:
         except:
             request = HTTPData(web.ctx.env, None)
         name = str(name)
-        return self.return_resource(name, request)
+        tmp = self.return_resource(name, request)
+        if isinstance(tmp, str):
+            return tmp
+        if tmp is not None:
+            for item in tmp.header.keys():
+                web.header(item, tmp.header[item])
+            return tmp.body
+        else:
+            return web.NotFound()
 
     def PUT(self, name = None, *data):
         """
@@ -142,6 +157,7 @@ class ResourceHandler(HTTPHandler):
     #TODO insert backend here
 
     resources = NonPersistentResourceDictionary()
+    backend = SSFHandler()
     """
     The list with resource - currently a non persistent one is used.
     """
@@ -153,8 +169,9 @@ class ResourceHandler(HTTPHandler):
         key -- the unique id.
         data -- the data.
         """
-        # trigger backend to do his magic
         self.resources[key] = data
+        # trigger backend to do his magic
+        self.backend.create(self.resources.get_resource(key))
         return web.header('Location', '/' + key)
 
     def return_resource(self, key, data):
@@ -170,11 +187,10 @@ class ResourceHandler(HTTPHandler):
         else:
             try:
                 # trigger backend to get resource
-                # TODO: set headers
                 res = self.resources[key]
-                return res.body
+                return res
             except KeyError:
-                return web.NotFound()
+                return None
 
     def update_resource(self, key, data):
         """

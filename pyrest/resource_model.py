@@ -23,19 +23,22 @@ Created on Jul 9, 2010
 @author: tmetsch
 '''
 
-class Resource:
+class Resource(object):
     """
-    A resource kind."""
-    id = ''
-    """Immutable, unique identifier of the instance (Multiplicity 1)"""
-    categories = []
-    """This is a set of associated categories with Kind.
-       There must be at minimum one Category associated 
-       (Multiplicity 1..n)"""
-    links = []
-    """This is a set of associated Links with Kind (Multiplicity 0..n)"""
-    data = ''
-    """Data which was initially provided by the client in the body."""
+    A resource kind.
+    """
+
+    def __init__(self):
+        self.id = ''
+        """Immutable, unique identifier of the instance (Multiplicity 1)"""
+        self.categories = []
+        """This is a set of associated categories with Kind.
+           There must be at minimum one Category associated 
+           (Multiplicity 1..n)"""
+        self.links = []
+        """This is a set of associated Links with Kind (Multiplicity 0..n)"""
+        self.data = ''
+        """Data which was initially provided by the client in the body."""
 
     def get_action_links(self):
         """
@@ -68,36 +71,40 @@ class Resource:
             return False
 
 
-class Category:
+class Category(object):
     """
     A category.
     """
-    term = ''
-    """Target definition within the scheme (Multiplicity 1)"""
-    scheme = ''
-    """A resource that defines the model of the referred term (Multiplicity 1)"""
-    title = ''
-    """assigned links/actions (Multiplicity 0,1)"""
-    related = []
-    """A set of related categories (Multiplicity 0..n)"""
+    def __init__(self):
+        self.term = ''
+        """Target definition within the scheme (Multiplicity 1)"""
+        self.scheme = ''
+        """A resource that defines the model of the referred term (Multiplicity 1)"""
+        self.title = ''
+        """assigned links/actions (Multiplicity 0,1)"""
+        self.related = []
+        """A set of related categories (Multiplicity 0..n)"""
 
-class Link:
+class Link(object):
     """
     A link.
     """
-    link_class = ''
-    """This denotes the type of Link (Multiplicity 0,1)"""
-    title = ''
-    """Display name for the Link (Multiplicity 0,1)"""
-    rel = ''
-    """The type of Link (Multiplicity 0,1)"""
-    target = ''
-    """The Kind to which the Link points to (Multiplicity 1)"""
+    def __init__(self):
+        self.link_class = ''
+        """This denotes the type of Link (Multiplicity 0,1)"""
+        self.title = ''
+        """Display name for the Link (Multiplicity 0,1)"""
+        self.rel = ''
+        """The type of Link (Multiplicity 0,1)"""
+        self.target = ''
+        """The Kind to which the Link points to (Multiplicity 1)"""
 
 class JobResource(Resource):
+
     """
     A job resource kind.
     """
-
-    attributes = {}
-    """Attributes assigned to this resource kind."""
+    def __init__(self):
+        super(JobResource, self).__init__()
+        self.attributes = {}
+        """Attributes assigned to this resource kind."""

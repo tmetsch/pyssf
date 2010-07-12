@@ -155,12 +155,10 @@ class HTTPHeaderParserTest(unittest.TestCase):
     def test_to_resource_for_sanity(self):
         # check if given categories are in the resource
         res = self.parser.to_resource("123", self.http_data)
-        #for item in res.categories:
-        #    print item.term
         self.assertEquals(res.get_certain_categories('compute')[0].term, 'compute')
 
         # check if given attributes are in the job resource
-        test_data = HTTPData({'HTTP_CATEGORY': 'job;scheme="http://purl.org/occi/kind#"', 'occi.job.exectuable': '/bin/sleep'}, self.body)
+        test_data = HTTPData({'HTTP_CATEGORY': 'job;scheme="http://purl.org/occi/kind#"', 'HTTP_OCCI.JOB.EXECTUABLE': '/bin/sleep'}, self.body)
         res = self.parser.to_resource("456", test_data)
         # category
         self.assertEquals(res.get_certain_categories('job')[0].term, 'job')

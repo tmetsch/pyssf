@@ -26,7 +26,7 @@ Created on Jul 9, 2010
 from resource_model import Resource, Category, JobResource
 import re, sys
 
-class HTTPData:
+class HTTPData(object):
     """
     Very simple data structure which encapsulates the header and the body of a
     HTTP request. Needed basically by all parsers since this is REST :-)
@@ -39,7 +39,7 @@ class HTTPData:
         self.header = header
         self.body = body
 
-class Parser:
+class Parser(object):
     """
     The parsers have the capability to transform a resource to and from a
     HTTPData strcuture.
@@ -121,8 +121,8 @@ class HTTPHeaderParser(Parser):
         """
         result = {}
         for item in heads.keys():
-            if item.find('occi.job.') > -1:
-                result[item] = heads[item]
+            if item.find('HTTP_OCCI.JOB.') > -1:
+                result[item.lstrip('HTTP_').lower()] = heads[item]
         return result
 
     def _create_categories_for_http_header(self, categories):
@@ -167,7 +167,7 @@ class HTTPHeaderParser(Parser):
             terms.index('job')
             res = JobResource()
             res.attributes = self._get_job_attributes_from_header(http_data.header)
-        except:
+        except Exception, err:
             res = Resource()
 
         res.id = key

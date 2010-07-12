@@ -22,8 +22,9 @@ Created on Jul 9, 2010
 
 @author: tmetsch
 '''
+from resource_model import JobResource, Link
 
-class Handler:
+class Handler(object):
 
     def create(self, resource):
         # add links to resource
@@ -44,3 +45,20 @@ class Handler:
     def action(self, resource):
         # trigger action & update state/attributes
         pass
+
+class SSFHandler(Handler):
+
+    def create(self, resource):
+        if isinstance(resource, JobResource):
+            link = Link()
+            link.link_class = 'action'
+            link.rel = 'http://purl.org/occi/job/action#kill'
+            link.target = '/' + resource.id + ';kill'
+            link.title = 'Kill Job'
+            resource.links.append(link)
+        else:
+            pass
+
+        # add a link
+
+
