@@ -38,8 +38,9 @@ class ResourceCreationTests(unittest.TestCase):
 
     def test_post_for_success(self):
         # simple post on entry point should return 200 OK
-        heads = {'Category': 'compute;scheme="http://purl.org/occi/kind#";label="Compute Resource", myimage;scheme="http://example.com/user/categories/templates#"; label="My very special server"'}
-        response = service.app.request("/", method = "POST", headers = heads)
+        #heads = {'Category': 'compute;scheme="http://purl.org/occi/kind#";label="Compute Resource", myimage;scheme="http://example.com/user/categories/templates#"; label="My very special server"'}
+        #response = service.app.request("/", method = "POST", headers = heads)
+        response = service.app.request("/", method = "POST")
         self.assertEquals(response.status, '200 OK')
 
         #response = service.app.request("/job/", method = "POST")
@@ -102,11 +103,11 @@ class ResourceCreationTests(unittest.TestCase):
 
     def test_post_for_sanity(self):
         # first create (post) then get
-        response = service.app.request("/", method = "POST", data = "occi.job.executable=/bin/sleep")
+        response = service.app.request("/", method = "POST", data = "some data")
         self.assertEquals(response.status, '200 OK')
         loc = response.headers['Location']
         response = service.app.request(loc)
-        self.assertEquals(response.data, 'occi.job.executable=/bin/sleep')
+        self.assertEquals(response.data, 'some data')
 
         # post to existent url should create sub resource 
         # TODO
@@ -119,25 +120,25 @@ class ResourceCreationTests(unittest.TestCase):
 
     def test_put_for_sanity(self):
         # put on existent should update
-        response = service.app.request("/", method = "POST", data = "occi.job.executable=/bin/sleep")
+        response = service.app.request("/", method = "POST", data = "some data")
         self.assertEquals(response.status, '200 OK')
         loc = response.headers['Location']
         response = service.app.request(loc)
-        self.assertEquals(response.data, "occi.job.executable=/bin/sleep")
-        response = service.app.request(loc, method = "PUT", data = "occi.job.executable=/bin/echo")
+        self.assertEquals(response.data, "some data")
+        response = service.app.request(loc, method = "PUT", data = "other data")
         self.assertEquals(response.status, '200 OK')
         response = service.app.request(loc)
-        self.assertEquals(response.data, "occi.job.executable=/bin/echo")
+        self.assertEquals(response.data, "other data")
 
         # put on non-existent should create
-        response = service.app.request("/abc", method = "PUT", data = "occi.job.executable=/bin/sleep")
+        response = service.app.request("/abc", method = "PUT", data = "some data")
         self.assertEquals(response.status, '200 OK')
         response = service.app.request("/abc")
         self.assertEquals(response.status, '200 OK')
 
     def test_delete_for_sanity(self):
         # create and delete an entry than try get
-        response = service.app.request("/", method = "POST", data = "occi.job.executable=/bin/sleep")
+        response = service.app.request("/", method = "POST", data = "some data")
         self.assertEquals(response.status, '200 OK')
         loc = response.headers['Location']
         service.app.request(loc, method = "DELETE")
@@ -145,6 +146,9 @@ class ResourceCreationTests(unittest.TestCase):
         self.assertEquals(response.status, "404 Not Found")
 
 class SecurityTests(unittest.TestCase):
+    pass
+
+class AttributeTests(unittest.TestCase):
     pass
 
 class CategoriesTests(unittest.TestCase):
@@ -158,7 +162,6 @@ class LinkTests(unittest.TestCase):
 
 class QueryTests(unittest.TestCase):
     pass
-
 
 if __name__ == "__main__":
     unittest.main()
