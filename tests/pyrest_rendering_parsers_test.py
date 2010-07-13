@@ -160,6 +160,14 @@ class HTTPHeaderParserTest(unittest.TestCase):
         # check if given categories are in the resource
         res = self.parser.to_resource("123", self.http_data)
         self.assertEquals(res.get_certain_categories('compute')[0].term, 'compute')
+        # test body
+        self.assertEquals(res.data, self.body)
+
+        # test category with len(rel)=1 and len(rel)=x
+        test_data = HTTPData({'HTTP_CATEGORY': 'job;scheme="http://purl.org/occi/kind#";rel=http://example'}, self.body)
+        res = self.parser.to_resource("456", test_data)
+        test_data = HTTPData({'HTTP_CATEGORY': 'job;scheme="http://purl.org/occi/kind#";rel="http://example,http://www.abc.com"'}, self.body)
+        res = self.parser.to_resource("456", test_data)
 
         # check if given attributes are in the job resource
         test_data = HTTPData({'HTTP_CATEGORY': 'job;scheme="http://purl.org/occi/kind#"', 'HTTP_OCCI.JOB.EXECTUABLE': '/bin/sleep'}, self.body)
@@ -189,7 +197,7 @@ class HTTPHeaderParserTest(unittest.TestCase):
     def test_from_resource_for_sanity(self):
         # check if given data, categories & links are in the response
         res = self.parser.from_resource(self.job_resource)
-        #body
+        # body
         self.assertEquals(res.body, self.body)
         # attributes
         self.assertEquals(res.header['occi.job.executable'], '/bin/sleep')

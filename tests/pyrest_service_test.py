@@ -180,11 +180,6 @@ class AttributeTests(unittest.TestCase):
 
 class LinkTests(unittest.TestCase):
 
-    #
-    #Link: </compute/345-345-345/default>; class="link"; rel="self";title="type"
-    #Link: </network/566-566-566>; class="link"
-    #
-
     # Note: more test are done in the parser tests
     heads = {'Category': 'job;scheme="http://purl.org/occi/kind#";label="Job Resource"', 'Link': '</123>;class="test";rel="http://example.com/next/job";title="Next job"'}
 

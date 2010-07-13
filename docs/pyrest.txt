@@ -34,7 +34,10 @@ It consist of the following modules:
     to create a new **resource** kind and update the rendering parsers. 
 
 .. note::
-    Currently pyrest does not handle the scheme given to links and cateories.
+    Currently pyrest does not handle the scheme given to links and categories.
+
+.. note::
+    pyrest currently allows the user to change everything including categories.
 
 The pyrest package follows the principals described in [OCCI]_.
 

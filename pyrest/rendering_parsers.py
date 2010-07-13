@@ -119,8 +119,8 @@ class HTTPHeaderParser(Parser):
             begin = entry.find('rel="')
             if begin is not - 1:
                 tmp = entry[begin + 7:]
-                category.related = (tmp[:tmp.find('"')])
-
+                rel = (tmp[:tmp.find('"')])
+                category.related = rel.split(',')
             result.append(category)
 
         if len(result) == 0:
