@@ -73,6 +73,9 @@ class Handler(object):
 
 class SSFHandler(Handler):
 
+    scheme = ''
+    available_actions = 'kill'
+
     def create(self, resource):
         if isinstance(resource, JobResource):
             link = Link()
@@ -81,6 +84,17 @@ class SSFHandler(Handler):
             link.target = '/' + resource.id + ';kill'
             link.title = 'Kill Job'
             resource.links.append(link)
+        else:
+            pass
+
+    def action(self, resource, action):
+        if isinstance(resource, JobResource):
+            # update attributes and links if needed and trigger action
+            if action in self.available_actions:
+                resource.links = []
+                resource.attributes = {'occi.job.state': 'killed'}
+            else:
+                raise AttributeError('Non existing action called!')
         else:
             pass
 

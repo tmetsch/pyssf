@@ -30,6 +30,7 @@ import web
 
 
 urls = (
+    # '/(.*)(;[a-zA-z]*)', 'ActionHandler', <- no clue why he doesn't trigger this
     '/(.*)', 'ResourceHandler'
 )
 app = web.application(urls, globals())
@@ -88,6 +89,11 @@ class HTTPHandler(object):
         name -- the id of the resource.
         *data -- if available (this it the body of the HTTP message).
         """
+        index = web.ctx.env['PATH_INFO'].find(';')
+        if index is not - 1:
+            key = web.ctx.env['PATH_INFO'][1:index]
+            actionclass = web.ctx.env['PATH_INFO'][index + 1:]
+            return self.trigger_action(key, actionclass)
         # create a new sub resource
         request = HTTPData(web.ctx.env, web.data())
         name = str(name)
@@ -111,6 +117,7 @@ class HTTPHandler(object):
             request = HTTPData(web.ctx.env, None)
         name = str(name)
         tmp = self.return_resource(name, request)
+        # following is uncool!
         if isinstance(tmp, str):
             return tmp
         if tmp is not None:
@@ -182,9 +189,9 @@ class ResourceHandler(HTTPHandler):
         key -- the unique id.
         data -- the data.
         """
-        # TODO: handle results based on data gives...
+        # TODO: mime types, Accept headers and listings
         if key is '' or key[-1:] is '/':
-            return 'TODO: Listing sub resources...'
+            return 'Listing sub resources...'
         else:
             try:
                 # trigger backend to get resource
@@ -201,8 +208,11 @@ class ResourceHandler(HTTPHandler):
         data -- the data.
         """
         # trigger backend and tell him there was an update
+        # only backend update the real resource - incl checks what can be 
+        #   changed and what not :-)
         try:
-            self.resources[key] = data
+            #self.resources[key] = data
+            pass
         except:
             return web.BadRequest
 
@@ -229,6 +239,16 @@ class ResourceHandler(HTTPHandler):
             return True
         else:
             return False
+
+    def trigger_action(self, key, name):
+        try:
+            resource = self.resources.get_resource(key)
+            self.backend.action(resource, name)
+            return web.OK()
+        except KeyError:
+            return web.NotFound()
+        except:
+            return web.BadRequest()
 
 if __name__ == "__main__":
     app.run()

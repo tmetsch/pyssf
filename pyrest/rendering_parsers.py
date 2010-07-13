@@ -232,7 +232,7 @@ class HTTPHeaderParser(Parser):
         # parse categories
         terms, categories = self._get_categories_from_header(http_data.header)
 
-        # TODO: add more resource kinds if needed
+        # XXX: add more resource kinds if needed
         try:
             terms.index('job')
             res = JobResource()
