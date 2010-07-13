@@ -145,30 +145,63 @@ class ResourceCreationTests(unittest.TestCase):
         response = service.app.request(loc)
         self.assertEquals(response.status, "404 Not Found")
 
-class SecurityTests(unittest.TestCase):
-    pass
+class CategoriesTests(unittest.TestCase):
+
+    # Note: more tests are done in the parser tests
+    heads = {'Category': 'job;scheme="http://purl.org/occi/kind#";label="Job Resource"'}
+
+    def test_categories_for_failure(self):
+        # if a post is done without category -> Fail
+        response = service.app.request("/", method = "POST")
+        self.assertEquals('400 Bad Request', response.status)
+
+    def test_categories_for_sanity(self):
+        # if a post is done and later a get should return same category
+        response = service.app.request("/", method = "POST", headers = self.heads)
+        url = response.headers['Location']
+        response = service.app.request(url)
+        cat = response.headers['Category'].split(';')
+        self.assertEquals(cat[0], 'job')
+        self.assertEquals(cat[1].split('=')[-1:].pop(), 'http://purl.org/occi/kind#')
 
 class AttributeTests(unittest.TestCase):
 
-    # Note: more tests are done in the resource model tests
+    # Note: more tests are done in the parser tests
 
-    pass
+    heads = {'Category': 'job;scheme="http://purl.org/occi/kind#";label="Job Resource"', 'occi.job.executable':'/bin/sleep'}
 
-class CategoriesTests(unittest.TestCase):
+    def test_attributes_for_sanity(self):
+        # pass along some attributes and see if they can be retrieved
+        response = service.app.request("/", method = "POST", headers = self.heads)
+        url = response.headers['Location']
+        response = service.app.request(url)
+        #print response
+        self.assertEquals(response.headers['occi.job.executable'], '/bin/sleep')
 
-    # Note: more tests are done in the resource model tests
+class LinkTests(unittest.TestCase):
 
-    pass
+    #
+    #Link: </compute/345-345-345/default>; class="link"; rel="self";title="type"
+    #Link: </network/566-566-566>; class="link"
+    #
+
+    # Note: more test are done in the parser tests
+    heads = {'Category': 'job;scheme="http://purl.org/occi/kind#";label="Job Resource"', 'Link': '</123>;class="test";rel="http://example.com/next/job";title="Next job"'}
+
+    def test_links_far_sanity(self):
+        # pass along some attributes and see if they can be retrieved
+        response = service.app.request("/", method = "POST", headers = self.heads)
+        url = response.headers['Location']
+        response = service.app.request(url)
+        self.assertEquals(response.headers['Link'].split(';')[0], '</123>')
 
 class ActionsTests(unittest.TestCase):
     pass
 
-class LinkTests(unittest.TestCase):
-
-    # Note: can only be tested here because of backend adding links not client!
+class QueryTests(unittest.TestCase):
     pass
 
-class QueryTests(unittest.TestCase):
+class SecurityTests(unittest.TestCase):
     pass
 
 if __name__ == "__main__":

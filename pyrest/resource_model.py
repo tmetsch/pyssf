@@ -108,3 +108,4 @@ class JobResource(Resource):
         super(JobResource, self).__init__()
         self.attributes = {}
         """Attributes assigned to this resource kind."""
+

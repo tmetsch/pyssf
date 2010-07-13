@@ -117,7 +117,11 @@ class HTTPHeaderParserTest(unittest.TestCase):
         request = HTTPData({}, None)
         self.assertRaises(AttributeError, self.parser.to_resource, "123", request)
 
-        # missing links -> nothing :-)
+        # action links -> error :-)
+        new_header = {'HTTP_CATEGORY': 'job;scheme="http://purl.org/occi/kind#"', 'HTTP_LINK': '</network/566-566-566>; class="action"'}
+        request = HTTPData(new_header, None)
+        res = self.parser.to_resource("123", request)
+        self.assertEquals(len(res.links), 0)
 
         # missing scheme for category
         header = {'HTTP_CATEGORY': 'job;scheme=;label=Tada'}
@@ -164,6 +168,23 @@ class HTTPHeaderParserTest(unittest.TestCase):
         self.assertEquals(res.get_certain_categories('job')[0].term, 'job')
         # get attribute
         self.assertEquals(res.attributes['occi.job.exectuable'], '/bin/sleep')
+
+        # test links
+        new_header = {'HTTP_CATEGORY': 'job;scheme="http://purl.org/occi/kind#"', 'HTTP_LINK': '</network/566-566-566>; class="link"'}
+        request = HTTPData(new_header, None)
+        res = self.parser.to_resource("123", request)
+        self.assertEquals(res.links[0].rel, '')
+        self.assertEquals(res.links[0].title, '')
+        self.assertEquals(res.links[0].target, '/network/566-566-566')
+        self.assertEquals(res.links[0].link_class, 'link')
+
+        new_header = {'HTTP_CATEGORY': 'job;scheme="http://purl.org/occi/kind#"', 'HTTP_LINK': '</compute/345-345-345/default>; class="link"; rel="self";title="type"'}
+        request = HTTPData(new_header, None)
+        res = self.parser.to_resource("123", request)
+        self.assertEquals(res.links[0].rel, 'self')
+        self.assertEquals(res.links[0].title, 'type')
+        self.assertEquals(res.links[0].target, '/compute/345-345-345/default')
+        self.assertEquals(res.links[0].link_class, 'link')
 
     def test_from_resource_for_sanity(self):
         # check if given data, categories & links are in the response

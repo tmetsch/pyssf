@@ -23,10 +23,11 @@ Created on Jul 2, 2010
 @author: tmetsch
 '''
 
-from rendering_parsers import HTTPHeaderParser, HTTPData
 from backends import SSFHandler
+from rendering_parsers import HTTPHeaderParser, HTTPData
 import uuid
 import web
+
 
 urls = (
     '/(.*)', 'ResourceHandler'
@@ -78,9 +79,6 @@ class HTTPHandler(object):
     Handles the very basic HTTP operations. The logic when a resource is
     created, updated or delete is handle in here.
     """
-    # TODO: overall add auth, and key validation
-    # TODO: queries
-    # TODO: handle actions
 
     def POST(self, name, *data):
         """
@@ -169,10 +167,13 @@ class ResourceHandler(HTTPHandler):
         key -- the unique id.
         data -- the data.
         """
-        self.resources[key] = data
-        # trigger backend to do his magic
-        self.backend.create(self.resources.get_resource(key))
-        return web.header('Location', '/' + key)
+        try:
+            self.resources[key] = data
+            # trigger backend to do his magic
+            self.backend.create(self.resources.get_resource(key))
+            return web.header('Location', '/' + key)
+        except:
+            web.BadRequest()
 
     def return_resource(self, key, data):
         """
@@ -200,7 +201,10 @@ class ResourceHandler(HTTPHandler):
         data -- the data.
         """
         # trigger backend and tell him there was an update
-        self.resources[key] = data
+        try:
+            self.resources[key] = data
+        except:
+            return web.BadRequest
 
     def delete_resource(self, key):
         """

@@ -23,8 +23,8 @@ Created on Jul 9, 2010
 @author: tmetsch
 '''
 
-from resource_model import Resource, Category, JobResource
-import re, sys
+from resource_model import Resource, Category, JobResource, Link
+import re
 
 class HTTPData(object):
     """
@@ -79,38 +79,100 @@ class HTTPHeaderParser(Parser):
         terms = []
         try:
             header = heads['HTTP_CATEGORY']
-            categories = header.split(',')
-            for entry in categories:
-                category = Category()
+        except:
+            raise AttributeError('No categories could be found in the header!')
+        categories = header.split(',')
+        for entry in categories:
+            category = Category()
+            # next two are mandatory and should be there!
+            # do regex on url and term to check if ok 
+            # find term
+            try:
                 tmp = entry.split(';')
-                # next two are mandatory and should be there!
-                # do regex on url and term to check if ok 
                 term = tmp[0].strip(' ')
                 if re.match("^[\w\d_-]*$", term) and term is not '':
                     category.term = term
                     terms.append(category.term)
                 else:
                     raise AttributeError('No valid term for given category could be found.')
-
-                scheme = tmp[1].split('=')[-1:][0]
+            except:
+                # todo log her...
+                break
+            # find scheme
+            begin = entry.find('scheme="')
+            if begin is not - 1:
+                tmp = entry[begin + 8:]
+                scheme = (tmp[:tmp.find('"')])
                 if scheme.find('http') is not - 1:
                     category.scheme = scheme
                 else:
-                    raise AttributeError('No a valid scheme for given category could be found.')
+                    break
+            else:
+                break
 
-                # add non mandatory fields
-                #if tmp[2] is not KeyError:
-                #    category.title = tmp[2].split('=')[-1:]
-                #if tmp[3]:
-                #    # TODO should be list
-                #    category.related = tmp[3].split('=')[-1:]
-                result.append(category)
-        except KeyError, err:
-            raise AttributeError('No Categories found in the HTTP Header: %s\n' % str(err))
-        except IndexError, err:
-            sys.stdout.write('Warning: %s\n' % str(err))
-            #pass
+            # add non mandatory fields
+            begin = entry.find('title="')
+            if begin is not - 1:
+                tmp = entry[begin + 7:]
+                category.title = (tmp[:tmp.find('"')])
+
+            begin = entry.find('rel="')
+            if begin is not - 1:
+                tmp = entry[begin + 7:]
+                category.related = (tmp[:tmp.find('"')])
+
+            result.append(category)
+
+        if len(result) == 0:
+            raise AttributeError("No valid categories could be found.")
         return terms, result
+
+    def _get_links_from_header(self, heads):
+        """
+        Retrieve all links from the header but doesn't look at action kinds.
+        Those should not be set by the user.
+        
+        heads -- headers to parse the links from.
+        """
+        # only target in mandatory...
+        result = []
+        try:
+            header = heads['HTTP_LINK']
+        except:
+            return result # this is actually okay :-)
+        links = header.split(',')
+        for item in links:
+            link = Link()
+            # find target
+            begin = item.find('<')
+            end = item.find('>')
+            if begin < end and begin is not - 1 and end is not - 1:
+                link.target = item[begin + 1:end]
+            else:
+                break
+            # find class
+            begin = item.find('class="')
+            if begin is not - 1:
+                tmp = item[begin + 7:]
+                lc = tmp[:tmp.find('"')]
+                if lc != 'action':
+                    link.link_class = lc
+                else:
+                    break
+
+            # find rel
+            begin = item.find('rel="')
+            if begin is not - 1:
+                tmp = item[begin + 5:]
+                link.rel = (tmp[:tmp.find('"')])
+
+            # find 
+            begin = item.find('title="')
+            if begin is not - 1:
+                tmp = item[begin + 7:]
+                link.title = (tmp[:tmp.find('"')])
+            result.append(link)
+        return result
 
     def _get_job_attributes_from_header(self, heads):
         """
@@ -149,9 +211,17 @@ class HTTPHeaderParser(Parser):
         
         links -- list of links (Link)
         """
+        # only target in mandatory...
         link_string = []
         for item in links:
-            text = '<' + item.target + '>;class="' + item.link_class + '";rel="' + item.rel + '";title="' + item.title + '"'
+            text = ''
+            text += '<' + item.target + '>'
+            if item.link_class is not '':
+                text += ';class="' + item.link_class + '"'
+            if item.rel is not '':
+                text += ';rel="' + item.rel + '"'
+            if item.title is not '':
+                text += ';title="' + item.title + '"'
             link_string.append(text)
         return ','.join(link_string)
 
@@ -167,12 +237,13 @@ class HTTPHeaderParser(Parser):
             terms.index('job')
             res = JobResource()
             res.attributes = self._get_job_attributes_from_header(http_data.header)
-        except Exception, err:
+        except:
             res = Resource()
 
         res.id = key
         res.categories = categories
-        # add links <- done by backend - client normally shouldn't set links
+        # add links <- done by backend
+        res.links = self._get_links_from_header(http_data.header)
 
         # append data from body - might be needed for OVF files etc.
         if http_data.body is not '':
