@@ -16,21 +16,68 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
    
 
-The pyREST module
-=================
+The pyrest package
+==================
 
-This module implements a generic RESTful interface. It can be used for
+This package implements a generic RESTful interface. It can be used for
 all kinds of operations. For now it supports Job submission.
+
+It consist of the following modules:
+ * **service** - This is the basic implementation of the RESTful service.
+ * **resource_model** - The resource model.
+ * **backends** - Backends are used to trigger actually operations.
+ * **rendering_parsers** - Parsers which traverse between the data on the wire
+   and the resource model.
 
 .. note::
     When using the pyrest module for other stuff then job submission you need
     to create a new **resource** kind and update the rendering parsers. 
 
- * TODO: code description
- * currently does not handle schemes of links & categories
- * HTTP header parser is very basic!
- * links are always created by the backend - never the user!
+.. note::
+    Currently pyrest does not handle the scheme given to links and cateories.
 
-pyrest follows the principales described in [OCCI]_.
+The pyrest package follows the principals described in [OCCI]_.
+
+Service
+-------
+
+Uses [web.py]_ to implement a RESTful service.
+
+Non Persistent Resource Dictionary
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Dictionary which holds resources from the resource model. But when using get
+and set it will return the proper HTTP Data needed by the service. This part is
+not persistent on failure or restart of the service all resource will be lost.
+
+Persistent Resource Dictionary
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Is not yet implemented.
+
+HTTP Handler
+^^^^^^^^^^^^
+Handler the basic HTTP CRUD operations. It implements the logic when a resource
+is created, updated or destroyed.
+
+Resource Handler
+^^^^^^^^^^^^^^^^
+Is derived form the HTTP Handler and has some convenient routines to update the
+resources in the Resource Dictionary.
+
+Rendering Parsers
+-----------------
+
+The HTTP Header Parser
+^^^^^^^^^^^^^^^^^^^^^^
+Is derived from Parser. Does in general nothing more then parsing the HTTP
+header and look for attributes, links and categories
+
+.. note::
+    If something is going to fail is is most probably in this class. It is not
+    XML and parsing strings from the header and fill them into data structures
+    can lead to issues. Still this part is reasonably tested.
+
+.. note::
+    links are always created by the backend - never the user!
 
 .. [OCCI] OCCI website - http://www.occi-wg.org
+.. [web.py] web.py website - http://webpy.org/

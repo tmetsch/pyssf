@@ -26,6 +26,13 @@ Contents:
    
    pyrest.txt
 
+This software package is a collection of modules which form an uniform
+integration point for Grid/Cloud/Cluster products. If provides several
+front-ends which can easily be used to build complete Services or integrate
+products with your products. It aims to deliver an distributed ecosystem where
+multiple Grid/Cloud/Clusters sites can federate. It is developed under a LGPL
+license.
+
 Indices and tables
 ==================
 
