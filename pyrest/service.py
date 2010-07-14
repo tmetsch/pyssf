@@ -29,11 +29,11 @@ import uuid
 import web
 
 
-urls = (
-    # '/(.*)(;[a-zA-z]*)', 'ActionHandler', <- no clue why he doesn't trigger this
+URLS = (
+    # '/(.*)(;[a-zA-z]*)', 'ActionHandler'; no clue why he doesn't trigger this
     '/(.*)', 'ResourceHandler'
 )
-app = web.application(urls, globals())
+APPLICATION = web.application(URLS, globals())
 
 class NonPersistentResourceDictionary(dict):
     """
@@ -101,7 +101,8 @@ class HTTPHandler(object):
             name += str(uuid.uuid4())
             return self.create_resource(str(name), request)
         else:
-            return web.NotFound("Couldn't create sub resource of non-existing resource.")
+            return web.NotFound("Couldn't create sub resource of non-existing"
+                                + "resource.")
 
     def GET(self, name, *data):
         """
@@ -163,9 +164,6 @@ class ResourceHandler(HTTPHandler):
 
     resources = NonPersistentResourceDictionary()
     backend = SSFHandler()
-    """
-    The list with resource - currently a non persistent one is used.
-    """
 
     def create_resource(self, key, data):
         """
@@ -241,6 +239,13 @@ class ResourceHandler(HTTPHandler):
             return False
 
     def trigger_action(self, key, name):
+        """
+        Trigger an action in the backend system. Backend should update state
+        and links if needed.
+        
+        key -- the id for the resource.
+        name -- name of the action.
+        """
         try:
             resource = self.resources.get_resource(key)
             self.backend.action(resource, name)
@@ -251,4 +256,5 @@ class ResourceHandler(HTTPHandler):
             return web.BadRequest()
 
 if __name__ == "__main__":
-    app.run()
+    APPLICATION.run()
+

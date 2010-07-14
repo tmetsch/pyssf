@@ -24,6 +24,9 @@ Created on Jun 28, 2010
 from pylsf import lsf
 
 def run_job(command):
+    """
+    Run a job...
+    """
     submitreq = lsf.submit()
     submitreq.command = command
     submitreq.options = 0
@@ -38,7 +41,7 @@ def run_job(command):
     submitreq.beginTime = 0
     submitreq.termTime = 0
     submitreq.numProcessors = 1
-    submitreq.maxNumProcessors = 1;
+    submitreq.maxNumProcessors = 1
 
     submitreply = lsf.submitReply()
 
@@ -52,8 +55,8 @@ def run_job(command):
 #    #hInfo = lsf.lsb_hostinfo("ubuntu", numHosts)
 #    print(hInfo.host)
 
-    jobId = lsf.lsb_submit(submitreq, submitreply)
-    return jobId
+    job_id = lsf.lsb_submit(submitreq, submitreply)
+    return job_id
 
 if __name__ == '__main__':
     print("LSF Clustername is :", lsf.ls_getclustername())
