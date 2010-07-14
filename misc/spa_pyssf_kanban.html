@@ -12,6 +12,9 @@
 <title>Kanban Board</title>
 </head><body>
 
+<!-- only the next part will be replaced during the save operation; 
+     please note that the start and end comments are necessary!-->
+
 <!-- The data for the stories -->
 <textarea rows="1" id="stories" style="visibility: hidden;">
 S_Q,S80,Create a modular SSF system which will act a Integration-Point / Enhanced Frontend
@@ -241,7 +244,9 @@ Blog at <a href="http://www.codemonkeyism.com">http://www.codemonkeyism.com</a>,
 JQuery with the DragSort plugin<br>
 This software application is Twitter-Ware. If you like it, use it, or have something to say, <b>follow me</b> and
 tell me on Twitter at @codemonkeyism<br/>
-    The newest version can be found on <a href="http://www.simple-kanban.com">www.simple-kanban.com</a>
+The newest version can be found on <a href="http://www.simple-kanban.com">www.simple-kanban.com</a><br />
+Updated by Thijs Metsch, who can be found on Twitter <a href="http://twitter.com/befreax">http://twitter.com/befreax</a>, with functionalities described <a href="taken from: http://softwareas.com/towards-a-single-page-application-framework#more-590">here</a>.
+The <em>jQuery.twFile.js</em> feature is used to make it a single page application - it is licensed under a BSD, MIT and GPL license.
 </div>
 <!--
      Copyright (c) 2009 Stephan Schmidt
@@ -604,18 +609,17 @@ OTHER DEALINGS IN THE SOFTWARE
      */
     
     $.spa.save = function(text) {
+        var data = "";
+        $("#board .dp10").each(function() {
+            var state = $(this).data("state");
+            $(this).find("li").each( function() {
+                var story = $(this).data("story");
+                data += state + "," + story[1] + "," + story[2] + "\n";
+            });
+        });
+        $("#data_output").val(data);
 
-  var data = "";
-  $("#board .dp10").each(function() {
-    var state = $(this).data("state");
-    $(this).find("li").each( function() {
-       var story = $(this).data("story");
-       data += state + "," + story[1] + "," + story[2] + "\n";
-    });
-  });
-  $("#data_output").val(data);
-
-      return text.replace(/<!-- The data for the stories -->\n<textarea rows="1" id="stories" style="visibility: hidden;">(.*\n)*<\/textarea>\n<!-- end -->/,
+        return text.replace(/<!-- The data for the stories -->\n<textarea rows="1" id="stories" style="visibility: hidden;">(.*\n)*<\/textarea>\n<!-- end -->/,
               '<!-- The data for the stories -->\n<textarea rows="1" id="stories" style="visibility: hidden;">\n'+ data +'</textarea>\n<!-- end -->');
     }
   </script>
