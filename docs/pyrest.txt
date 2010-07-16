@@ -36,9 +36,6 @@ It consist of the following modules:
 .. note::
     Currently pyrest does not handle the scheme given to links and categories.
 
-.. note::
-    pyrest currently allows the user to change everything including categories.
-
 The pyrest package follows the principals described in [OCCI]_.
 
 Service
@@ -79,5 +76,39 @@ header and look for attributes, links and categories
     XML and parsing strings from the header and fill them into data structures
     can lead to issues. Still this part is reasonably tested.
 
+Backends
+--------
+The backends actually trigger operations and map the HTTP/RESTful resource to
+something else.
+
+SSF Handler
+^^^^^^^^^^^
+This Handler is capable of submitting jobs to Platform LSF. Creation of the
+resources should be done with the following category:
+
+    ========  ============================
+      Term      Scheme                    
+    ========  ============================
+    job       "http://purl.org/occi/kind#"
+    ========  ============================
+
+Currently the following attributes are supported:
+
+    ========================  ======================  ===========
+      Attribute               Description             Example    
+    ========================  ======================  ===========
+    occi.drmaa.remoteCommand  Path to Job Executable  /bin/sleep 
+    occi.drmaa.args           Arguments               "100"      
+    ========================  ======================  ===========
+
+Also the following links/actions can be used to manipulate the job:
+
+    ===================  ===============================
+      Link                 Description                  
+    ===================  ===============================
+    <id>;release         Release a job currently on hold
+    <id>;terminate       Terminate a running job        
+    ===================  ===============================
+
 .. [OCCI] OCCI website - http://www.occi-wg.org
-.. [web.py] web.py website - http://webpy.org/
+.. [web.py] web.py website - http://webpy.org
