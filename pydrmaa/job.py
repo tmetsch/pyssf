@@ -69,6 +69,7 @@ class LSFJob(Job):
         """
         Initialize a LSF Job and schedules it!
         """
+        super(LSFJob, self).__init__()
         self.remote_command = command
         self.args = args
 
@@ -108,10 +109,11 @@ class LSFJob(Job):
     def get_state(self):
         # FIXME: this needs to be fixed!
         import os
-        p = os.popen("bjobs -a " + str(self.job_id) + " | awk 'NR != 1 {print $3}'")
-        s = p.readline()
-        p.close()
-        return s.replace('\n', '')
+        process = os.popen("bjobs -a " + str(self.job_id) +
+                           " | awk 'NR != 1 {print $3}'")
+        string = process.readline()
+        process.close()
+        return string.replace('\n', '')
 
 # following lines are taken from the DRMAAv2 stack - eventually this should all
 # be supported:

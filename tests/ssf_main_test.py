@@ -37,7 +37,6 @@ class Test(unittest.TestCase):
 
     def test_run_job_for_success(self):
         main.run_job("/bin/sleep 1")
-        pass
 
     def _some_private_stuff(self):
         pass
