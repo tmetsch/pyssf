@@ -81,10 +81,10 @@ Backends
 The backends actually trigger operations and map the HTTP/RESTful resource to
 something else.
 
-SSF Handler
+Job Handler
 ^^^^^^^^^^^
-This Handler is capable of submitting jobs to Platform LSF. Creation of the
-resources should be done with the following category:
+This Handler is capable of submitting jobs. Creation of the resources should be
+done with the following category:
 
     ========  ============================
       Term      Scheme                    

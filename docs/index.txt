@@ -24,7 +24,10 @@ Contents:
 .. toctree::
    :maxdepth: 2
    
+   pydrmaa.txt
+   pylsf.txt
    pyrest.txt
+   pyssf.txt
 
 This software package is a collection of modules which form an uniform
 integration point for Grid/Cloud/Cluster products. If provides several
@@ -32,6 +35,13 @@ front-ends which can easily be used to build complete Services or integrate
 products with your products. It aims to deliver an distributed ecosystem where
 multiple Grid/Cloud/Clusters sites can federate. It is developed under a LGPL
 license.
+
+Features:
+ * Access multiple Distributed Resource Managers (DRM) systems
+ * Provides simple Cloud interfaces for (Infrastructure|Platform) as a Service
+   (Job submission, VM management, and many more...)
+ * Negotiation and federation of services between Grids/Clouds/Clusters
+ * Integration point to integrate your products with Grids/Clouds/Clusters
 
 Indices and tables
 ==================
