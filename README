@@ -8,12 +8,7 @@ integration point for Grid/Cloud/Cluster products. If provides several
 front-ends which can easily be used to build complete Services or integrate
 products with your products. It aims to deliver an distributed ecosystem where
 multiple Grid/Cloud/Clusters sites can federate. It is developed under a LGPL
-license for the DGSI Project. The following module exist:
-
-  * ssf - The Service Sharing Facility modules is the core module which 
-          orchestrates all the others.
-  * pylsf - Provides a Python Interface for Platform LSF
-  * pyrest - A RESTful interface for SSF
+license for the DGSI Project.
 
 --------
 BUILDING
