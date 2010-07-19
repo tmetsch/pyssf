@@ -19,15 +19,8 @@
 Welcome to Service Sharing Facility's documentation!
 ====================================================
 
-Contents:
-
-.. toctree::
-   :maxdepth: 2
-   
-   pydrmaa.txt
-   pylsf.txt
-   pyrest.txt
-   pyssf.txt
+.. image:: images/pyssf_logo.png
+   :alt: Service Sharing Facility logo
 
 This software package is a collection of modules which form an uniform
 integration point for Grid/Cloud/Cluster products. If provides several
@@ -42,6 +35,16 @@ Features:
    (Job submission, VM management, and many more...)
  * Negotiation and federation of services between Grids/Clouds/Clusters
  * Integration point to integrate your products with Grids/Clouds/Clusters
+
+Contents:
+
+.. toctree::
+   :maxdepth: 2
+   
+   pydrmaa.txt
+   pylsf.txt
+   pyrest.txt
+   pyssf.txt
 
 Indices and tables
 ==================
