@@ -24,6 +24,16 @@ Created on Jul 9, 2010
 '''
 from resource_model import JobResource, Link
 
+#def check_resource_type(func):
+#    def wrapper(*args):
+#        if isinstance(args[1], JobResource):
+#            print 'OK - calling', func.__name__ , 'with', args[1]
+#            return func(*args)
+#        else:
+#            print 'NO - calling', func.__name__ , 'with', args[1]
+#            raise AttributeError('not a job resource')
+#    return wrapper
+
 class Handler(object):
 
     def create(self, resource):
@@ -44,7 +54,7 @@ class Handler(object):
         # update attributes
         raise NotImplementedError
 
-    def get(self, resource):
+    def retrieve(self, resource):
         """
         A get was called - return new values if needed.
         
@@ -71,11 +81,30 @@ class Handler(object):
         # trigger action & update state/attributes
         pass
 
-class SSFHandler(Handler):
+    def _action_is_in_resource_description(self, resource, action):
+        """
+        Tests whether an given action is indeed currently defined by a link in
+        a resource.
+        
+        resource -- the resource.
+        action -- the action to test.
+        """
+        links = resource.get_action_links()
+        for item in links:
+            if item.target.split(';')[-1:].pop() == str(action):
+                return True
+        return False
+
+class JobHandler(Handler):
+    """
+    Job Handler is in charge of updating the states/link of a job resource. It
+    ensures that the state model is not broken. Class whichh handle the
+    management of the Jobs in DRMs should derive from this class.
+    """
 
     scheme = ''
-    available_actions = 'kill'
 
+    # @check_resource_type
     def create(self, resource):
         if isinstance(resource, JobResource):
             link = Link()
@@ -90,11 +119,10 @@ class SSFHandler(Handler):
     def action(self, resource, action):
         if isinstance(resource, JobResource):
             # update attributes and links if needed and trigger action
-            if action in self.available_actions:
+            if self._action_is_in_resource_description(resource, action):
                 resource.links = []
                 resource.attributes = {'occi.job.state': 'killed'}
             else:
                 raise AttributeError('Non existing action called!')
         else:
             pass
-

@@ -11,5 +11,6 @@
 <path>/pyssf/pyrest</path>
 <path>/pyssf/tests</path>
 <path>/pyssf/build/lib.linux-i686-2.6</path>
+<path>/pyssf/pydrmaa</path>
 </pydev_pathproperty>
 </pydev_project>

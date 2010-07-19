@@ -23,7 +23,7 @@ Created on Jul 2, 2010
 @author: tmetsch
 '''
 
-from backends import SSFHandler
+from backends import JobHandler
 from rendering_parsers import HTTPHeaderParser, HTTPData
 import uuid
 import web
@@ -163,7 +163,7 @@ class ResourceHandler(HTTPHandler):
     #TODO insert backend here
 
     resources = NonPersistentResourceDictionary()
-    backend = SSFHandler()
+    backend = JobHandler()
 
     def create_resource(self, key, data):
         """
