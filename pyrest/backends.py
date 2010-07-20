@@ -40,6 +40,8 @@ class Handler(object):
     def create(self, resource):
         """
         Do something with the newly created resource.
+        NOTE: Within this method assure the mutability of links, attributes and
+        categories!
         
         resource -- the new resource.
         """
@@ -49,6 +51,8 @@ class Handler(object):
     def update(self, resource):
         """
         An update on the resource has occurred - map it to the backend.
+        NOTE: Within this method assure the mutability of links, attributes and
+        categories!
         
         resource -- the updated resource
         """
@@ -71,7 +75,7 @@ class Handler(object):
         resource -- the resource which should be deleted.
         """
         # update attributes & cleanup
-        pass
+        raise NotImplementedError
 
     def action(self, resource, action):
         """
@@ -80,7 +84,7 @@ class Handler(object):
         resource -- the resource.
         """
         # trigger action & update state/attributes
-        pass
+        raise NotImplementedError
 
     def _action_is_in_resource_description(self, resource, action):
         """
@@ -103,17 +107,61 @@ class JobHandler(Handler):
     management of the Jobs in DRMs should derive from this class.
     """
 
-    scheme = ''
+    jobs = {}
 
     # @check_resource_type
     def create(self, resource):
         if isinstance(resource, JobResource):
+            if not 'occi.drmaa.remote_command' in resource.attributes:
+                raise AttributeError('Missing command argument')
+
+            command = resource.attributes['occi.drmaa.remote_command']
+            if 'occi.drmaa.args' in resource.attributes:
+                args = resource.attributes['occi.drmaa.args']
+            else:
+                args = None
+            job = JobFactory().create_job(command, args)
+
+            # update links & attributes
             link = Link()
             link.link_class = 'action'
-            link.rel = 'http://purl.org/occi/job/action#kill'
-            link.target = '/' + resource.id + ';kill'
+            link.rel = 'http://purl.org/occi/drmaa/action#release'
+            link.target = '/' + resource.id + ';release'
             link.title = 'Kill Job'
+            # I can append because not action links could be added previously
+            # because parsers take care of that...
             resource.links.append(link)
+            resource.attributes['occi.drmaa.job_id'] = job.job_id
+
+            self.jobs[job.job_id] = job
+        else:
+            pass
+
+    def retrieve(self, resource):
+        if isinstance(resource, JobResource):
+            state = job.get_state()
+            resource.attributes['occi.drmaa.job_state'] = state
+            if state == 'RUNNING':
+                link = Link()
+                link.link_class = 'action'
+                link.rel = 'http://purl.org/occi/drmaa/action#terminate'
+                link.target = '/' + resource.id + ';terminate'
+                link.title = 'Release Job'
+                resource.links = [link]
+            if state == 'DONE' or state == 'EXIT':
+                resource.links = []
+        else:
+            pass
+
+    def update(self, resource):
+        # not allowing the update :-D
+        pass
+
+    def delete(self, resource):
+        if isinstance(resource, JobResource):
+            job = self.jobs[resource.attributes['occi.drmaa.job_id']]
+            job.terminate()
+            del self.jobs[resource.attributes['occi.drmaa.job_id']]
         else:
             pass
 
@@ -121,8 +169,14 @@ class JobHandler(Handler):
         if isinstance(resource, JobResource):
             # update attributes and links if needed and trigger action
             if self._action_is_in_resource_description(resource, action):
-                resource.links = []
-                resource.attributes = {'occi.drmaa.state': 'killed'}
+                job = self.jobs[resource.attributes['occi.drmaa.job_id']]
+                if action == 'release':
+                    job.release()
+                    resource.links = []
+                elif action == 'terminate':
+                    job.terminate()
+                    resource.links = []
+                resource.attributes['occi.drmaa.job_state'] = job.get_state()
             else:
                 raise AttributeError('Non existing action called!')
         else:

@@ -177,8 +177,8 @@ class ResourceHandler(HTTPHandler):
             # trigger backend to do his magic
             self.backend.create(self.resources.get_resource(key))
             return web.header('Location', '/' + key)
-        except:
-            web.BadRequest()
+        except Exception as inst:
+            web.HTTPError(inst)
 
     def return_resource(self, key, data):
         """
@@ -194,6 +194,7 @@ class ResourceHandler(HTTPHandler):
             try:
                 # trigger backend to get resource
                 res = self.resources[key]
+                self.backend.retrieve(res)
                 return res
             except KeyError:
                 return None
@@ -210,7 +211,8 @@ class ResourceHandler(HTTPHandler):
         #   changed and what not :-)
         try:
             #self.resources[key] = data
-            pass
+            res = self.resources[key]
+            self.backend.retrieve(res)
         except:
             return web.BadRequest
 
@@ -223,6 +225,8 @@ class ResourceHandler(HTTPHandler):
         """
         try:
             # trigger backend to delete
+            res = self.resources[key]
+            self.backend.delete(res)
             del(self.resources[key])
         except KeyError:
             return web.NotFound()

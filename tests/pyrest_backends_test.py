@@ -28,21 +28,57 @@ class Test(unittest.TestCase):
     # TEST FOR SUCCESS
     # --------
 
-    def test_routine_for_success(self):
+    def test_create_for_success(self):
+        pass
+
+    def test_retrieve_for_success(self):
+        pass
+
+    def test_update_for_success(self):
+        pass
+
+    def test_delete_for_success(self):
+        pass
+
+    def test_action_for_success(self):
         pass
 
     # --------
     # TEST FOR FAILURE
     # --------
 
-    def test_routine_for_failure(self):
+    def test_create_for_failure(self):
+        pass
+
+    def test_retrieve_for_failure(self):
+        pass
+
+    def test_update_for_failure(self):
+        pass
+
+    def test_delete_for_failure(self):
+        pass
+
+    def test_action_for_failure(self):
         pass
 
     # --------
     # TEST FOR SANITY
     # --------
 
-    def test_routine_for_sanity(self):
+    def test_create_for_sanity(self):
+        pass
+
+    def test_retrieve_for_sanity(self):
+        pass
+
+    def test_update_for_sanity(self):
+        pass
+
+    def test_delete_for_sanity(self):
+        pass
+
+    def test_action_for_sanity(self):
         pass
 
 if __name__ == "__main__":

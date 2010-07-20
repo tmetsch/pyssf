@@ -16,31 +16,35 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 # 
 '''
-Created on Jun 28, 2010
+Created on Jul 20, 2010
 
 @author: tmetsch
 '''
-from ssf import main
-import unittest
-import sys
+from backends import Handler
+from resource_model import Link
 
-class Test(unittest.TestCase):
+class DummyBackend(Handler):
 
-    def test_numerus_for_success(self):
-        """Form a complex number.
-        
-        Keyword arguments:
-        real -- the real part (default 0.0)
-        imag-- the imaginary part (default 0.0)
-        """
-        self.assertEquals('bla', 'bla')
+    def create(self, resource):
+        link = Link()
+        link.link_class = 'action'
+        link.rel = 'http://purl.org/occi/drmaa/action#release'
+        link.target = '/' + resource.id + ';release'
+        link.title = 'Kill Job'
+        resource.links.append(link)
 
-    def test_run_job_for_success(self):
-        #main.run_job("/bin/sleep 1")
+    def update(self, resource):
         pass
 
-    def _some_private_stuff(self):
+    def retrieve(self, resource):
         pass
 
-if __name__ == "__main__":
-    unittest.main()
+    def delete(self, resource):
+        pass
+
+    def action(self, resource, action):
+        if action == 'release':
+            resource.attributes['occi.drmaa.job_state'] = 'EXIT'
+        else:
+            raise AttributeError('Non existing action called!')
+

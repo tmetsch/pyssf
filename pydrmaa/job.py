@@ -77,7 +77,6 @@ class LSFJob(Job):
             raise RuntimeError("Couldn't initialize LSF!")
 
         submitreq = lsf.submit()
-        print command + ' ' + ' '.join(args)
         submitreq.command = command + ' ' + ' '.join(args)
         submitreq.options = 0
         submitreq.options2 = 0
