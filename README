@@ -15,7 +15,7 @@ BUILDING
 --------
 Normally a 'python setup.py build' should do. The 'dist' target will also work
 and build all modules including the SWIG and GCC runs needed for pyLSF. There 
-is no need to run make. Although you can build the pyLSF modul using the 
+is no need to run make. Although you can build the pyLSF module using the 
 Makefile if you want. 
 
 --------

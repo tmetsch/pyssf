@@ -169,7 +169,7 @@ class AttributeTests(unittest.TestCase):
 
     # Note: more tests are done in the parser tests
 
-    heads = {'Category': 'job;scheme="http://purl.org/occi/kind#";label="Job Resource"', 'occi.job.executable':'/bin/sleep'}
+    heads = {'Category': 'job;scheme="http://purl.org/occi/kind#";label="Job Resource"', 'occi.drmaa.executable':'/bin/sleep'}
 
     def test_attributes_for_sanity(self):
         # pass along some attributes and see if they can be retrieved
@@ -177,7 +177,7 @@ class AttributeTests(unittest.TestCase):
         url = response.headers['Location']
         response = service.APPLICATION.request(url)
         #print response
-        self.assertEquals(response.headers['occi.job.executable'], '/bin/sleep')
+        self.assertEquals(response.headers['occi.drmaa.executable'], '/bin/sleep')
 
 class LinkTests(unittest.TestCase):
 
@@ -193,7 +193,7 @@ class LinkTests(unittest.TestCase):
 
 class ActionsTests(unittest.TestCase):
 
-    heads = {'Category': 'job;scheme="http://purl.org/occi/kind#";label="Job Resource"', 'occi.job.executable':'/bin/sleep'}
+    heads = {'Category': 'job;scheme="http://purl.org/occi/kind#";label="Job Resource"', 'occi.drmaa.executable':'/bin/sleep'}
 
     def test_trigger_action_for_success(self):
         response = service.APPLICATION.request("/", method = "POST", headers = self.heads)
@@ -236,7 +236,7 @@ class ActionsTests(unittest.TestCase):
         kill_url = tmp[tmp.find('<') + 1:tmp.find('>')]
         service.APPLICATION.request(kill_url, method = "POST")
         response = service.APPLICATION.request(url)
-        self.assertEquals(response.headers['occi.job.state'], 'killed')
+        self.assertEquals(response.headers['occi.drmaa.state'], 'killed')
 
 class QueryTests(unittest.TestCase):
     pass

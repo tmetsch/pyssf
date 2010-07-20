@@ -74,7 +74,7 @@ class HTTPHeaderParserTest(unittest.TestCase):
         self.job_resource.categories = [self.category_three]
         self.job_resource.id = '456'
         self.job_resource.links = [self.link]
-        self.job_resource.attributes = {'occi.job.executable': '/bin/sleep'}
+        self.job_resource.attributes = {'occi.drmaa.executable': '/bin/sleep'}
         self.job_resource.data = self.body
 
     # --------
@@ -170,12 +170,12 @@ class HTTPHeaderParserTest(unittest.TestCase):
         res = self.parser.to_resource("456", test_data)
 
         # check if given attributes are in the job resource
-        test_data = HTTPData({'HTTP_CATEGORY': 'job;scheme="http://purl.org/occi/kind#"', 'HTTP_OCCI.JOB.EXECTUABLE': '/bin/sleep'}, self.body)
+        test_data = HTTPData({'HTTP_CATEGORY': 'job;scheme="http://purl.org/occi/kind#"', 'HTTP_OCCI.DRMAA.EXECUTABLE': '/bin/sleep'}, self.body)
         res = self.parser.to_resource("456", test_data)
         # category
         self.assertEquals(res.get_certain_categories('job')[0].term, 'job')
         # get attribute
-        self.assertEquals(res.attributes['occi.job.exectuable'], '/bin/sleep')
+        self.assertEquals(res.attributes['occi.drmaa.executable'], '/bin/sleep')
 
         # test links
         new_header = {'HTTP_CATEGORY': 'job;scheme="http://purl.org/occi/kind#"', 'HTTP_LINK': '</network/566-566-566>; class="link"'}
@@ -200,7 +200,7 @@ class HTTPHeaderParserTest(unittest.TestCase):
         # body
         self.assertEquals(res.body, self.body)
         # attributes
-        self.assertEquals(res.header['occi.job.executable'], '/bin/sleep')
+        self.assertEquals(res.header['occi.drmaa.executable'], '/bin/sleep')
         # category
         self.assertEquals(res.header['Category'].split(';')[0], 'job')
         # links

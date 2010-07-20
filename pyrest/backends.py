@@ -23,6 +23,7 @@ Created on Jul 9, 2010
 @author: tmetsch
 '''
 from resource_model import JobResource, Link
+from job import JobFactory, Job
 
 #def check_resource_type(func):
 #    def wrapper(*args):
@@ -121,7 +122,7 @@ class JobHandler(Handler):
             # update attributes and links if needed and trigger action
             if self._action_is_in_resource_description(resource, action):
                 resource.links = []
-                resource.attributes = {'occi.job.state': 'killed'}
+                resource.attributes = {'occi.drmaa.state': 'killed'}
             else:
                 raise AttributeError('Non existing action called!')
         else:

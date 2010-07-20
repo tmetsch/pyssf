@@ -98,9 +98,8 @@ class LSFJobTest(unittest.TestCase):
         pass
 
     def test_terminate_for_failure(self):
-        job = LSFJob('/bin/echo', ['hello'])
+        job = LSFJob('/bin/echo', ['hello', 'world'])
         time.sleep(10)
-        print job.get_state()
         self.assertRaises(AttributeError, job.terminate)
 
     # --------

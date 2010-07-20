@@ -177,13 +177,13 @@ class HTTPHeaderParser(Parser):
     def _get_job_attributes_from_header(self, heads):
         """
         Returns a list of attributes found in the header which start with the
-        'occi.job.' in the key section. Otherwise returns an empty dictionary.
+        'occi.drmaa.' in the key section. Otherwise returns an empty dictionary.
         
         heads -- headers to parse the attributes from.
         """
         result = {}
         for item in heads.keys():
-            if item.find('HTTP_OCCI.JOB.') > -1:
+            if item.find('HTTP_OCCI.DRMAA.') > -1:
                 result[item.lstrip('HTTP_').lower()] = heads[item]
         return result
 
