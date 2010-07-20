@@ -223,7 +223,7 @@ class ActionsTests(unittest.TestCase):
         tmp = response.headers['Link'].split(',').pop()
         kill_url = tmp[tmp.find('<') + 1:tmp.find('>')]
         response = service.APPLICATION.request(kill_url + 'all', method = "POST")
-        self.assertEquals(response.status, '400 Bad Request')
+        self.assertEquals(str(response.status), 'Non existing action called!')
 
         # trigger action on non existing resource
         response = service.APPLICATION.request('http://abc.com/all;kill', method = "POST")

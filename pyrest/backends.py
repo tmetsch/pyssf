@@ -127,7 +127,7 @@ class JobHandler(Handler):
             link.link_class = 'action'
             link.rel = 'http://purl.org/occi/drmaa/action#release'
             link.target = '/' + resource.id + ';release'
-            link.title = 'Kill Job'
+            link.title = 'Release Job'
             # I can append because not action links could be added previously
             # because parsers take care of that...
             resource.links.append(link)
@@ -170,7 +170,6 @@ class JobHandler(Handler):
             job = self.jobs[resource.attributes['occi.drmaa.job_id']]
             state = job.get_state()
             if state != 'DONE' and state != 'EXIT':
-                print 'terminating :', job.job_id
                 job.terminate()
             del self.jobs[resource.attributes['occi.drmaa.job_id']]
         else:

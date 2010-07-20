@@ -193,11 +193,12 @@ class ResourceHandler(HTTPHandler):
         else:
             try:
                 # trigger backend to get resource
-                res = self.resources[key]
+                res = self.resources.get_resource(key)
                 self.backend.retrieve(res)
+                res = self.resources[key]
                 return res
-            except KeyError:
-                return None
+            except Exception as inst:
+                web.HTTPError(inst)
 
     def update_resource(self, key, data):
         """
@@ -211,10 +212,10 @@ class ResourceHandler(HTTPHandler):
         #   changed and what not :-)
         try:
             #self.resources[key] = data
-            res = self.resources[key]
+            res = self.resources.get_resource(key)
             self.backend.retrieve(res)
-        except:
-            return web.BadRequest
+        except Exception as inst:
+            web.HTTPError(inst)
 
     def delete_resource(self, key):
         """
@@ -225,11 +226,13 @@ class ResourceHandler(HTTPHandler):
         """
         try:
             # trigger backend to delete
-            res = self.resources[key]
+            res = self.resources.get_resource(key)
             self.backend.delete(res)
             del(self.resources[key])
         except KeyError:
-            return web.NotFound()
+            web.NotFound()
+        except Exception as inst:
+            web.HTTPError(inst)
 
     def resource_exists(self, key):
         """
@@ -253,11 +256,11 @@ class ResourceHandler(HTTPHandler):
         try:
             resource = self.resources.get_resource(key)
             self.backend.action(resource, name)
-            return web.OK()
+            web.OK()
         except KeyError:
-            return web.NotFound()
-        except:
-            return web.BadRequest()
+            web.NotFound()
+        except Exception as inst:
+            web.HTTPError(inst)
 
 if __name__ == "__main__":
     APPLICATION.run()
