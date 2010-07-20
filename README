@@ -53,6 +53,10 @@ if you encounter any problems:
     build it stand alone. No need to change it when building using setup.py 
     script. Default is set to /opt/lsf/7.0/linux2.6-glibc2.3-x86_64/lib. 
 
+  * The unittest expect that there are no jobs pending in the queue of LSF.
+    Overall this system is best test on a single machine cluster with an empty
+    queue.
+
 --------
 TESTING
 --------

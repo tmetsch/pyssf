@@ -74,7 +74,7 @@ class HTTPHeaderParserTest(unittest.TestCase):
         self.job_resource.categories = [self.category_three]
         self.job_resource.id = '456'
         self.job_resource.links = [self.link]
-        self.job_resource.attributes = {'occi.drmaa.executable': '/bin/sleep'}
+        self.job_resource.attributes = {'occi.drmaa.remote_command': '/bin/sleep'}
         self.job_resource.data = self.body
 
     # --------
@@ -200,7 +200,7 @@ class HTTPHeaderParserTest(unittest.TestCase):
         # body
         self.assertEquals(res.body, self.body)
         # attributes
-        self.assertEquals(res.header['occi.drmaa.executable'], '/bin/sleep')
+        self.assertEquals(res.header['occi.drmaa.remote_command'], '/bin/sleep')
         # category
         self.assertEquals(res.header['Category'].split(';')[0], 'job')
         # links

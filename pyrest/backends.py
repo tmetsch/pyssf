@@ -117,7 +117,7 @@ class JobHandler(Handler):
 
             command = resource.attributes['occi.drmaa.remote_command']
             if 'occi.drmaa.args' in resource.attributes:
-                args = resource.attributes['occi.drmaa.args']
+                args = resource.attributes['occi.drmaa.args'].split(' ')
             else:
                 args = None
             job = JobFactory().create_job(command, args)
@@ -139,14 +139,19 @@ class JobHandler(Handler):
 
     def retrieve(self, resource):
         if isinstance(resource, JobResource):
+            if not 'occi.drmaa.job_id' in resource.attributes:
+                raise AttributeError('Something is wrong here - running job '
+                                     + 'resource should have an id.')
+            job = self.jobs[resource.attributes['occi.drmaa.job_id']]
             state = job.get_state()
             resource.attributes['occi.drmaa.job_state'] = state
-            if state == 'RUNNING':
+            if state == 'RUN':
                 link = Link()
                 link.link_class = 'action'
                 link.rel = 'http://purl.org/occi/drmaa/action#terminate'
                 link.target = '/' + resource.id + ';terminate'
-                link.title = 'Release Job'
+                link.title = 'Terminate Job'
+                # drop old links - when running cannot change links!
                 resource.links = [link]
             if state == 'DONE' or state == 'EXIT':
                 resource.links = []
@@ -159,8 +164,14 @@ class JobHandler(Handler):
 
     def delete(self, resource):
         if isinstance(resource, JobResource):
+            if not 'occi.drmaa.job_id' in resource.attributes:
+                raise AttributeError('Something is wrong here - running job '
+                                     + 'resource should have an id.')
             job = self.jobs[resource.attributes['occi.drmaa.job_id']]
-            job.terminate()
+            state = job.get_state()
+            if state != 'DONE' and state != 'EXIT':
+                print 'terminating :', job.job_id
+                job.terminate()
             del self.jobs[resource.attributes['occi.drmaa.job_id']]
         else:
             pass

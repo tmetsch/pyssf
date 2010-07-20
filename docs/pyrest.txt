@@ -83,8 +83,8 @@ something else.
 
 Job Handler
 ^^^^^^^^^^^
-This Handler is capable of submitting jobs. Creation of the resources should be
-done with the following category:
+This Handler is capable of submitting jobs using the pydrmaa package. Creation
+of the resources should be done with the following category:
 
     ========  ============================
       Term      Scheme                    
@@ -94,12 +94,14 @@ done with the following category:
 
 Currently the following attributes are supported:
 
-    ========================  ======================  ===========
-      Attribute               Description             Example    
-    ========================  ======================  ===========
-    occi.drmaa.remoteCommand  Path to Job Executable  /bin/sleep 
-    occi.drmaa.args           Arguments               "100"      
-    ========================  ======================  ===========
+    =========================  ======================  ===========
+      Attribute                Description             Example    
+    =========================  ======================  ===========
+    occi.drmaa.remote_command  Path to Job Executable  /bin/sleep 
+    occi.drmaa.args            Arguments               "100"      
+    occi.drmaa.job_id          Id of the job in DRM    123        
+                               (immutable)                       
+    =========================  ======================  ===========
 
 Also the following links/actions can be used to manipulate the job:
 
