@@ -53,8 +53,16 @@ class Job(object):
         raise NotImplementedError
 
 class JobFactory(object):
+    """
+    Factory for jobs.
+    """
 
     def create_job(self, command, args = None):
+        """
+        Create a new job instance.
+        
+        command - mandatory field for the executable.
+        """
         if args is None:
             # need to do this...default values are shared!
             args = []

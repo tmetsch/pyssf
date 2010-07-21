@@ -160,7 +160,6 @@ class ResourceHandler(HTTPHandler):
     """
     Manages the resources and stores them. Also triggers backend operations.
     """
-    #TODO insert backend here
 
     resources = NonPersistentResourceDictionary()
     backend = JobHandler()

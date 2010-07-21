@@ -94,7 +94,8 @@ class HTTPHeaderParser(Parser):
                     category.term = term
                     terms.append(category.term)
                 else:
-                    raise AttributeError('No valid term for given category could be found.')
+                    raise AttributeError('No valid term for given category ' +
+                                         'could be found.')
             except:
                 # todo log her...
                 break
@@ -154,9 +155,9 @@ class HTTPHeaderParser(Parser):
             begin = item.find('class="')
             if begin is not - 1:
                 tmp = item[begin + 7:]
-                lc = tmp[:tmp.find('"')]
-                if lc != 'action':
-                    link.link_class = lc
+                link_class = tmp[:tmp.find('"')]
+                if link_class != 'action':
+                    link.link_class = link_class
                 else:
                     break
 
@@ -187,7 +188,7 @@ class HTTPHeaderParser(Parser):
                 result[item.lstrip('HTTP_').lower()] = heads[item]
         return result
 
-    def _create_categories_for_http_header(self, categories):
+    def _create_categories_for_header(self, categories):
         """
         Creates a string which can be added to the header - containing all
         categories.

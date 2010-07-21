@@ -1,16 +1,6 @@
 Service Sharing Facility (SSF)
 
 --------
-Summary
---------
-This software package is a collection of modules which form an uniform
-integration point for Grid/Cloud/Cluster products. If provides several
-front-ends which can easily be used to build complete Services or integrate
-products with your products. It aims to deliver an distributed ecosystem where
-multiple Grid/Cloud/Clusters sites can federate. It is developed under a LGPL
-license for the DGSI Project.
-
---------
 BUILDING
 --------
 Normally a 'python setup.py build' should do. The 'dist' target will also work
@@ -21,12 +11,12 @@ Makefile if you want.
 --------
 PREREQUISITES
 --------
-Needed to building and installing SSF are:
+Needed to build and install SSF:
 
   * Swig
   * Python (> 2.6) with distutils
   * GCC
-  * Platform LSF (> 7.0.6)
+  * Platform LSF (>= 7.0.6)
 
 For developing with SSF you can use:
 
