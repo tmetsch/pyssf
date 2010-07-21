@@ -42,4 +42,18 @@ LSF Job
 ^^^^^^^
 Derived from Job class. uses the pylsf module to actually execute the commands.
 
+Simple job submission using LSF Job
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+    command = '/bin/sleep'
+    args = ['100']
+    job = JobFactory().create_job(command, args)
+    state = job.get_state()
+    if state != 'RUN':
+        job.release()
+    else:
+        job.terminate()
+
 .. [DRMAAv2] DRMAA website - http://www.drmaa.org

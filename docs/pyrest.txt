@@ -100,7 +100,7 @@ Currently the following attributes are supported:
     occi.drmaa.remote_command  Path to Job Executable  /bin/sleep 
     occi.drmaa.args            Arguments               "100"      
     occi.drmaa.job_id          Id of the job in DRM    123        
-                               (immutable)                       
+                               (immutable)                        
     =========================  ======================  ===========
 
 Also the following links/actions can be used to manipulate the job:
@@ -112,5 +112,45 @@ Also the following links/actions can be used to manipulate the job:
     <id>;terminate       Terminate a running job        
     ===================  ===============================
 
+Using the Service
+-----------------
+You can easily start the service using the following command::
+
+    python service.py
+
+This will start the service listening on the default post 8080. For testing
+and development purposes this will do. This will start the internal web server
+coming along with web.py. If you plan to deploy the service to others read the
+documentation provide in the web.py documentation [DOC]_.
+
+.. note::
+    If you want the service to run on another port simple provide the port
+    number as a command line parameter.
+
+Now you can access the RESTful service from basically everywhere using anything
+. For example you can use your web browser or use the python httplib2 package.
+Other programming languages have similar libraries: libcurl for C,
+URLConnection for Java, etc. This is transparent to the user and no
+knowledge/API/properitary interface to the underlying systems needs to be
+provided/used.
+
+A simple python program to submit a job would look like::
+
+    import httplib2
+    h = httplib2.Http()
+    
+    # create HTTP headers with the right category (mandatory field ) and attributes
+    heads = {'Category': 'job;scheme="http://purl.org/occi/kind#";label="Job Resource"', 
+             'occi.drmaa.remote_command': '/bin/sleep', 'occi.drmaa.args': '10'}
+    response = h.request('http://localhost:8080/','POST', headers=heads)
+    
+    # get the URL of the newly created resource...
+    url = str(response)[str(response).find('location') + 12:]
+    url = 'http://localhost:8080' + url[:url.find(',') - 1]
+    
+    # and delete it
+    h.request(url,'DELETE')
+
 .. [OCCI] OCCI website - http://www.occi-wg.org
 .. [web.py] web.py website - http://webpy.org
+.. [DOC] web.py website - setup - http://webpy.org/recommended_setup

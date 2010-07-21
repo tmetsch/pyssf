@@ -19,6 +19,9 @@
 Welcome to Service Sharing Facility's documentation!
 ====================================================
 
+:Release: |version|
+:Date: |today|
+
 .. image:: images/pyssf_logo.png
    :alt: Service Sharing Facility logo
 
@@ -46,8 +49,4 @@ Contents:
    pyrest.txt
    pyssf.txt
 
-Indices and tables
-==================
-
 * :ref:`search`
-
