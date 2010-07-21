@@ -205,7 +205,7 @@ class HTTPHeaderParser(Parser):
             category_string.append(text)
         return ','.join(category_string)
 
-    def _create_links_for_http_header(self, links):
+    def _create_links_for_header(self, links):
         """
         Creates a string which can be added to the header - containing all
         links.
@@ -254,8 +254,8 @@ class HTTPHeaderParser(Parser):
     def from_resource(self, resource):
         res = HTTPData
         # add links and categories to header
-        res.header['Category'] = self._create_categories_for_http_header(resource.categories)
-        res.header['Link'] = self._create_links_for_http_header(resource.links)
+        res.header['Category'] = self._create_categories_for_header(resource.categories)
+        res.header['Link'] = self._create_links_for_header(resource.links)
         # add attributes
         if isinstance(resource, JobResource):
             for item in resource.attributes.keys():
