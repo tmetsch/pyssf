@@ -25,6 +25,10 @@ Welcome to Service Sharing Facility's documentation!
 .. image:: images/pyssf_logo.png
    :alt: Service Sharing Facility logo
 
+.. note::
+    This is still work in progress. For more information and tracking the
+    ongoing developement go to http://sourceforge.net/projects/pyssf/
+
 This software package is a collection of modules which form an uniform
 integration point for Grid/Cloud/Cluster products. If provides several
 front-ends which can easily be used to build complete Services or integrate

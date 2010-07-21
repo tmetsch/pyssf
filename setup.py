@@ -22,9 +22,9 @@ from distutils.core import setup, Extension
 
 setup(name = 'Service Sharing Facility',
       version = '0.1',
-      license = 'LICENSE',
+      license = 'LGPL',
       description = 'Service Sharing Facility',
-      url = 'http://www.platform.com',
+      url = 'http://pyssf.sourceforge.net',
       packages = ['ssf', 'pyrest', 'pydrmaa'],
       ext_package = 'pylsf',
       ext_modules = [Extension('_lsf', ['pylsf/lsf.i'],
