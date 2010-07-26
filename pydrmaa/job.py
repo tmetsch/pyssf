@@ -23,6 +23,8 @@ Created on Jul 19, 2010
 @author: tmetsch
 '''
 from pylsf import lsf
+import os
+import drmaa
 
 class Job(object):
     """
@@ -66,7 +68,36 @@ class JobFactory(object):
         if args is None:
             # need to do this...default values are shared!
             args = []
-        return LSFJob(command, args)
+        return DRMAAJob(command, args)
+
+class DRMAAJob(Job):
+
+    s = drmaa.Session()
+    s.initialize()
+
+    def __init__(self, command, args):
+        super(DRMAAJob, self).__init__()
+        self.remote_command = command
+        self.args = args
+
+        self.jt = self.s.createJobTemplate()
+        self.jt.remoteCommand = command
+        self.jt.args = args
+        self.jt.joinFiles = True
+
+        self.job_id = self.s.runJob(self.jt)
+
+    def __del__(self):
+        self.s.deleteJobTemplate(self.jt)
+
+    def terminate(self):
+        self.s.control(self.job_id, drmaa.JobControlAction.TERMINATE)
+
+    def release(self):
+        self.s.control(self.job_id, drmaa.JobControlAction.RELEASE)
+
+    def get_state(self):
+        return self.s.jobStatus(self.job_id)
 
 class LSFJob(Job):
     """
