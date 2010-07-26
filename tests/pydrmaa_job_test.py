@@ -72,14 +72,6 @@ class JobFactoryTest(unittest.TestCase):
 #        self.assertTrue(isinstance(job, LSFJob))
 #        job.terminate()
 #
-#    def test_release_for_success(self):
-#        # works only on single slot clusters :-/
-#        job1 = LSFJob('/bin/sleep', ['1000'])
-#        job2 = LSFJob('/bin/sleep', ['1000'])
-#        job2.release()
-#        self.assertEquals(job2.get_state(), 'EXIT')
-#        job1.terminate()
-#
 #    def test_terminate_for_success(self):
 #        job = LSFJob('/bin/sleep', ['1000'])
 #        job.terminate()
@@ -91,10 +83,6 @@ class JobFactoryTest(unittest.TestCase):
 #
 #    def test_init_for_failure(self):
 #        # not sure what to test here...
-#        pass
-#
-#    def test_release_for_failure(self):
-#        # done in next failure test...
 #        pass
 #
 #    def test_terminate_for_failure(self):
@@ -110,10 +98,6 @@ class JobFactoryTest(unittest.TestCase):
 #        job = LSFJob('/bin/echo', [])
 #        self.assertNotEquals(job.job_id, 0)
 #        job.terminate()
-#
-#    def test_release_for_sanity(self):
-#        # done in next test...
-#        pass
 #
 #    def test_terminate_for_sanity(self):
 #        job = LSFJob('/bin/sleep', ['100'])
@@ -131,21 +115,11 @@ class DRMAAJobTest(unittest.TestCase):
         self.assertTrue(isinstance(job, DRMAAJob))
         job.terminate()
 
-    def test_release_for_success(self):
-        # works only on single slot clusters :-/
-        job1 = DRMAAJob('/bin/sleep', ['1000'])
-        job2 = DRMAAJob('/bin/sleep', ['1000'])
-        job2.release()
-        time.sleep(5)
-        self.assertEquals(job2.get_state(), 'EXIT')
-        job1.terminate()
-
     def test_terminate_for_success(self):
         job = DRMAAJob('/bin/sleep', ['1000'])
         job.terminate()
         time.sleep(5)
-        self.assertEquals(job.get_state(), 'EXIT')
-
+        self.assertEquals(job.get_state(), 'failed')
 
 if __name__ == "__main__":
     unittest.main()

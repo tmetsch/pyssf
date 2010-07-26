@@ -108,7 +108,6 @@ Also the following links/actions can be used to manipulate the job:
     ===================  ===============================
       Link                 Description                  
     ===================  ===============================
-    <id>;release         Release a job currently on hold
     <id>;terminate       Terminate a running job        
     ===================  ===============================
 

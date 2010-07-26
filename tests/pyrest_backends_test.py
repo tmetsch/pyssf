@@ -73,11 +73,6 @@ class JobHandlerTest(unittest.TestCase):
         self.assertEquals(len(self.backend.jobs), 0)
 
     def test_action_for_success(self):
-        self.backend.create(self.resource)
-        self.backend.action(self.resource, 'release')
-        # no more links should be there
-        self.assertEquals(len(self.resource.links), 0)
-
         self.setUp()
         self.backend.create(self.resource)
         self.backend.action(self.resource, 'terminate')
@@ -112,7 +107,7 @@ class JobHandlerTest(unittest.TestCase):
 
         # non existent resource
         self.setUp()
-        self.assertRaises(AttributeError, self.backend.action, self.resource, 'release')
+        self.assertRaises(AttributeError, self.backend.action, self.resource, 'terminate')
 
     # --------
     # TEST FOR SANITY
@@ -123,12 +118,12 @@ class JobHandlerTest(unittest.TestCase):
         self.resource.links = []
         self.backend.create(self.resource)
         # release should be added
-        self.assertEquals(self.resource.links[0].target, '/123;release')
+        self.assertEquals(self.resource.links[0].target, '/123;terminate')
 
         # check if state changes when done...wait for LSF
-        time.sleep(10)
+        time.sleep(20)
         self.backend.retrieve(self.resource)
-        self.assertEquals(self.resource.attributes['occi.drmaa.job_state'], 'DONE')
+        self.assertEquals(self.resource.attributes['occi.drmaa.job_state'], 'done')
 
     def test_retrieve_for_sanity(self):
         self.resource.attributes['occi.drmaa.remote_command'] = '/bin/sleep'
@@ -137,9 +132,9 @@ class JobHandlerTest(unittest.TestCase):
 
         # check if terminate action got added to a running job
         self.resource.links = []
-        time.sleep(10)
+        time.sleep(20)
         self.backend.retrieve(self.resource)
-        self.assertEquals(self.resource.attributes['occi.drmaa.job_state'], 'RUN')
+        self.assertEquals(self.resource.attributes['occi.drmaa.job_state'], 'running')
         self.assertTrue(len(self.resource.links) == 1)
         self.assertEquals(self.resource.links[0].target, '/123;terminate')
 
@@ -156,7 +151,7 @@ class JobHandlerTest(unittest.TestCase):
     def test_action_for_sanity(self):
         # check if links/state have been set right...
         self.backend.create(self.resource)
-        self.backend.action(self.resource, 'release')
+        self.backend.action(self.resource, 'terminate')
         # no more links should be there
         self.assertEquals(len(self.resource.links), 0)
 

@@ -5,6 +5,7 @@ build/*
 dist/*
 *html/*
 .settings/*
+web*
 pylsf/lsf.py
 pylsf/lsf_wrap.c
 *.pyc

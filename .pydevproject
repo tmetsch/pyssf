@@ -11,5 +11,6 @@
 <path>/pyssf/pyrest</path>
 <path>/pyssf/ssf</path>
 <path>/pyssf/tests</path>
+<path>/pyssf</path>
 </pydev_pathproperty>
 </pydev_project>

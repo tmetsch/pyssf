@@ -22,8 +22,8 @@ Created on Jul 9, 2010
 
 @author: tmetsch
 '''
+from job import JobFactory
 from resource_model import JobResource, Link
-from job import JobFactory, Job
 
 #def check_resource_type(func):
 #    def wrapper(*args):
@@ -125,9 +125,9 @@ class JobHandler(Handler):
             # update links & attributes
             link = Link()
             link.link_class = 'action'
-            link.rel = 'http://purl.org/occi/drmaa/action#release'
-            link.target = '/' + resource.id + ';release'
-            link.title = 'Release Job'
+            link.rel = 'http://purl.org/occi/drmaa/action#terminate'
+            link.target = '/' + resource.id + ';terminate'
+            link.title = 'Terminate Job'
             # I can append because not action links could be added previously
             # because parsers take care of that...
             resource.links.append(link)
@@ -145,7 +145,7 @@ class JobHandler(Handler):
             job = self.jobs[resource.attributes['occi.drmaa.job_id']]
             state = job.get_state()
             resource.attributes['occi.drmaa.job_state'] = state
-            if state == 'RUN':
+            if state == 'running':
                 link = Link()
                 link.link_class = 'action'
                 link.rel = 'http://purl.org/occi/drmaa/action#terminate'
@@ -153,7 +153,7 @@ class JobHandler(Handler):
                 link.title = 'Terminate Job'
                 # drop old links - when running cannot change links!
                 resource.links = [link]
-            if state == 'DONE' or state == 'EXIT':
+            if state == 'done' or state == 'failed':
                 resource.links = []
         else:
             pass
@@ -169,7 +169,7 @@ class JobHandler(Handler):
                                      + 'resource should have an id.')
             job = self.jobs[resource.attributes['occi.drmaa.job_id']]
             state = job.get_state()
-            if state != 'DONE' and state != 'EXIT':
+            if state != 'done' and state != 'failed':
                 job.terminate()
             del self.jobs[resource.attributes['occi.drmaa.job_id']]
         else:
@@ -179,11 +179,12 @@ class JobHandler(Handler):
         if isinstance(resource, JobResource):
             # update attributes and links if needed and trigger action
             if self._action_is_in_resource_description(resource, action):
-                job = self.jobs[resource.attributes['occi.drmaa.job_id']]
-                if action == 'release':
-                    job.release()
-                    resource.links = []
-                elif action == 'terminate':
+                try:
+                    job = self.jobs[resource.attributes['occi.drmaa.job_id']]
+                except:
+                    raise AttributeError('Trying to run an action on non'
+                                         + 'active resource.')
+                if action == 'terminate':
                     job.terminate()
                     resource.links = []
                 resource.attributes['occi.drmaa.job_state'] = job.get_state()

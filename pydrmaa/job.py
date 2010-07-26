@@ -22,7 +22,7 @@ Created on Jul 19, 2010
 
 @author: tmetsch
 '''
-from pylsf import lsf
+
 import os
 import drmaa
 
@@ -39,12 +39,6 @@ class Job(object):
     def terminate(self):
         """
         terminate a running job.
-        """
-        raise NotImplementedError
-
-    def release(self):
-        """
-        release a job on hold.
         """
         raise NotImplementedError
 
@@ -73,7 +67,10 @@ class JobFactory(object):
 class DRMAAJob(Job):
 
     s = drmaa.Session()
-    s.initialize()
+    try:
+        s.initialize()
+    except:
+        pass
 
     def __init__(self, command, args):
         super(DRMAAJob, self).__init__()
@@ -92,9 +89,6 @@ class DRMAAJob(Job):
 
     def terminate(self):
         self.s.control(self.job_id, drmaa.JobControlAction.TERMINATE)
-
-    def release(self):
-        self.s.control(self.job_id, drmaa.JobControlAction.RELEASE)
 
     def get_state(self):
         return self.s.jobStatus(self.job_id)
@@ -141,9 +135,6 @@ class LSFJob(Job):
             lsf.lsb_signaljob(self.job_id, 9)
         else:
             raise AttributeError('Cannot terminate done job.')
-
-    def release(self):
-        self.terminate()
 
     def get_state(self):
         # FIXME: this needs to be fixed!

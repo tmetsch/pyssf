@@ -32,7 +32,7 @@ A simple job modeled after the JobTemplate in the DRMAAv2 Specification.
 Currently the job has the following attributes and methods:
 
  * Attributes: remoteCommand, args
- * Methods: release(), terminate(), get_state()
+ * Methods: terminate(), get_state()
  
 Job Factory
 ^^^^^^^^^^^
@@ -51,9 +51,6 @@ Simple job submission using LSF Job
     args = ['100']
     job = JobFactory().create_job(command, args)
     state = job.get_state()
-    if state != 'RUN':
-        job.release()
-    else:
-        job.terminate()
+    job.terminate()
 
 .. [DRMAAv2] DRMAA website - http://www.drmaa.org
