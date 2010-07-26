@@ -22,9 +22,9 @@ Created on Jul 19, 2010
 
 @author: tmetsch
 '''
-
-import os
 import drmaa
+from pylsf import lsf
+import os
 
 class Job(object):
     """
@@ -138,7 +138,6 @@ class LSFJob(Job):
 
     def get_state(self):
         # FIXME: this needs to be fixed!
-        import os
         process = os.popen("bjobs -a " + str(self.job_id) +
                            " | awk 'NR != 1 {print $3}'")
         string = process.readline()

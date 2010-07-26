@@ -22,8 +22,8 @@ Created on Jul 12, 2010
 '''
 from backends import JobHandler
 from resource_model import JobResource, Link
-import unittest
 import time
+import unittest
 
 class JobHandlerTest(unittest.TestCase):
 

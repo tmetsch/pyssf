@@ -61,48 +61,48 @@ class JobFactoryTest(unittest.TestCase):
         self.assertEquals(job.remote_command, '/bin/echo')
         job.terminate()
 
-#class LSFJobTest(unittest.TestCase):
-#
-#    # --------
-#    # TEST FOR SUCCESS
-#    # --------
-#
-#    def test_init_for_success(self):
-#        job = LSFJob('/bin/echo', [])
-#        self.assertTrue(isinstance(job, LSFJob))
-#        job.terminate()
-#
-#    def test_terminate_for_success(self):
-#        job = LSFJob('/bin/sleep', ['1000'])
-#        job.terminate()
-#        self.assertEquals(job.get_state(), 'EXIT')
-#
-#    # --------
-#    # TEST FOR FAILURE
-#    # --------
-#
-#    def test_init_for_failure(self):
-#        # not sure what to test here...
-#        pass
-#
-#    def test_terminate_for_failure(self):
-#        job = LSFJob('/bin/echo', ['hello', 'world'])
-#        time.sleep(10)
-#        self.assertRaises(AttributeError, job.terminate)
-#
-#    # --------
-#    # TEST FOR SANITY
-#    # --------
-#
-#    def test_init_for_sanity(self):
-#        job = LSFJob('/bin/echo', [])
-#        self.assertNotEquals(job.job_id, 0)
-#        job.terminate()
-#
-#    def test_terminate_for_sanity(self):
-#        job = LSFJob('/bin/sleep', ['100'])
-#        job.terminate()
-#        self.assertEquals(job.get_state(), 'EXIT')
+class LSFJobTest(unittest.TestCase):
+
+    # --------
+    # TEST FOR SUCCESS
+    # --------
+
+    def test_init_for_success(self):
+        job = LSFJob('/bin/echo', [])
+        self.assertTrue(isinstance(job, LSFJob))
+        job.terminate()
+
+    def test_terminate_for_success(self):
+        job = LSFJob('/bin/sleep', ['1000'])
+        job.terminate()
+        self.assertEquals(job.get_state(), 'EXIT')
+
+    # --------
+    # TEST FOR FAILURE
+    # --------
+
+    def test_init_for_failure(self):
+        # not sure what to test here...
+        pass
+
+    def test_terminate_for_failure(self):
+        job = LSFJob('/bin/echo', ['hello', 'world'])
+        time.sleep(10)
+        self.assertRaises(AttributeError, job.terminate)
+
+    # --------
+    # TEST FOR SANITY
+    # --------
+
+    def test_init_for_sanity(self):
+        job = LSFJob('/bin/echo', [])
+        self.assertNotEquals(job.job_id, 0)
+        job.terminate()
+
+    def test_terminate_for_sanity(self):
+        job = LSFJob('/bin/sleep', ['100'])
+        job.terminate()
+        self.assertEquals(job.get_state(), 'EXIT')
 
 class DRMAAJobTest(unittest.TestCase):
 
