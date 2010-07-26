@@ -22,7 +22,7 @@ Created on Jul 9, 2010
 
 @author: tmetsch
 '''
-from job import JobFactory
+from pydrmaa.job import JobFactory
 from resource_model import JobResource, Link
 
 #def check_resource_type(func):

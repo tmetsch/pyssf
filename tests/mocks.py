@@ -20,8 +20,8 @@ Created on Jul 20, 2010
 
 @author: tmetsch
 '''
-from backends import Handler
-from resource_model import Link
+from pyrest.backends import Handler
+from pyrest.resource_model import Link
 
 class DummyBackend(Handler):
 

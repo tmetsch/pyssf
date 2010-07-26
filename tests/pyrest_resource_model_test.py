@@ -20,7 +20,7 @@ Created on Jul 12, 2010
 
 @author: tmetsch
 '''
-from resource_model import Link, Resource, Category
+from pyrest.resource_model import Link, Resource, Category
 import unittest
 
 class ActionLinkTest(unittest.TestCase):

@@ -20,8 +20,8 @@ Created on Jul 12, 2010
 
 @author: tmetsch
 '''
-from rendering_parsers import HTTPHeaderParser, HTTPData
-from resource_model import Link, Category, Resource, JobResource
+from pyrest.rendering_parsers import HTTPHeaderParser, HTTPData
+from pyrest.resource_model import Link, Category, Resource, JobResource
 import unittest
 
 class HTTPHeaderParserTest(unittest.TestCase):

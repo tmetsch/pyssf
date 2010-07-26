@@ -20,8 +20,8 @@ Created on Jul 12, 2010
 
 @author: tmetsch
 '''
-from backends import JobHandler
-from resource_model import JobResource, Link
+from pyrest.backends import JobHandler
+from pyrest.resource_model import JobResource, Link
 import time
 import unittest
 

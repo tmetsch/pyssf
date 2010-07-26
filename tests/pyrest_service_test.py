@@ -21,7 +21,7 @@ Created on Jul 5, 2010
 @author: tmetsch
 '''
 from mocks import DummyBackend
-import service
+import pyrest.service as service
 import unittest
 
 class ResourceCreationTests(unittest.TestCase):

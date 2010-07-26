@@ -20,7 +20,7 @@ Created on Jul 19, 2010
 
 @author: tmetsch
 '''
-from job import JobFactory, Job, LSFJob, DRMAAJob
+from pydrmaa.job import JobFactory, Job, LSFJob, DRMAAJob
 import time
 import unittest
 

@@ -22,8 +22,8 @@ Created on Jul 19, 2010
 
 @author: tmetsch
 '''
-import drmaa
 from pylsf import lsf
+import drmaa
 import os
 
 class Job(object):
