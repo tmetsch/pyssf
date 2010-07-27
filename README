@@ -1,6 +1,6 @@
 Service Sharing Facility (SSF)
+==============================
 
---------
 BUILDING
 --------
 Normally a 'python setup.py build' should do. The 'dist' target will also work
@@ -8,15 +8,15 @@ and build all modules including the SWIG and GCC runs needed for pyLSF. There
 is no need to run make. Although you can build the pyLSF module using the 
 Makefile if you want. 
 
---------
 PREREQUISITES
---------
+-------------
 Needed to build and install SSF:
 
   * Swig
   * Python (> 2.6) with distutils
   * GCC
-  * Platform LSF (>= 7.0.6)
+  * Platform LSF (>= 7.0.6) or Oracle Grid Engine (>= 6.2u5)
+  * drmaa-python
 
 For developing with SSF you can use:
 
@@ -26,9 +26,8 @@ For developing with SSF you can use:
   * Firefox to view the kanban board (misc/platform_ssf_kanban.html)
   * make to build standalone documentation and pylsf shared library
 
---------
 TECHNICAL NOTES
---------
+---------------
 The following paths are configured and you might need to take a look at them
 if you encounter any problems:
 
@@ -47,16 +46,14 @@ if you encounter any problems:
     Overall this system is best test on a single machine cluster with an empty
     queue.
 
---------
 TESTING
---------
+-------
 Either run nosetests or the testsuite.py file in the tests/ directory. You 
 might need to add the build _lsf.so file to the PYTHONPATH (In my case: 
 build/lib.linux-i686-2.6/pylsf)
 
---------
 LICENSE
---------
+-------
 Please review the file LICENSE in the root directory. Everything published
 within this project is licensed under a GNU LESSER GENERAL PUBLIC LICENSE.
 

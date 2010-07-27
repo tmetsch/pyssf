@@ -36,11 +36,22 @@ Currently the job has the following attributes and methods:
  
 Job Factory
 ^^^^^^^^^^^
-Returns a job object based on some decisions. For now only returns LSFJobs.
+Returns a job object based on some decisions. For now it returns DRMAA Jobs.
+
+DRMAA Job
+^^^^^^^^^
+Derived from Job class. Uses DRMAA (v1) to submit jobs. Currently supports
+Oracle Grid Engine's DRMAA implementation [OGE]_ as well as FedStage's DRMAA
+for Platform LSF implementation [LSF_DRMAA]_ (Version 1.0.3). It uses the
+drmaa-python [PY_DRMAA]_ package which is therefore a prerequisite.
+
+.. note::
+    When using pydrmaa ensure the the DRMAA_LIBRARY_PATH is set. This is needed
+    when running the service or the tests.
 
 LSF Job
 ^^^^^^^
-Derived from Job class. uses the pylsf module to actually execute the commands.
+Derived from Job class. Uses the pylsf module to actually execute the commands.
 
 Simple job submission using LSF Job
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -54,3 +65,8 @@ Simple job submission using LSF Job
     job.terminate()
 
 .. [DRMAAv2] DRMAA website - http://www.drmaa.org
+.. [LSF_DRMAA] FedStage DRMAA for LSF - 
+   http://sourceforge.net/projects/lsf-drmaa/
+.. [OGE] Oracle Grid Engine website - 
+   http://www.oracle.com/us/products/tools/oracle-grid-engine-075549.html
+.. [PY_DRMAA] drmaa-python website - http://code.google.com/p/drmaa-python/
