@@ -150,6 +150,56 @@ A simple python program to submit a job would look like::
     # and delete it
     h.request(url,'DELETE')
 
+Writing your own service using pyrest
+--------------------------------------
+
+By default the pyrest module supports job submission. But it can easily be
+extended to offer any kind of service.
+
+The following code demonstrates howto write your own backend and use the
+RESTful interface provided by pyrest::
+
+    from pyrest import service
+    from pyrest.service import HTTPHeaderParser
+    from pyrest.rendering_parsers import Parser, HTTPHeaderParser
+    from pyrest.backends import Handler, JobHandler
+    
+    class MyParser(Parser):
+        """
+        Write your own parser to get the information from the HTTP messages.
+        """
+        pass
+    
+    class MyBackend(Handler):
+        """
+        Write your own backend.
+        """
+        pass
+    
+    class MyStorage(dict):
+        """
+        Write your own (persistent) storage dictionary. 
+        """
+        pass
+    
+    if __name__ == '__main__':
+        # define which dictionary to use to store the resources.
+        # service.ResourceHandler.resources = MyStorage()
+        service.ResourceHandler.resources = NonPersistentResourceDictionary()
+        
+        # define which parser to use
+        # service.NonPersistentResourceDictionary.parser = MyParser()
+        service.NonPersistentResourceDictionary.parser = HTTPHeaderParser()
+        
+        # define a backend
+        # service.ResourceHandler.backend = MyHandler()
+        service.ResourceHandler.backend = JobHandler()
+        service.APPLICATION.run()
+
+This code demonstrates how flexible the environment is. You can easily use the
+pyrest package to create a service which provides a IaaS, a PaaS or a SaaS. You
+can overwrite the Parser, the backend and the storage used.
+
 .. [OCCI] OCCI website - http://www.occi-wg.org
 .. [web.py] web.py website - http://webpy.org
 .. [DOC] web.py website - setup - http://webpy.org/recommended_setup
