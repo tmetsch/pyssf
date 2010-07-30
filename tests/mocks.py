@@ -21,6 +21,7 @@ Created on Jul 20, 2010
 @author: tmetsch
 '''
 from pyrest.backends import Handler
+from pyrest.myexceptions import MissingActionException
 from pyrest.resource_model import Link
 
 class DummyBackend(Handler):
@@ -46,5 +47,5 @@ class DummyBackend(Handler):
         if action == 'release':
             resource.attributes['occi.drmaa.job_state'] = 'EXIT'
         else:
-            raise AttributeError('Non existing action called!')
+            raise MissingActionException('Non existing action called!')
 

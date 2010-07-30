@@ -23,6 +23,7 @@ Created on Jul 9, 2010
 @author: tmetsch
 '''
 
+from myexceptions import MissingCategoriesException
 from resource_model import Resource, Category, JobResource, Link
 import re
 
@@ -80,7 +81,8 @@ class HTTPHeaderParser(Parser):
         try:
             header = heads['HTTP_CATEGORY']
         except:
-            raise AttributeError('No categories could be found in the header!')
+            raise MissingCategoriesException('No categories could be found in'
+                                           + ' the header!')
         categories = header.split(',')
         for entry in categories:
             category = Category()
@@ -94,8 +96,9 @@ class HTTPHeaderParser(Parser):
                     category.term = term
                     terms.append(category.term)
                 else:
-                    raise AttributeError('No valid term for given category ' +
-                                         'could be found.')
+                    raise MissingCategoriesException('No valid term for given'
+                                                   + 'category could be'
+                                                   + 'found.')
             except:
                 # todo log her...
                 break
@@ -125,7 +128,8 @@ class HTTPHeaderParser(Parser):
             result.append(category)
 
         if len(result) == 0:
-            raise AttributeError("No valid categories could be found.")
+            raise MissingCategoriesException('No valid categories could be'
+            + 'found.')
         return terms, result
 
     def _get_links_from_header(self, heads):
@@ -228,10 +232,13 @@ class HTTPHeaderParser(Parser):
 
     def to_resource(self, key, http_data):
         if key is None or http_data is None:
-            raise AttributeError('Header or key cannot be None!')
+            raise MissingCategoriesException('Header or key cannot be None!')
 
         # parse categories
-        terms, categories = self._get_categories_from_header(http_data.header)
+        try:
+            terms, categories = self._get_categories_from_header(http_data.header)
+        except MissingCategoriesException:
+            raise
 
         # XXX: add more resource kinds if needed
         try:

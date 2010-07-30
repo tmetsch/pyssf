@@ -20,6 +20,7 @@ Created on Jul 12, 2010
 
 @author: tmetsch
 '''
+from pyrest.myexceptions import MissingCategoriesException
 from pyrest.rendering_parsers import HTTPHeaderParser, HTTPData
 from pyrest.resource_model import Link, Category, Resource, JobResource
 import unittest
@@ -113,9 +114,9 @@ class HTTPHeaderParserTest(unittest.TestCase):
 
     def test_to_resource_for_failure(self):
         # missing categories -> fail big time!
-        self.assertRaises(AttributeError, self.parser.to_resource, "123", None)
+        self.assertRaises(MissingCategoriesException, self.parser.to_resource, "123", None)
         request = HTTPData({}, None)
-        self.assertRaises(AttributeError, self.parser.to_resource, "123", request)
+        self.assertRaises(MissingCategoriesException, self.parser.to_resource, "123", request)
 
         # action links -> error :-)
         new_header = {'HTTP_CATEGORY': 'job;scheme="http://purl.org/occi/kind#"', 'HTTP_LINK': '</network/566-566-566>; class="action"'}
@@ -126,27 +127,27 @@ class HTTPHeaderParserTest(unittest.TestCase):
         # missing scheme for category
         header = {'HTTP_CATEGORY': 'job;scheme=;label=Tada'}
         request = HTTPData(header, None)
-        self.assertRaises(AttributeError, self.parser.to_resource, "123", request)
+        self.assertRaises(MissingCategoriesException, self.parser.to_resource, "123", request)
 
         # missing term for category
         header = {'HTTP_CATEGORY': ';scheme=http://purl.org/occi/kind#;label=Tada'}
         request = HTTPData(header, None)
-        self.assertRaises(AttributeError, self.parser.to_resource, "123", request)
+        self.assertRaises(MissingCategoriesException, self.parser.to_resource, "123", request)
 
         # wrong order in header for category
         header = {'HTTP_CATEGORY': 'scheme=http://purl.org/occi/kind#;job;label=Tada;'}
         request = HTTPData(header, None)
-        self.assertRaises(AttributeError, self.parser.to_resource, "123", request)
+        self.assertRaises(MissingCategoriesException, self.parser.to_resource, "123", request)
 
         # faulty URL
         header = {'HTTP_CATEGORY': 'job;scheme=glubber;label=Tada;'}
         request = HTTPData(header, None)
-        self.assertRaises(AttributeError, self.parser.to_resource, "123", request)
+        self.assertRaises(MissingCategoriesException, self.parser.to_resource, "123", request)
 
         # faulty term
         header = {'HTTP_CATEGORY': 'flaver daver 1s;scheme=glubber;job;label="Tada";'}
         request = HTTPData(header, None)
-        self.assertRaises(AttributeError, self.parser.to_resource, "123", request)
+        self.assertRaises(MissingCategoriesException, self.parser.to_resource, "123", request)
 
     def test_from_resource_for_failure(self):
         # ??? this should never happen

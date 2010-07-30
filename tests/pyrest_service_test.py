@@ -144,7 +144,7 @@ class ResourceCreationTests(unittest.TestCase):
         response = service.APPLICATION.request("/", method = "POST", headers = self.heads, data = "some data")
         self.assertEquals(response.status, '200 OK')
         loc = response.headers['Location']
-        service.APPLICATION.request(loc, method = "DELETE")
+        response = service.APPLICATION.request(loc, method = "DELETE")
         response = service.APPLICATION.request(loc)
         self.assertEquals(response.status, "404 Not Found")
 
@@ -156,7 +156,7 @@ class CategoriesTests(unittest.TestCase):
     def test_categories_for_failure(self):
         # if a post is done without category -> Fail
         response = service.APPLICATION.request("/", method = "POST")
-        self.assertEquals('No categories could be found in the header!', str(response.status))
+        self.assertEquals('400 Bad Request', str(response.status))
 
     def test_categories_for_sanity(self):
         # if a post is done and later a get should return same category
@@ -214,7 +214,7 @@ class ActionsTests(unittest.TestCase):
         tmp = response.headers['Link'].split(',').pop()
         kill_url = tmp[tmp.find('<') + 1:tmp.find('>')]
         response = service.APPLICATION.request(kill_url, method = "PUT")
-        self.assertEquals('No categories could be found in the header!', str(response.status))
+        self.assertEquals('400 Bad Request', str(response.status))
 
         # trigger not existing action!
         response = service.APPLICATION.request("/", method = "POST", headers = self.heads)
@@ -223,7 +223,7 @@ class ActionsTests(unittest.TestCase):
         tmp = response.headers['Link'].split(',').pop()
         kill_url = tmp[tmp.find('<') + 1:tmp.find('>')]
         response = service.APPLICATION.request(kill_url + 'all', method = "POST")
-        self.assertEquals(str(response.status), 'Non existing action called!')
+        self.assertEquals(str(response.status), '400 Bad Request')
 
         # trigger action on non existing resource
         response = service.APPLICATION.request('http://abc.com/all;kill', method = "POST")

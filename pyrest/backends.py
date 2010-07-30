@@ -22,6 +22,8 @@ Created on Jul 9, 2010
 
 @author: tmetsch
 '''
+from myexceptions import MissingActionException
+from myexceptions import MissingAttributesException, StateException
 from pydrmaa.job import JobFactory
 from resource_model import JobResource, Link
 
@@ -113,7 +115,7 @@ class JobHandler(Handler):
     def create(self, resource):
         if isinstance(resource, JobResource):
             if not 'occi.drmaa.remote_command' in resource.attributes:
-                raise AttributeError('Missing command argument')
+                raise MissingAttributesException('Missing command argument')
 
             command = resource.attributes['occi.drmaa.remote_command']
             if 'occi.drmaa.args' in resource.attributes:
@@ -140,8 +142,9 @@ class JobHandler(Handler):
     def retrieve(self, resource):
         if isinstance(resource, JobResource):
             if not 'occi.drmaa.job_id' in resource.attributes:
-                raise AttributeError('Something is wrong here - running job '
-                                     + 'resource should have an id.')
+                raise MissingAttributesException('Something is wrong here'
+                                                 + ' running job resource'
+                                                 + ' should have an id.')
             job = self.jobs[resource.attributes['occi.drmaa.job_id']]
             state = job.get_state()
             resource.attributes['occi.drmaa.job_state'] = state
@@ -165,8 +168,9 @@ class JobHandler(Handler):
     def delete(self, resource):
         if isinstance(resource, JobResource):
             if not 'occi.drmaa.job_id' in resource.attributes:
-                raise AttributeError('Something is wrong here - running job '
-                                     + 'resource should have an id.')
+                raise MissingAttributesException('Something is wrong here'
+                                                 + ' running job resource'
+                                                 + ' should have an id.')
             job = self.jobs[resource.attributes['occi.drmaa.job_id']]
             state = job.get_state()
             if state != 'done' and state != 'failed':
@@ -182,13 +186,14 @@ class JobHandler(Handler):
                 try:
                     job = self.jobs[resource.attributes['occi.drmaa.job_id']]
                 except:
-                    raise AttributeError('Trying to run an action on non'
+                    raise StateException('Trying to run an action on non'
                                          + 'active resource.')
                 if action == 'terminate':
                     job.terminate()
                     resource.links = []
                 resource.attributes['occi.drmaa.job_state'] = job.get_state()
             else:
-                raise AttributeError('Non existing action called!')
+                raise MissingActionException('Non existing action called!')
         else:
             pass
+

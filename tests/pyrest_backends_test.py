@@ -21,6 +21,8 @@ Created on Jul 12, 2010
 @author: tmetsch
 '''
 from pyrest.backends import JobHandler
+from pyrest.myexceptions import MissingActionException, StateException
+from pyrest.myexceptions import MissingAttributesException
 from pyrest.resource_model import JobResource, Link
 import time
 import unittest
@@ -86,11 +88,11 @@ class JobHandlerTest(unittest.TestCase):
     def test_create_for_failure(self):
         # test create without arg.
         self.resource.attributes = []
-        self.assertRaises(AttributeError, self.backend.create, self.resource)
+        self.assertRaises(MissingAttributesException, self.backend.create, self.resource)
 
     def test_retrieve_for_failure(self):
         # test retrieving non existent
-        self.assertRaises(AttributeError, self.backend.retrieve, self.resource)
+        self.assertRaises(MissingAttributesException, self.backend.retrieve, self.resource)
 
     def test_update_for_failure(self):
         # doesn't do anything
@@ -98,16 +100,16 @@ class JobHandlerTest(unittest.TestCase):
 
     def test_delete_for_failure(self):
         # delete non-existent
-        self.assertRaises(AttributeError, self.backend.delete, self.resource)
+        self.assertRaises(MissingAttributesException, self.backend.delete, self.resource)
 
     def test_action_for_failure(self):
         # non existent action...
         self.backend.create(self.resource)
-        self.assertRaises(AttributeError, self.backend.action, self.resource, 'blabber')
+        self.assertRaises(MissingActionException, self.backend.action, self.resource, 'blabber')
 
         # non existent resource
         self.setUp()
-        self.assertRaises(AttributeError, self.backend.action, self.resource, 'terminate')
+        self.assertRaises(StateException, self.backend.action, self.resource, 'terminate')
 
     # --------
     # TEST FOR SANITY

@@ -160,7 +160,7 @@ The following code demonstrates howto write your own backend and use the
 RESTful interface provided by pyrest::
 
     from pyrest import service
-    from pyrest.service import HTTPHeaderParser
+    from pyrest.service import NonPersistentResourceDictionary
     from pyrest.rendering_parsers import Parser, HTTPHeaderParser
     from pyrest.backends import Handler, JobHandler
     
