@@ -152,7 +152,6 @@ A simple python program to submit a job would look like::
 
 Writing your own service using pyrest
 --------------------------------------
-
 By default the pyrest module supports job submission. But it can easily be
 extended to offer any kind of service.
 
@@ -199,6 +198,87 @@ RESTful interface provided by pyrest::
 This code demonstrates how flexible the environment is. You can easily use the
 pyrest package to create a service which provides a IaaS, a PaaS or a SaaS. You
 can overwrite the Parser, the backend and the storage used.
+
+Deploy the service in a PKI secured environment
+-----------------------------------------------
+If you want to deploy the service in a PKI (X509 certificates) secured
+environment you'll need to install Apache2. Also the mod-wsgi module is needed.
+
+.. note::
+    On an Ubuntu server system the following command will do: **sudo apt-get
+    install apache2 libapache2-mod-wsgi**
+
+Next the ssl engine needs to activated for Apache2. To do so add the according
+link in the */etc/apache2/mods-enabled* directory.
+
+To setup the service to run on port 21 add the following virtual host to your
+Apache configuration. Add a file to */etc/apache2/sites-available/* directory
+and set a link to it in the */etc/apache2/sites-enabled* directory.
+
+Add the following content to the file and edit the paths accordingly::
+
+    WSGIPythonPath <python path>
+    
+    Listen 81
+    NameVirtualHost *:81
+    <VirtualHost *:81>
+        ServerAdmin root@localhost
+        ServerName localhost
+
+        SSLEngine on
+        SSLCertificateFile <path to cert>/newcert.pem
+        SSLCertificateKeyFile<path to cert>/newkey.pem
+        SSLCACertificateFile <path to cert>/cacert.pem
+        SSLVerifyClient require
+        SSLVerifyDepth 2
+
+        SSLOptions +StdEnvVars
+
+        WSGIScriptAlias / /<path to your service>/service.py
+
+        ErrorLog /var/log/apache2/service.error.log
+        CustomLog /var/log/apache2/service.log common
+    </VirtualHost>
+
+When using pydrmaa with LSF
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To setup LSF in in such an environment you need to edit 
+*/etc/ld.so.conf.d/lsf.conf* and add the value of the $LSF_LIBDIR environment
+variable to this file. Finally run the **ldconfig** command.
+
+In the next step you need to symbolically link lsf.conf to /etc/lsf.conf.
+Therefore do a **ln -s <path to lsf>/conf/lsf.conf /etc/**
+
+Some variables need to be added to the lsf.conf file::
+
+    LSF_BINDIR=<path to lsf>/7.0/linux2.6-glibc2.3-x86_64/bin
+    LSF_ENVDIR=<path to lsf>/conf
+    LSF_LIBDIR=<path to lsf>/7.0/linux2.6-glibc2.3-x86_64/lib
+    LSF_SERVERDIR=<path to lsf>/7.0/linux2.6-glibc2.3-x86_64/etc
+
+.. note::
+    MAke sure that you update the paths according to the platform architecture
+    you run.
+
+Setup a simple CA
+^^^^^^^^^^^^^^^^^
+To setup an simple CA for managing the X509 certificates do the following::
+
+    /usr/lib/ssl/misc/CA.pl -newca
+    
+    # create a server certificate
+    /usr/lib/ssl/misc/CA.pl -newreq
+    /usr/lib/ssl/misc/CA.pl -sign
+    mkdir server && mv new* server/
+    # (optional) remove pw from key - so apache can startup without asking pw
+    cd server
+    mv newkey.pem newkey.pem.orig
+    openssl rsa -in newkey.pem.orig -out newkey.pem
+    
+    # create a user certificate
+    /usr/lib/ssl/misc/CA.pl -newreq
+    /usr/lib/ssl/misc/CA.pl -sign
+    mkdir user1 && mv new* user1/
 
 .. [OCCI] OCCI website - http://www.occi-wg.org
 .. [web.py] web.py website - http://webpy.org
