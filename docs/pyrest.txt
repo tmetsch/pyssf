@@ -240,6 +240,10 @@ Add the following content to the file and edit the paths accordingly::
         CustomLog /var/log/apache2/service.log common
     </VirtualHost>
 
+.. note::
+    Normally the Python Path of the application to the destination folder after
+    a *python setup.py build* run in the root directory of SSF.
+
 When using pydrmaa with LSF
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To setup LSF in in such an environment you need to edit 
@@ -279,6 +283,32 @@ To setup an simple CA for managing the X509 certificates do the following::
     /usr/lib/ssl/misc/CA.pl -newreq
     /usr/lib/ssl/misc/CA.pl -sign
     mkdir user1 && mv new* user1/
+
+A simple client using the previous described setup
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This is a simple client using the httplib library::
+
+    import httplib
+    
+    KEYFILE = '/home/tmetsch/scrap/CA/user1/newkey.pem'
+    CERTFILE = '/home/tmetsch/scrap/CA/user1/newcert.pem'
+    heads = {'Category': 'job;scheme="http://purl.org/occi/kind#"',
+         'occi.drmaa.remote_command':'/bin/sleep',
+         'occi.drmaa.args':'10'}
+    
+    conn = httplib.HTTPSConnection('localhost', 81, key_file = KEYFILE,
+    cert_file = CERTFILE)
+    
+    conn.request("POST", "/", headers = heads)
+    r1 = conn.getresponse()
+    url = r1.getheader('Location')
+    print r1.status, r1.reason, r1.getheader('Location'), r1.read()
+    
+    conn.request("GET", url)
+    r2 = conn.getresponse()
+    print r2.status, r2.reason, r2.getheaders(), r2.read()
+    
+    conn.close()
 
 .. [OCCI] OCCI website - http://www.occi-wg.org
 .. [web.py] web.py website - http://webpy.org

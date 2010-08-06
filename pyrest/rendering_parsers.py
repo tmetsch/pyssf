@@ -190,6 +190,8 @@ class HTTPHeaderParser(Parser):
         for item in heads.keys():
             if item.find('HTTP_OCCI.DRMAA.') > -1:
                 result[item.lstrip('HTTP_').lower()] = heads[item]
+            elif item.find('HTTP_OCCI_DRMAA_') > -1:
+                result['occi.drmaa.' + item[16:].lower()] = heads[item]
         return result
 
     def _create_categories_for_header(self, categories):

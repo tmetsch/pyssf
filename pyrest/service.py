@@ -36,6 +36,8 @@ URLS = (
     '/(.*)', 'ResourceHandler'
 )
 APPLICATION = web.application(URLS, globals())
+# needed for apahce mod_Wsgi integration
+application = web.application(URLS, globals()).wsgifunc()
 
 class NonPersistentResourceDictionary(dict):
     """
@@ -162,7 +164,6 @@ class HTTPHandler(object):
             return web.NotFound()
         except MissingAttributesException as mae:
             return web.BadRequest, str(mae)
-
         else:
             # following is uncool!
             if isinstance(tmp, str):
