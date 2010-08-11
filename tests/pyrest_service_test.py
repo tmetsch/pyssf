@@ -22,7 +22,9 @@ Created on Jul 5, 2010
 '''
 from mocks import DummyBackend
 import pyrest.service as service
+from pyrest.service import ResourceHandler
 import unittest
+import web
 
 class ResourceCreationTests(unittest.TestCase):
 
@@ -37,6 +39,7 @@ class ResourceCreationTests(unittest.TestCase):
     # TEST FOR SUCCESS
     # --------
 
+    service.APPLICATION = web.application(('/(.*)', 'ResourceHandler'), globals())
     service.ResourceHandler.backend = DummyBackend()
     heads = {'Category': 'compute;scheme="http://purl.org/occi/kind#";label="Compute Resource"'}
 

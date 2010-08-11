@@ -26,18 +26,16 @@ Created on Jul 2, 2010
 from backends import JobHandler
 from myexceptions import MissingAttributesException, StateException
 from myexceptions import MissingCategoriesException, MissingActionException
+from myexceptions import SecurityException
 from rendering_parsers import HTTPHeaderParser, HTTPData
+import PAM
 import re
 import uuid
 import web
 
-URLS = (
-    # '/(.*)(;[a-zA-z]*)', 'ActionHandler'; no clue why he doesn't trigger this
-    '/(.*)', 'ResourceHandler'
-)
-APPLICATION = web.application(URLS, globals())
-# needed for apahce mod_Wsgi integration
-application = web.application(URLS, globals()).wsgifunc()
+"""
+The following stuff is here for Storage of the Resources.
+"""
 
 class NonPersistentResourceDictionary(dict):
     """
@@ -88,10 +86,41 @@ class PersistentResourceDictionary(dict):
     """
     pass
 
+"""
+The following part is here for basic HTTP handling.
+"""
+
+class SecurityHandler(object):
+    """
+    A security handler.
+    """
+    
+    def authenticate(self, username, password):
+        """
+        Authenticate a user with it's password.
+        """
+        raise SecurityException("Could not authenticate user.")
+
+class PAMSercurityHandler(SecurityHandler):
+    """
+    A security handler which uses PAM to authenticate the user
+    """
+    
+    def authenticate(self, username, password):
+        try:
+            import PAM
+            auth = PAM.pam()
+            auth.start('auth')
+            auth.set_item(PAM.PAM_USER, username)
+            auth.authenticate()
+        except PAM.error, resp:
+            raise SecurityException("Could not authenticate user.")
+        except:
+            raise SecurityException("Could not authenticate user.")
+
 def validate_key(fn):
-    """Decorator for HTTP methods that validates if resource
-    name is a valid database key. Used to protect against
-    directory traversal.
+    """
+    Decorator to validate the given keys!
     """
     VALID_KEY = re.compile('[a-z0-9-/]*')
     def new(*args):
@@ -100,12 +129,45 @@ def validate_key(fn):
         return fn(*args)
     return new
 
+def authenticate(fn):
+    """
+    Authenticate the user.
+    """
+    import base64
+    
+    def new(*args):
+        try:
+            print web.ctx.protocol
+            str = web.ctx.env['HTTP_AUTHORIZATION'].lstrip('Basic ')
+        except:
+            pass
+        else:
+            print base64.b64decode(str)
+        return fn(*args)
+    return new
+#    
+#    auth = PAM.pam()
+#    auth.start(service)
+#    if user != None:
+#        auth.set_item(PAM.PAM_USER, user)
+#    auth.set_item(PAM.PAM_CONV, pam_conv)
+#    try:
+#        auth.authenticate()
+#        auth.acct_mgmt()
+#    except PAM.error, resp:
+#        print 'Go away! (%s)' % resp
+#    except:
+#        print 'Internal error'
+#    else:
+#        print 'Good to go!'
+
 class HTTPHandler(object):
     """
     Handles the very basic HTTP operations. The logic when a resource is
     created, updated or delete is handle in here.
     """
 
+    @authenticate
     @validate_key
     def POST(self, name, *data):
         """
@@ -163,7 +225,7 @@ class HTTPHandler(object):
         except KeyError:
             return web.NotFound()
         except MissingAttributesException as mae:
-            return web.BadRequest, str(mae)
+            return web.BadRequest(), str(mae)
         else:
             # following is uncool!
             if isinstance(tmp, str):
@@ -227,6 +289,10 @@ class HTTPHandler(object):
                 return 'OK'
         else:
             return web.NotFound()
+
+"""
+The final part actually does something.
+"""
 
 class ResourceHandler(HTTPHandler):
     """
@@ -325,8 +391,3 @@ class ResourceHandler(HTTPHandler):
             self.backend.action(resource, name)
         except (KeyError, MissingActionException, StateException):
             raise
-
-if __name__ == "__main__":
-    web.config.debug = False
-    APPLICATION.run()
-

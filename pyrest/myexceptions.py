@@ -47,3 +47,9 @@ class MissingActionException(BaseException):
     Raised when a (currently) non existing action is triggered!
     """
     pass
+
+class SecurityException(BaseException):
+    """
+    Raised if a user could not be authenticated or authorized.
+    """
+    pass
