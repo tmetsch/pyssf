@@ -44,7 +44,7 @@ class JobHandlerTest(unittest.TestCase):
         self.resource.links = []
         link = Link()
         link.link_class = 'action'
-        link.rel = 'http://purl.org/occi/ drmaa/action#terminate'
+        link.rel = 'http://schemas.ogf.org/occi/ drmaa/action#terminate'
         link.target = '/' + self.resource.id + ';terminate'
         link.title = 'Terminate Job'
         self.resource.links = [link]

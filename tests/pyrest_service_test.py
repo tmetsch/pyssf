@@ -41,7 +41,7 @@ class ResourceCreationTests(unittest.TestCase):
 
     service.APPLICATION = web.application(('/(.*)', 'ResourceHandler'), globals())
     service.ResourceHandler.backend = DummyBackend()
-    heads = {'Category': 'compute;scheme="http://purl.org/occi/kind#";label="Compute Resource"'}
+    heads = {'Category': 'compute;scheme="http://schemas.ogf.org/occi/resource#";label="Compute Resource"'}
 
     def test_post_for_success(self):
         # simple post on entry point should return 200 OK
@@ -154,7 +154,7 @@ class ResourceCreationTests(unittest.TestCase):
 class CategoriesTests(unittest.TestCase):
 
     # Note: more tests are done in the parser tests
-    heads = {'Category': 'job;scheme="http://purl.org/occi/kind#";label="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep'}
+    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep'}
 
     def test_categories_for_failure(self):
         # if a post is done without category -> Fail
@@ -168,13 +168,13 @@ class CategoriesTests(unittest.TestCase):
         response = service.APPLICATION.request(url)
         cat = response.headers['Category'].split(';')
         self.assertEquals(cat[0], 'job')
-        self.assertEquals(cat[1].split('=')[-1:].pop(), 'http://purl.org/occi/kind#')
+        self.assertEquals(cat[1].split('=')[-1:].pop(), 'http://schemas.ogf.org/occi/resource#')
 
 class AttributeTests(unittest.TestCase):
 
     # Note: more tests are done in the parser tests
 
-    heads = {'Category': 'job;scheme="http://purl.org/occi/kind#";label="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep'}
+    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep'}
 
     def test_attributes_for_sanity(self):
         # pass along some attributes and see if they can be retrieved
@@ -187,7 +187,7 @@ class AttributeTests(unittest.TestCase):
 class LinkTests(unittest.TestCase):
 
     # Note: more test are done in the parser tests
-    heads = {'Category': 'job;scheme="http://purl.org/occi/kind#";label="Job Resource"', 'Link': '</123>;class="test";rel="http://example.com/next/job";title="Next job"', 'occi.drmaa.remote_command':'/bin/sleep'}
+    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 'Link': '</123>;class="test";rel="http://example.com/next/job";title="Next job"', 'occi.drmaa.remote_command':'/bin/sleep'}
 
     def test_links_far_sanity(self):
         # pass along some attributes and see if they can be retrieved
@@ -198,7 +198,7 @@ class LinkTests(unittest.TestCase):
 
 class ActionsTests(unittest.TestCase):
 
-    heads = {'Category': 'job;scheme="http://purl.org/occi/kind#";label="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep'}
+    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep'}
 
     def test_trigger_action_for_success(self):
         response = service.APPLICATION.request("/", method = "POST", headers = self.heads)

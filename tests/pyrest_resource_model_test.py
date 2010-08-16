@@ -42,10 +42,10 @@ class ActionLinkTest(unittest.TestCase):
         category = Category()
         resource = Resource()
         category.term = 'job'
-        category.scheme = 'http://purl.org/occi/kind#'
+        category.scheme = 'http://schemas.ogf.org/occi/resource#'
         resource.categories.append(category)
         res = resource.get_certain_categories('job')
-        self.assertEquals(res[0].scheme, 'http://purl.org/occi/kind#')
+        self.assertEquals(res[0].scheme, 'http://schemas.ogf.org/occi/resource#')
 
     # --------
     # TEST FOR FAILUTE

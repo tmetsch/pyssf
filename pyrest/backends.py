@@ -127,7 +127,7 @@ class JobHandler(Handler):
             # update links & attributes
             link = Link()
             link.link_class = 'action'
-            link.rel = 'http://purl.org/occi/drmaa/action#terminate'
+            link.rel = 'http://schemas.ogf.org/occi/drmaa/action#terminate'
             link.target = '/' + resource.id + ';terminate'
             link.title = 'Terminate Job'
             # I can append because not action links could be added previously
@@ -151,7 +151,7 @@ class JobHandler(Handler):
             if state == 'running':
                 link = Link()
                 link.link_class = 'action'
-                link.rel = 'http://purl.org/occi/drmaa/action#terminate'
+                link.rel = 'http://schemas.ogf.org/occi/drmaa/action#terminate'
                 link.target = '/' + resource.id + ';terminate'
                 link.title = 'Terminate Job'
                 # drop old links - when running cannot change links!

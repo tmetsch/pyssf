@@ -31,7 +31,7 @@ It consist of the following modules:
 
 .. note::
     When using the pyrest module for other stuff then job submission you need
-    to create a new **resource** kind and update the rendering parsers. 
+    to create a new **resource** and update the rendering parsers. 
 
 .. note::
     Currently pyrest does not handle the scheme given to links and categories.
@@ -86,11 +86,11 @@ Job Handler
 This Handler is capable of submitting jobs using the pydrmaa package. Creation
 of the resources should be done with the following category:
 
-    ========  ============================
-      Term      Scheme                    
-    ========  ============================
-    job       "http://purl.org/occi/kind#"
-    ========  ============================
+    ========  =======================================
+      Term      Scheme                               
+    ========  =======================================
+    job       "http://schemas.ogf.org/occi/resource#"
+    ========  =======================================
 
 Currently the following attributes are supported:
 
@@ -139,7 +139,7 @@ A simple python program to submit a job would look like::
     h = httplib2.Http()
     
     # create HTTP headers with the right category (mandatory field ) and attributes
-    heads = {'Category': 'job;scheme="http://purl.org/occi/kind#";label="Job Resource"', 
+    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 
              'occi.drmaa.remote_command': '/bin/sleep', 'occi.drmaa.args': '10'}
     response = h.request('http://localhost:8080/','POST', headers=heads)
     
@@ -307,7 +307,7 @@ This is a simple client using the httplib library::
     
     KEYFILE = '<path to key>/newkey.pem'
     CERTFILE = '<path to cert>/newcert.pem'
-    heads = {'Category': 'job;scheme="http://purl.org/occi/kind#"',
+    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#"',
          'occi.drmaa.remote_command':'/bin/sleep',
          'occi.drmaa.args':'10'}
     

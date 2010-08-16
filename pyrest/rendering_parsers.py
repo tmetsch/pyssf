@@ -242,7 +242,7 @@ class HTTPHeaderParser(Parser):
         except MissingCategoriesException:
             raise
 
-        # XXX: add more resource kinds if needed
+        # XXX: add more resource if needed
         try:
             terms.index('job')
             res = JobResource()

@@ -29,7 +29,7 @@ class DummyBackend(Handler):
     def create(self, resource):
         link = Link()
         link.link_class = 'action'
-        link.rel = 'http://purl.org/occi/drmaa/action#release'
+        link.rel = 'http://schemas.ogf.org/occi/drmaa/action#release'
         link.target = '/' + resource.id + ';release'
         link.title = 'Kill Job'
         resource.links.append(link)

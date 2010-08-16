@@ -33,7 +33,7 @@ class HTTPHeaderParserTest(unittest.TestCase):
     parser = HTTPHeaderParser()
     # a correct request
     correct_header = {'CONTENT_LENGTH': 0,
-              'HTTP_CATEGORY': 'compute;scheme="http://purl.org/occi/kind#";label="Compute Resource", myimage;scheme="http://example.com/user/categories/templates#";',
+              'HTTP_CATEGORY': 'compute;scheme="http://schemas.ogf.org/occi/resource#";label="Compute Resource", myimage;scheme="http://example.com/user/categories/templates#";',
               'wsgi.input': '' ,
               'REQUEST_METHOD': 'POST',
               'HTTP_HOST': '0.0.0.0:8080',
@@ -53,11 +53,11 @@ class HTTPHeaderParserTest(unittest.TestCase):
     def setUp(self):
         self.correct_http_data = HTTPData(self.correct_header, self.body)
         self.link.link_class = 'action'
-        self.link.rel = 'http://purl.org/occi/job/action#kill'
+        self.link.rel = 'http://schemas.ogf.org/occi/job/action#kill'
         self.link.target = 'http://www.example.com/456/#kill'
         self.link.title = 'Kill Job'
         self.category_one.related = ''
-        self.category_one.scheme = 'http://purl.org/occi/kind#'
+        self.category_one.scheme = 'http://schemas.ogf.org/occi/resource#'
         self.category_one.term = 'compute'
         self.category_one.title = 'Compute Resource'
         self.category_two.related = ''
@@ -65,7 +65,7 @@ class HTTPHeaderParserTest(unittest.TestCase):
         self.category_two.term = 'myimage'
         self.category_two.title = ''
         self.category_three.related = ''
-        self.category_three.scheme = 'http://purl.org/occi/kind#'
+        self.category_three.scheme = 'http://schemas.ogf.org/occi/resource#'
         self.category_three.term = 'job'
         self.category_three.title = ''
         self.resource.categories = [self.category_one, self.category_two]
@@ -88,7 +88,7 @@ class HTTPHeaderParserTest(unittest.TestCase):
         self.assertEquals(self.resource.id, res.id)
 
         # create a job resource (via category def)
-        new_header = {'HTTP_CATEGORY': 'job;scheme="http://purl.org/occi/kind#"'}
+        new_header = {'HTTP_CATEGORY': 'job;scheme="http://schemas.ogf.org/occi/resource#"'}
         request = HTTPData(new_header, None)
         job_res = self.parser.to_resource("123", request)
         if not isinstance(job_res, JobResource):
@@ -102,7 +102,7 @@ class HTTPHeaderParserTest(unittest.TestCase):
 
         # check if it returns a job resource when asking for one...
         category_job = Category()
-        category_job.scheme = 'http://purl.org/occi/kind#'
+        category_job.scheme = 'http://schemas.ogf.org/occi/resource#'
         category_job.term = 'job'
         self.resource.categories.append(category_job)
         result = self.parser.from_resource(self.resource)
@@ -119,7 +119,7 @@ class HTTPHeaderParserTest(unittest.TestCase):
         self.assertRaises(MissingCategoriesException, self.parser.to_resource, "123", request)
 
         # action links -> error :-)
-        new_header = {'HTTP_CATEGORY': 'job;scheme="http://purl.org/occi/kind#"', 'HTTP_LINK': '</network/566-566-566>; class="action"'}
+        new_header = {'HTTP_CATEGORY': 'job;scheme="http://schemas.ogf.org/occi/resource#"', 'HTTP_LINK': '</network/566-566-566>; class="action"'}
         request = HTTPData(new_header, None)
         res = self.parser.to_resource("123", request)
         self.assertEquals(len(res.links), 0)
@@ -130,12 +130,12 @@ class HTTPHeaderParserTest(unittest.TestCase):
         self.assertRaises(MissingCategoriesException, self.parser.to_resource, "123", request)
 
         # missing term for category
-        header = {'HTTP_CATEGORY': ';scheme=http://purl.org/occi/kind#;label=Tada'}
+        header = {'HTTP_CATEGORY': ';scheme=http://schemas.ogf.org/occi/resource#;label=Tada'}
         request = HTTPData(header, None)
         self.assertRaises(MissingCategoriesException, self.parser.to_resource, "123", request)
 
         # wrong order in header for category
-        header = {'HTTP_CATEGORY': 'scheme=http://purl.org/occi/kind#;job;label=Tada;'}
+        header = {'HTTP_CATEGORY': 'scheme=http://schemas.ogf.org/occi/resource#;job;label=Tada;'}
         request = HTTPData(header, None)
         self.assertRaises(MissingCategoriesException, self.parser.to_resource, "123", request)
 
@@ -165,13 +165,13 @@ class HTTPHeaderParserTest(unittest.TestCase):
         self.assertEquals(res.data, self.body)
 
         # test category with len(rel)=1 and len(rel)=x
-        test_data = HTTPData({'HTTP_CATEGORY': 'job;scheme="http://purl.org/occi/kind#";rel=http://example'}, self.body)
+        test_data = HTTPData({'HTTP_CATEGORY': 'job;scheme="http://schemas.ogf.org/occi/resource#";rel=http://example'}, self.body)
         res = self.parser.to_resource("456", test_data)
-        test_data = HTTPData({'HTTP_CATEGORY': 'job;scheme="http://purl.org/occi/kind#";rel="http://example,http://www.abc.com"'}, self.body)
+        test_data = HTTPData({'HTTP_CATEGORY': 'job;scheme="http://schemas.ogf.org/occi/resource#";rel="http://example,http://www.abc.com"'}, self.body)
         res = self.parser.to_resource("456", test_data)
 
         # check if given attributes are in the job resource
-        test_data = HTTPData({'HTTP_CATEGORY': 'job;scheme="http://purl.org/occi/kind#"', 'HTTP_OCCI.DRMAA.EXECUTABLE': '/bin/sleep'}, self.body)
+        test_data = HTTPData({'HTTP_CATEGORY': 'job;scheme="http://schemas.ogf.org/occi/resource#"', 'HTTP_OCCI.DRMAA.EXECUTABLE': '/bin/sleep'}, self.body)
         res = self.parser.to_resource("456", test_data)
         # category
         self.assertEquals(res.get_certain_categories('job')[0].term, 'job')
@@ -179,7 +179,7 @@ class HTTPHeaderParserTest(unittest.TestCase):
         self.assertEquals(res.attributes['occi.drmaa.executable'], '/bin/sleep')
 
         # test links
-        new_header = {'HTTP_CATEGORY': 'job;scheme="http://purl.org/occi/kind#"', 'HTTP_LINK': '</network/566-566-566>; class="link"'}
+        new_header = {'HTTP_CATEGORY': 'job;scheme="http://schemas.ogf.org/occi/resource#"', 'HTTP_LINK': '</network/566-566-566>; class="link"'}
         request = HTTPData(new_header, None)
         res = self.parser.to_resource("123", request)
         self.assertEquals(res.links[0].rel, '')
@@ -187,7 +187,7 @@ class HTTPHeaderParserTest(unittest.TestCase):
         self.assertEquals(res.links[0].target, '/network/566-566-566')
         self.assertEquals(res.links[0].link_class, 'link')
 
-        new_header = {'HTTP_CATEGORY': 'job;scheme="http://purl.org/occi/kind#"', 'HTTP_LINK': '</compute/345-345-345/default>; class="link"; rel="self";title="type"'}
+        new_header = {'HTTP_CATEGORY': 'job;scheme="http://schemas.ogf.org/occi/resource#"', 'HTTP_LINK': '</compute/345-345-345/default>; class="link"; rel="self";title="type"'}
         request = HTTPData(new_header, None)
         res = self.parser.to_resource("123", request)
         self.assertEquals(res.links[0].rel, 'self')
