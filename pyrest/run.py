@@ -49,17 +49,9 @@ application = web.application(urls, globals())
 # When using the build-in webserver with SSL enabled uncomment the following
 # lines
 # 
-from web.wsgiserver import CherryPyWSGIServer
+#from web.wsgiserver import CherryPyWSGIServer
 #CherryPyWSGIServer.ssl_certificate = "<path to CA>/newcert.pem"
 #CherryPyWSGIServer.ssl_private_key = "<path to CA>/newkey.pem"
-CherryPyWSGIServer.ssl_certificate = "/home/tmetsch/scrap/CA/server/newcert.pem"
-CherryPyWSGIServer.ssl_private_key = "/home/tmetsch/scrap/CA/server/newkey.pem"
-
-#
-# Tells the service to enable Basic authentication. Therefore a security
-# handler needs to be defined.
-#
-
 
 # 
 # Tells the service tells the ResourceHandler which Storage, Backend and which

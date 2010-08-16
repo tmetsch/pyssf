@@ -28,7 +28,6 @@ from myexceptions import MissingAttributesException, StateException
 from myexceptions import MissingCategoriesException, MissingActionException
 from myexceptions import SecurityException
 from rendering_parsers import HTTPHeaderParser, HTTPData
-import PAM
 import re
 import uuid
 import web
@@ -101,23 +100,6 @@ class SecurityHandler(object):
         """
         raise SecurityException("Could not authenticate user.")
 
-class PAMSercurityHandler(SecurityHandler):
-    """
-    A security handler which uses PAM to authenticate the user
-    """
-    
-    def authenticate(self, username, password):
-        try:
-            import PAM
-            auth = PAM.pam()
-            auth.start('auth')
-            auth.set_item(PAM.PAM_USER, username)
-            auth.authenticate()
-        except PAM.error, resp:
-            raise SecurityException("Could not authenticate user.")
-        except:
-            raise SecurityException("Could not authenticate user.")
-
 def validate_key(fn):
     """
     Decorator to validate the given keys!
@@ -145,21 +127,6 @@ def authenticate(fn):
             print base64.b64decode(str)
         return fn(*args)
     return new
-#    
-#    auth = PAM.pam()
-#    auth.start(service)
-#    if user != None:
-#        auth.set_item(PAM.PAM_USER, user)
-#    auth.set_item(PAM.PAM_CONV, pam_conv)
-#    try:
-#        auth.authenticate()
-#        auth.acct_mgmt()
-#    except PAM.error, resp:
-#        print 'Go away! (%s)' % resp
-#    except:
-#        print 'Internal error'
-#    else:
-#        print 'Good to go!'
 
 class HTTPHandler(object):
     """

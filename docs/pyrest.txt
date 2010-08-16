@@ -158,42 +158,57 @@ extended to offer any kind of service.
 The following code demonstrates howto write your own backend and use the
 RESTful interface provided by pyrest::
 
-    from pyrest import service
-    from pyrest.service import NonPersistentResourceDictionary
-    from pyrest.rendering_parsers import Parser, HTTPHeaderParser
-    from pyrest.backends import Handler, JobHandler
+    from pyrest.service import ResourceHandler
+    import web
     
-    class MyParser(Parser):
-        """
-        Write your own parser to get the information from the HTTP messages.
-        """
-        pass
+    # 
+    # Configures web.py and tells him which handlers should listen to which 
+    # entry-point.
+    # 
+    urls = ('/(.*)', 'ResourceHandler')
     
-    class MyBackend(Handler):
-        """
-        Write your own backend.
-        """
-        pass
+    # 
+    # Turns debugging on of off - Default is False (off).
+    # 
+    web.config.debug = False
     
-    class MyStorage(dict):
-        """
-        Write your own (persistent) storage dictionary. 
-        """
-        pass
+    # 
+    # When using the build-in webserver of the web.py framework there is no need to
+    # change the following line. If the service is deployed in Apache using the
+    # mod_wsgi use the second line. Do not change the name of the attribute. Apache
+    # mod_wsgi will assume it is named application (lowercase).
+    # 
+    application = web.application(urls, globals())
+    #application = web.application(urls, globals()).wsgifunc()
     
-    if __name__ == '__main__':
-        # define which dictionary to use to store the resources.
-        # service.ResourceHandler.resources = MyStorage()
-        service.ResourceHandler.resources = NonPersistentResourceDictionary()
-        
-        # define which parser to use
-        # service.NonPersistentResourceDictionary.parser = MyParser()
-        service.NonPersistentResourceDictionary.parser = HTTPHeaderParser()
-        
-        # define a backend
-        # service.ResourceHandler.backend = MyHandler()
-        service.ResourceHandler.backend = JobHandler()
-        service.APPLICATION.run()
+    # 
+    # When using the build-in webserver with SSL enabled uncomment the following
+    # lines
+    # 
+    #from web.wsgiserver import CherryPyWSGIServer
+    #CherryPyWSGIServer.ssl_certificate = "<path to CA>/newcert.pem"
+    #CherryPyWSGIServer.ssl_private_key = "<path to CA>/newkey.pem"
+    
+    # 
+    # Tells the service tells the ResourceHandler which Storage, Backend and which
+    # Parser it should use.
+    #
+    #from <module> import <class>
+    #
+    # define storage
+    #ResourceHandler.resources = MyStorage()
+    #
+    # define parser
+    #MyStorage.parser = MyParser()
+    #
+    # define a backend
+    #ResourceHandler.backend = MyHandler()
+    
+    if __name__ == "__main__":
+        """
+        Finally run the application.
+        """
+        application.run()
 
 This code demonstrates how flexible the environment is. You can easily use the
 pyrest package to create a service which provides a IaaS, a PaaS or a SaaS. You
@@ -234,7 +249,7 @@ Add the following content to the file and edit the paths accordingly::
 
         SSLOptions +StdEnvVars
 
-        WSGIScriptAlias / /<path to your service>/service.py
+        WSGIScriptAlias / /<path to your service>/run.py
 
         ErrorLog /var/log/apache2/service.error.log
         CustomLog /var/log/apache2/service.log common
