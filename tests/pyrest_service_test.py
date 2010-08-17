@@ -20,9 +20,11 @@ Created on Jul 5, 2010
 
 @author: tmetsch
 '''
-from mocks import DummyBackend
-import pyrest.service as service
+from mocks import DummyBackend, SimpleSecurityHandler
 from pyrest.service import ResourceHandler
+import base64
+import pyrest.service as service
+import string
 import unittest
 import web
 
@@ -247,7 +249,61 @@ class QueryTests(unittest.TestCase):
     pass
 
 class SecurityTests(unittest.TestCase):
-    pass
+
+    # TODO: authorization...
+    # test if users only get his resources not those of other users
+    # test creation, then put by different user -> fail
+
+    heads = {'Category': 'compute;scheme="http://schemas.ogf.org/occi/resource#";label="Compute Resource"', 'Authorization': 'Basic ' + string.strip(base64.encodestring('foo' + ':' + 'ssf'))}
+    def_heads = {'Authorization': 'Basic ' + string.strip(base64.encodestring('foo' + ':' + 'asd'))}
+
+    def setUp(self):
+        service.authentication_enabled = True
+        service.security_handler = SimpleSecurityHandler()
+
+    # --------
+    # TEST FOR SUCCESS
+    # --------
+
+    def test_authenticate_for_success(self):
+        # test login
+        response = service.APPLICATION.request("/", method = "GET", headers = self.heads)
+        self.assertEquals(response.status, '200 OK')
+
+    # --------
+    # TEST FOR FAILURE
+    # --------
+
+    def test_authenticate_for_failure(self):
+        # auth enabled but no security handler...
+        service.security_handler = None
+        response = service.APPLICATION.request("/", method = "GET", headers = self.heads)
+        self.assertEquals(response.status, '401 Unauthorized')
+        service.security_handler = SimpleSecurityHandler()
+
+        # test wrong password
+        response = service.APPLICATION.request("/", method = "GET", headers = self.def_heads)
+        self.assertEquals(response.status, '401 Unauthorized')
+
+    # --------
+    # TEST FOR SANITY
+    # --------
+
+    def test_authenticate_for_sanity(self):
+        # test post, get, put and delete authentication for sanity...
+        # post
+        response = service.APPLICATION.request("/", method = "POST", headers = self.heads)
+        self.assertEquals(response.status, '200 OK')
+        loc = response.headers['Location']
+        # get
+        response = service.APPLICATION.request(loc, headers = self.heads)
+        self.assertEquals(response.status, '200 OK')
+        # put
+        response = service.APPLICATION.request(loc, method = "PUT", headers = self.heads, data = "bla")
+        self.assertEquals(response.status, '200 OK')
+        # delete
+        response = service.APPLICATION.request(loc, method = "DELETE", headers = self.heads)
+        self.assertEquals(response.status, '200 OK')
 
 if __name__ == "__main__":
     unittest.main()

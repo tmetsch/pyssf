@@ -29,7 +29,7 @@ setup(name = 'Service Sharing Facility',
       ext_package = 'pylsf',
       ext_modules = [Extension('_lsf', ['pylsf/lsf.i'],
                                include_dirs = ['/usr/include/python2.6'],
-                               library_dirs = ['/opt/lsf/7.0/linux2.6-glibc2.3-x86/lib'],
+                               library_dirs = ['/opt/lsf/7.0/linux2.6-glibc2.3-x86_64/lib'],
                                libraries = ['c', 'nsl', 'lsf', 'bat', 'fairshareadjust', 'lsbstream'])],
       py_modules = ['pylsf.lsf'],
      )

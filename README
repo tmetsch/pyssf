@@ -17,6 +17,7 @@ Needed to build and install SSF:
   * GCC
   * Platform LSF (>= 7.0.6) or Oracle Grid Engine (>= 6.2u5)
   * drmaa-python
+  * web.py
 
 For developing with SSF you can use:
 

@@ -93,12 +93,39 @@ class SecurityHandler(object):
     """
     A security handler.
     """
-    
+
     def authenticate(self, username, password):
         """
         Authenticate a user with it's password.
         """
         raise SecurityException("Could not authenticate user.")
+
+authentication_enabled = False
+security_handler = SecurityHandler()
+
+def authenticate(fn):
+    """
+    Authenticate the user.
+    """
+    def new(*args):
+        if authentication_enabled:
+            if security_handler is None:
+                return web.Unauthorized("Could not determine an security"
+                                        + "handler.")
+            try:
+                import base64
+                tmp = web.ctx.env['HTTP_AUTHORIZATION'].lstrip('Basic ')
+                credentials = base64.b64decode(tmp).split(':')
+                username = credentials[0]
+                password = credentials[1]
+                security_handler.authenticate(username, password)
+            except BaseException:
+                return web.Unauthorized()
+            else:
+                return fn(*args)
+        else:
+            return fn(*args)
+    return new
 
 def validate_key(fn):
     """
@@ -108,23 +135,6 @@ def validate_key(fn):
     def new(*args):
         if VALID_KEY.match(args[1]) is None:
             web.BadRequest(), 'Invalid key provided!'
-        return fn(*args)
-    return new
-
-def authenticate(fn):
-    """
-    Authenticate the user.
-    """
-    import base64
-    
-    def new(*args):
-        try:
-            print web.ctx.protocol
-            str = web.ctx.env['HTTP_AUTHORIZATION'].lstrip('Basic ')
-        except:
-            pass
-        else:
-            print base64.b64decode(str)
         return fn(*args)
     return new
 
@@ -173,6 +183,7 @@ class HTTPHandler(object):
             return web.NotFound("Couldn't create sub resource of non-existing"
                                 + "resource.")
 
+    @authenticate
     @validate_key
     def GET(self, name, *data):
         """
@@ -207,6 +218,7 @@ class HTTPHandler(object):
             else:
                 return web.NotFound()
 
+    @authenticate
     @validate_key
     def PUT(self, name = None, *data):
         """
@@ -236,6 +248,7 @@ class HTTPHandler(object):
                 web.OK()
                 return 'OK'
 
+    @authenticate
     @validate_key
     def DELETE(self, name):
         """

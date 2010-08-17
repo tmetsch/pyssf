@@ -54,8 +54,8 @@ application = web.application(urls, globals())
 #CherryPyWSGIServer.ssl_private_key = "<path to CA>/newkey.pem"
 
 # 
-# Tells the service tells the ResourceHandler which Storage, Backend and which
-# Parser it should use.
+# Tells the ResourceHandler which Storage, Backend and which Parser it should
+# use.
 #
 #from <module> import <class>
 #

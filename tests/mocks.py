@@ -21,8 +21,9 @@ Created on Jul 20, 2010
 @author: tmetsch
 '''
 from pyrest.backends import Handler
-from pyrest.myexceptions import MissingActionException
+from pyrest.myexceptions import MissingActionException, SecurityException
 from pyrest.resource_model import Link
+from pyrest.service import SecurityHandler
 
 class DummyBackend(Handler):
 
@@ -49,3 +50,16 @@ class DummyBackend(Handler):
         else:
             raise MissingActionException('Non existing action called!')
 
+class SimpleSecurityHandler(SecurityHandler):
+    """
+    Simple mock security handler which can authenticate & authorize users 'foo'
+    and 'bar' with the password 'ssf'.
+    """
+
+    users = {'foo':'ssf', 'bar':'ssf'}
+
+    def authenticate(self, username, password):
+        if self.users.has_key(username) and self.users[username] == password:
+            pass
+        else:
+            raise SecurityException()
