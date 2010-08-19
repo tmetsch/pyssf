@@ -1,9 +1,11 @@
 syntax: glob
 
 docs/_build
+docs/cover
 build/*
 dist/*
 *html/*
+.coverage
 .settings/*
 web*
 pylsf/lsf.py

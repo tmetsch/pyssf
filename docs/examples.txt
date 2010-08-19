@@ -1,0 +1,69 @@
+.. 
+   Copyright (C) 2010 Platform Computing
+   
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+   
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+   
+   You should have received a copy of the GNU Lesser General Public
+   License along with this library; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+   
+
+Examples of how to use SSF
+==========================
+
+The following examples demonstrate how the SSF modules can be used individually
+or in conjunction. These examples just demonstrate how SSF can be used in
+different setups. The examples are for demonstration purposes only - they do
+not strive to be complete or perfectly pythonic.
+
+Using the pyrest module
+-----------------------
+
+The following sections describe some possible use case setups for the pyrest
+module.
+
+Using pyrest for Job submission with SSL and Basic Authentication
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following code can be used to realize a RESTful interface for job
+submission using the pyrest module. It uses the internal CherryPy web server::
+
+    from pyrest import service, myexceptions
+    from pyrest.service import ResourceHandler
+    from pyrest.service import SecurityHandler
+    import web
+    
+    # setup the service
+    urls = ('/(.*)', 'ResourceHandler')
+    web.config.debug = False
+    application = web.application(urls, globals())
+    
+    # enable SSL
+    from web.wsgiserver import CherryPyWSGIServer
+    CherryPyWSGIServer.ssl_certificate = "<path to ca>/newcert.pem"
+    CherryPyWSGIServer.ssl_private_key = "<path to ca>/newkey.pem"
+    
+    # create a very simple security handler
+    class SimpleSecurityHandler(SecurityHandler):
+        
+        def authenticate(self, username, password):
+            if username == 'foo' and password == 'bar':
+                pass
+            else:
+                raise myexceptions.SecurityException()
+    
+    # activate authentication
+    service.authentication_enabled = True
+    service.security_handler = SimpleSecurityHandler()
+    
+    # run...
+    if __name__ == "__main__":
+        application.run()

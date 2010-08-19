@@ -52,5 +52,6 @@ Contents:
    pylsf.txt
    pyrest.txt
    pyssf.txt
+   examples.txt
 
 * :ref:`search`
