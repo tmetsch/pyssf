@@ -111,45 +111,6 @@ Also the following links/actions can be used to manipulate the job:
     <id>;terminate       Terminate a running job        
     ===================  ===============================
 
-Using the Service
------------------
-You can easily start the service using the following command::
-
-    python service.py
-
-This will start the service listening on the default post 8080. For testing
-and development purposes this will do. This will start the internal web server
-coming along with web.py. If you plan to deploy the service to others read the
-documentation provide in the web.py documentation [DOC]_.
-
-.. note::
-    If you want the service to run on another port simple provide the port
-    number as a command line parameter.
-
-Now you can access the RESTful service from basically everywhere using anything
-. For example you can use your web browser or use the python httplib2 package.
-Other programming languages have similar libraries: libcurl for C,
-URLConnection for Java, etc. This is transparent to the user and no
-knowledge/API/properitary interface to the underlying systems needs to be
-provided/used.
-
-A simple python program to submit a job would look like::
-
-    import httplib2
-    h = httplib2.Http()
-    
-    # create HTTP headers with the right category (mandatory field ) and attributes
-    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 
-             'occi.drmaa.remote_command': '/bin/sleep', 'occi.drmaa.args': '10'}
-    response = h.request('http://localhost:8080/','POST', headers=heads)
-    
-    # get the URL of the newly created resource...
-    url = str(response)[str(response).find('location') + 12:]
-    url = 'http://localhost:8080' + url[:url.find(',') - 1]
-    
-    # and delete it
-    h.request(url,'DELETE')
-
 Writing your own service using pyrest
 --------------------------------------
 By default the pyrest module supports job submission. But it can easily be
@@ -214,6 +175,13 @@ This code demonstrates how flexible the environment is. You can easily use the
 pyrest package to create a service which provides a IaaS, a PaaS or a SaaS. You
 can overwrite the Parser, the backend and the storage used.
 
+.. note::
+    If you want the service to run on another port simple provide the port
+    number as a command line parameter.
+
+If you plan to deploy the service to others read the documentation provide in
+the web.py documentation [DOC]_.
+
 Deploy the service in a PKI secured environment
 -----------------------------------------------
 If you want to deploy the service in a PKI (X509 certificates) secured
@@ -256,28 +224,9 @@ Add the following content to the file and edit the paths accordingly::
     </VirtualHost>
 
 .. note::
-    Normally the Python Path of the application to the destination folder after
-    a *python setup.py build* run in the root directory of SSF.
-
-When using pydrmaa with LSF
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To setup LSF in in such an environment you need to edit 
-*/etc/ld.so.conf.d/lsf.conf* and add the value of the $LSF_LIBDIR environment
-variable to this file. Finally run the **ldconfig** command.
-
-In the next step you need to symbolically link lsf.conf to /etc/lsf.conf.
-Therefore do a **ln -s <path to lsf>/conf/lsf.conf /etc/**
-
-Some variables need to be added to the lsf.conf file::
-
-    LSF_BINDIR=<path to lsf>/7.0/linux2.6-glibc2.3-x86_64/bin
-    LSF_ENVDIR=<path to lsf>/conf
-    LSF_LIBDIR=<path to lsf>/7.0/linux2.6-glibc2.3-x86_64/lib
-    LSF_SERVERDIR=<path to lsf>/7.0/linux2.6-glibc2.3-x86_64/etc
-
-.. note::
-    MAke sure that you update the paths according to the platform architecture
-    you run.
+    Normally the Python Path should be set to the ouput folder of a *python
+    setup.py build* or *python setup.py install* run in the root directory of
+    SSF.
 
 Setup a simple CA
 ^^^^^^^^^^^^^^^^^
@@ -298,32 +247,6 @@ To setup an simple CA for managing the X509 certificates do the following::
     /usr/lib/ssl/misc/CA.pl -newreq
     /usr/lib/ssl/misc/CA.pl -sign
     mkdir user1 && mv new* user1/
-
-A simple client using the previous described setup
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-This is a simple client using the httplib library::
-
-    import httplib
-    
-    KEYFILE = '<path to key>/newkey.pem'
-    CERTFILE = '<path to cert>/newcert.pem'
-    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#"',
-         'occi.drmaa.remote_command':'/bin/sleep',
-         'occi.drmaa.args':'10'}
-    
-    conn = httplib.HTTPSConnection('localhost', 81, key_file = KEYFILE,
-    cert_file = CERTFILE)
-    
-    conn.request("POST", "/", headers = heads)
-    r1 = conn.getresponse()
-    url = r1.getheader('Location')
-    print r1.status, r1.reason, r1.getheader('Location'), r1.read()
-    
-    conn.request("GET", url)
-    r2 = conn.getresponse()
-    print r2.status, r2.reason, r2.getheaders(), r2.read()
-    
-    conn.close()
 
 .. [OCCI] OCCI website - http://www.occi-wg.org
 .. [web.py] web.py website - http://webpy.org

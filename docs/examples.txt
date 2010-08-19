@@ -18,21 +18,37 @@
 
 Examples of how to use SSF
 ==========================
-
 The following examples demonstrate how the SSF modules can be used individually
 or in conjunction. These examples just demonstrate how SSF can be used in
 different setups. The examples are for demonstration purposes only - they do
 not strive to be complete or perfectly pythonic.
 
-Using the pyrest module
------------------------
-
+Using the pyrest module (job submission)
+----------------------------------------
 The following sections describe some possible use case setups for the pyrest
-module.
+module. All use the default ResourceHandler, Storage and Backend and therefore
+feature only job submissions.
 
-Using pyrest for Job submission with SSL and Basic Authentication
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Using pyrest without SSL or authentication
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The following code demonstrates how to setup pyrest in the easiest possible
+way::
 
+    from pyrest import service
+    from pyrest.service import ResourceHandler
+    import web
+    
+    # setup the service
+    urls = ('/(.*)', 'ResourceHandler')
+    web.config.debug = False
+    application = web.application(urls, globals())
+    
+    # run...
+    if __name__ == "__main__":
+        application.run()
+
+Using pyrest with SSL and basic Authentication
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The following code can be used to realize a RESTful interface for job
 submission using the pyrest module. It uses the internal CherryPy web server::
 
@@ -67,3 +83,118 @@ submission using the pyrest module. It uses the internal CherryPy web server::
     # run...
     if __name__ == "__main__":
         application.run()
+
+Using pyrest in a PKI secured environment
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This example assumes that you have deployed pyrest using mod_wsgi on Apache. To
+use pyrest in this setup use the following script (which is configures in your
+Apache site configuration)::
+
+    from pyrest import service
+    from pyrest.service import ResourceHandler
+    import web
+    
+    # setup the service
+    urls = ('/(.*)', 'ResourceHandler')
+    web.config.debug = False
+    application = web.application(urls, globals()).wsgifunc()
+
+.. note::
+    See the slightly different application assigment with the wsgifunc() call
+    added. Also note that no security feature need to be enabled, since Apache
+    handles those.
+
+Clients for pyrest (job submission)
+-----------------------------------
+
+A simple pyrest client (without SSL or authentication)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Now you can access the RESTful service from basically everywhere using anything
+. For example you can use your web browser or use the python httplib2 package.
+Other programming languages have similar libraries: libcurl for C,
+URLConnection for Java, etc. This is transparent to the user and no
+knowledge/API/proprietary interface to the underlying systems needs to be
+provided/used.
+
+A simple python program to submit a job would look like::
+
+    import httplib2
+    h = httplib2.Http()
+    
+    # create HTTP headers with the right category (mandatory field ) and attributes
+    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 
+             'occi.drmaa.remote_command': '/bin/sleep', 
+             'occi.drmaa.args': '10'}
+    response = h.request('http://localhost:8080/','POST', headers=heads)
+    
+    # get the URL of the newly created resource...
+    url = str(response)[str(response).find('location') + 12:]
+    url = 'http://localhost:8080' + url[:url.find(',') - 1]
+    
+    # and delete it
+    h.request(url,'DELETE')
+
+A pyrest client using SSL and basic authentication
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+A simple client which corresponds to the setup described above::
+
+    import httplib
+    import base64
+    import string
+    
+    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#"',
+             'occi.drmaa.remote_command':'/bin/sleep',
+             'occi.drmaa.args':'10',
+             'Authorization': 'Basic ' + string.strip(base64.encodestring('foo' + ':' + 'bar')) }
+    
+    # setup SSL connection
+    conn = httplib.HTTPSConnection('localhost', 8080)
+                                   #, key_file = KEYFILE,cert_file = CERTFILE)
+    
+    # create a resource
+    conn.request("POST", "/", headers = heads)
+    r1 = conn.getresponse()
+    url = r1.getheader('Location')
+    print r1.status, r1.reason, r1.getheader('Location'), r1.read()
+    
+    # and get it
+    conn.request("GET", url, headers={'Authorization': 'Basic ' + string.strip(base64.encodestring('foo' + ':' + 'bar'))})
+    r2 = conn.getresponse()
+    print r2.status, r2.reason, r2.getheaders(), r2.read()
+    
+    conn.close()
+
+A pyrest client which uses X590 certificates
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This is a simple client using the httplib library::
+
+    import httplib
+    
+    KEYFILE = '<path to key>/newkey.pem'
+    CERTFILE = '<path to cert>/newcert.pem'
+    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#"',
+         'occi.drmaa.remote_command':'/bin/sleep',
+         'occi.drmaa.args':'10'}
+    
+    # create a PKI secured connection
+    conn = httplib.HTTPSConnection('localhost', 81, key_file = KEYFILE, cert_file = CERTFILE)
+    
+    # create a resource
+    conn.request("POST", "/", headers = heads)
+    r1 = conn.getresponse()
+    url = r1.getheader('Location')
+    print r1.status, r1.reason, r1.getheader('Location'), r1.read()
+    
+    # and get the resource
+    conn.request("GET", url)
+    r2 = conn.getresponse()
+    print r2.status, r2.reason, r2.getheaders(), r2.read()
+    
+    conn.close()
+
+Using the pyrest module (customized backend)
+--------------------------------------------
+The following code examples demonstrates how to configure the ResourceHandler
+to use a different backend. The backend described here will uses VirtualBox. So
+the pyrest module basically becomes a RESTful Cloud Computing interface for
+Virtual Machine management (IaaS).

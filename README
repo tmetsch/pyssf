@@ -15,7 +15,8 @@ Needed to build and install SSF:
   * Swig
   * Python (> 2.6) with distutils
   * GCC
-  * Platform LSF (>= 7.0.6) or Oracle Grid Engine (>= 6.2u5)
+  * Platform LSF (>= 7.0.6) (with lsf-drmaa (>=1.0.3 installed)) or 
+    Oracle Grid Engine (>= 6.2u5)
   * drmaa-python
   * web.py
 
@@ -24,7 +25,7 @@ For developing with SSF you can use:
   * Sphinx for building documents (python-sphinx)
   * Eclipse with PyDev for coding
   * Nosetest for easy unit testing (python-nose)
-  * Firefox to view the kanban board (misc/platform_ssf_kanban.html)
+  * Firefox to view the kanban board (misc/spa_pyssf_kanban.html)
   * make to build standalone documentation and pylsf shared library
 
 TECHNICAL NOTES

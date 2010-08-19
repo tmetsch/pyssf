@@ -19,12 +19,6 @@
 Welcome to Service Sharing Facility's documentation!
 ====================================================
 
-:Release: |version|
-:Date: |today|
-
-.. image:: images/pyssf_logo.png
-   :alt: Service Sharing Facility logo
-
 .. note::
     This is still work in progress. For more information and tracking the
     ongoing developement go to http://sourceforge.net/projects/pyssf/
@@ -43,15 +37,18 @@ Features:
  * Negotiation and federation of services between Grids/Clouds/Clusters
  * Integration point to integrate your products with Grids/Clouds/Clusters
 
+This page was updated: |today|
+
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
+   :numbered:
    
+   examples.txt
    pydrmaa.txt
    pylsf.txt
    pyrest.txt
    pyssf.txt
-   examples.txt
 
 * :ref:`search`
