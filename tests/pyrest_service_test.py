@@ -250,12 +250,17 @@ class QueryTests(unittest.TestCase):
 
 class SecurityTests(unittest.TestCase):
 
-    # TODO: authorization...
-    # test if users only get his resources not those of other users
-    # test creation, then put by different user -> fail
+    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep', 'Authorization': 'Basic ' + string.strip(base64.encodestring('foo' + ':' + 'ssf'))}
+    heads2 = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep', 'Authorization': 'Basic ' + string.strip(base64.encodestring('bar' + ':' + 'ssf'))}
 
-    heads = {'Category': 'compute;scheme="http://schemas.ogf.org/occi/resource#";label="Compute Resource"', 'Authorization': 'Basic ' + string.strip(base64.encodestring('foo' + ':' + 'ssf'))}
+    heads_apache = heads.copy()
+    heads_apache.pop("Authorization")
+    heads_apache['SSL_CLIENT_CERT_DN'] = '/C=DE/L=Munich/O=Sun/OU=Staff/CN=Foo'
+    heads_apache2 = heads_apache.copy()
+    heads_apache2['SSL_CLIENT_CERT_DN'] = '/C=DE/L=Munich/O=Sun/OU=Staff/CN=Bar'
+
     def_heads = {'Authorization': 'Basic ' + string.strip(base64.encodestring('foo' + ':' + 'asd'))}
+    def_heads2 = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep'}
 
     def setUp(self):
         service.authentication_enabled = True
@@ -268,6 +273,34 @@ class SecurityTests(unittest.TestCase):
     def test_authenticate_for_success(self):
         # test login
         response = service.APPLICATION.request("/", method = "GET", headers = self.heads)
+        self.assertEquals(response.status, '200 OK')
+
+    def test_authorization_for_success(self):
+        response = service.APPLICATION.request("/", method = "POST", headers = self.heads)
+        self.assertEquals(response.status, '200 OK')
+        url = response.headers['Location']
+        response = service.APPLICATION.request(url, method = "GET", headers = self.heads)
+        self.assertEquals(response.status, '200 OK')
+
+        tmp = response.headers['Link'].split(',').pop()
+        action_url = tmp[tmp.find('<') + 1:tmp.find('>')]
+        response = service.APPLICATION.request(action_url, method = "POST", headers = self.heads)
+        self.assertEquals(response.status, '200 OK')
+
+        response = service.APPLICATION.request(url, method = "PUT", headers = self.heads)
+        self.assertEquals(response.status, '200 OK')
+        response = service.APPLICATION.request(url, method = "DELETE", headers = self.heads)
+        self.assertEquals(response.status, '200 OK')
+
+        # PKI cert & mod_wsgi testing...
+        response = service.APPLICATION.request("/", method = "POST", headers = self.heads_apache)
+        self.assertEquals(response.status, '200 OK')
+        url = response.headers['Location']
+        response = service.APPLICATION.request(url, method = "GET", headers = self.heads_apache)
+        self.assertEquals(response.status, '200 OK')
+        response = service.APPLICATION.request(url, method = "PUT", headers = self.heads_apache)
+        self.assertEquals(response.status, '200 OK')
+        response = service.APPLICATION.request(url, method = "DELETE", headers = self.heads_apache)
         self.assertEquals(response.status, '200 OK')
 
     # --------
@@ -283,6 +316,39 @@ class SecurityTests(unittest.TestCase):
 
         # test wrong password
         response = service.APPLICATION.request("/", method = "GET", headers = self.def_heads)
+        self.assertEquals(response.status, '401 Unauthorized')
+
+    def test_authorization_for_failure(self):
+        response = service.APPLICATION.request("/", method = "POST", headers = self.heads)
+        self.assertEquals(response.status, '200 OK')
+        url = response.headers['Location']
+
+        response = service.APPLICATION.request(url, method = "GET", headers = self.heads)
+        tmp = response.headers['Link'].split(',').pop()
+        action_url = tmp[tmp.find('<') + 1:tmp.find('>')]
+        response = service.APPLICATION.request(action_url, method = "POST", headers = self.heads2)
+        self.assertEquals(response.status, '401 Unauthorized')
+
+        response = service.APPLICATION.request(url, method = "GET", headers = self.heads2)
+        self.assertEquals(response.status, '401 Unauthorized')
+        response = service.APPLICATION.request(url, method = "PUT", headers = self.heads2)
+        self.assertEquals(response.status, '401 Unauthorized')
+        response = service.APPLICATION.request(url, method = "DELETE", headers = self.heads2)
+        self.assertEquals(response.status, '401 Unauthorized')
+
+        # PKI cert & mod_wsgi testing...
+        response = service.APPLICATION.request("/", method = "POST", headers = self.heads_apache)
+        self.assertEquals(response.status, '200 OK')
+        url = response.headers['Location']
+        response = service.APPLICATION.request(url, method = "GET", headers = self.heads_apache2)
+        self.assertEquals(response.status, '401 Unauthorized')
+        response = service.APPLICATION.request(url, method = "PUT", headers = self.heads_apache2)
+        self.assertEquals(response.status, '401 Unauthorized')
+        response = service.APPLICATION.request(url, method = "DELETE", headers = self.heads_apache2)
+        self.assertEquals(response.status, '401 Unauthorized')
+
+        # auth enabled but no user info
+        response = service.APPLICATION.request("/", method = "POST", headers = self.def_heads2)
         self.assertEquals(response.status, '401 Unauthorized')
 
     # --------
@@ -304,6 +370,10 @@ class SecurityTests(unittest.TestCase):
         # delete
         response = service.APPLICATION.request(loc, method = "DELETE", headers = self.heads)
         self.assertEquals(response.status, '200 OK')
+
+    def test_authorization_for_sanity(self):
+        # done on server side - no chances to check it here...
+        pass
 
 if __name__ == "__main__":
     unittest.main()

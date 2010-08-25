@@ -100,42 +100,55 @@ class SecurityHandler(object):
         """
         raise SecurityException("Could not authenticate user.")
 
+    def authorize(self, username, resource):
+        if not username == resource.user:
+            raise SecurityException("Not authorized.")
+
 authentication_enabled = False
 security_handler = SecurityHandler()
 
-def authenticate(fn):
+def authenticate(target):
     """
     Authenticate the user.
     """
-    def new(*args):
+    def wrapper(*args, **kwargs):
         if authentication_enabled:
             if security_handler is None:
                 return web.Unauthorized("Could not determine an security"
                                         + "handler.")
             try:
-                import base64
-                tmp = web.ctx.env['HTTP_AUTHORIZATION'].lstrip('Basic ')
-                credentials = base64.b64decode(tmp).split(':')
-                username = credentials[0]
-                password = credentials[1]
-                security_handler.authenticate(username, password)
+                if 'HTTP_AUTHORIZATION' in web.ctx.env:
+                    # when using basic oAuth.
+                    import base64
+                    tmp = web.ctx.env['HTTP_AUTHORIZATION'].lstrip('Basic ')
+                    credentials = base64.b64decode(tmp).split(':')
+                    username = credentials[0]
+                    password = credentials[1]
+                    security_handler.authenticate(username, password)
+                elif 'HTTP_SSL_CLIENT_CERT_DN' in web.ctx.env:
+                    # when using Apache mod_wsgi
+                    username = web.ctx.env['HTTP_SSL_CLIENT_CERT_DN'].strip()
+                else:
+                    raise SecurityException("Could not find user information.")
             except BaseException:
                 return web.Unauthorized()
             else:
-                return fn(*args)
+                kwargs.update({'username': username})
+                return target(*args, **kwargs)
         else:
-            return fn(*args)
-    return new
+            return target(*args)
+
+    return wrapper
 
 def validate_key(fn):
     """
     Decorator to validate the given keys!
     """
     VALID_KEY = re.compile('[a-z0-9-/]*')
-    def new(*args):
+    def new(*args, **kwargs):
         if VALID_KEY.match(args[1]) is None:
             web.BadRequest(), 'Invalid key provided!'
-        return fn(*args)
+        return fn(*args, **kwargs)
     return new
 
 class HTTPHandler(object):
@@ -146,7 +159,7 @@ class HTTPHandler(object):
 
     @authenticate
     @validate_key
-    def POST(self, name, *data):
+    def POST(self, name, username = "default", *data):
         """
         Handles the POST request - triggers creation of a resource. Will
         return a location of the newly created resource.
@@ -160,13 +173,15 @@ class HTTPHandler(object):
             key = web.ctx.env['PATH_INFO'][1:index]
             actionclass = web.ctx.env['PATH_INFO'][index + 1:]
             try:
-                self.trigger_action(key, actionclass)
+                self.trigger_action(key, actionclass, username)
                 web.OK()
                 return 'OK'
             except (StateException, MissingActionException) as ex:
                 return web.BadRequest(), str(ex)
             except KeyError:
                 return web.NotFound()
+            except SecurityException as se:
+                return web.Unauthorized(), str(se)
 
         # create a new sub resource
         request = HTTPData(web.ctx.env, web.data())
@@ -174,7 +189,7 @@ class HTTPHandler(object):
         if self.resource_exists(name) is True:
             try:
                 name += str(uuid.uuid4())
-                self.create_resource(str(name), request)
+                self.create_resource(str(name), request, username)
                 web.header("Location", "/" + str(name))
                 return 'OK'
             except (MissingCategoriesException, MissingAttributesException) as ex:
@@ -185,7 +200,7 @@ class HTTPHandler(object):
 
     @authenticate
     @validate_key
-    def GET(self, name, *data):
+    def GET(self, name, username = 'default', * data):
         """
         Handles the GET request - triggers the service to return information.
         
@@ -198,12 +213,15 @@ class HTTPHandler(object):
         except:
             request = HTTPData(web.ctx.env, None)
         name = str(name)
+
         try:
-            tmp = self.return_resource(name, request)
+            tmp = self.return_resource(name, request, username)
         except KeyError:
             return web.NotFound()
         except MissingAttributesException as mae:
             return web.BadRequest(), str(mae)
+        except SecurityException as se:
+            return web.Unauthorized(), str(se)
         else:
             # following is uncool!
             if isinstance(tmp, str):
@@ -220,7 +238,7 @@ class HTTPHandler(object):
 
     @authenticate
     @validate_key
-    def PUT(self, name = None, *data):
+    def PUT(self, name = None, username = "default", *data):
         """
         Handles the PUT request - triggers either the creation or updates a 
         resource.
@@ -233,15 +251,17 @@ class HTTPHandler(object):
         name = str(name)
         if self.resource_exists(name) is True:
             try:
-                self.update_resource(name, request)
+                self.update_resource(name, request, username)
             except MissingCategoriesException as mce:
                 return web.BadRequest(), str(mce)
+            except SecurityException as se:
+                return web.Unauthorized(), str(se)
             else:
                 web.OK()
                 return 'OK'
         else:
             try:
-                self.create_resource(name, request)
+                self.create_resource(name, request, username)
             except (MissingCategoriesException, MissingAttributesException) as ex:
                 return web.BadRequest(), str(ex)
             else:
@@ -250,7 +270,7 @@ class HTTPHandler(object):
 
     @authenticate
     @validate_key
-    def DELETE(self, name):
+    def DELETE(self, name, username = "default"):
         """
         Handles the DELETE request.
         
@@ -259,11 +279,13 @@ class HTTPHandler(object):
         # delete a resource representation
         if self.resource_exists(name):
             try:
-                self.delete_resource(str(name))
+                self.delete_resource(str(name), username)
             except KeyError:
                 return web.NotFound()
             except MissingAttributesException as mae:
                 return web.InternalError(str(mae))
+            except SecurityException as se:
+                return web.Unauthorized(), str(se)
             else:
                 web.OK()
                 return 'OK'
@@ -282,7 +304,7 @@ class ResourceHandler(HTTPHandler):
     resources = NonPersistentResourceDictionary()
     backend = JobHandler()
 
-    def create_resource(self, key, data):
+    def create_resource(self, key, data, username):
         """
         Creates a resource.
         
@@ -291,12 +313,13 @@ class ResourceHandler(HTTPHandler):
         """
         try:
             self.resources[key] = data
+            self.resources.get_resource(key).user = username
             # trigger backend to do his magic
             self.backend.create(self.resources.get_resource(key))
         except (MissingCategoriesException, MissingAttributesException):
             raise
 
-    def return_resource(self, key, data):
+    def return_resource(self, key, data, username):
         """
         Returns a resource.
         
@@ -310,13 +333,14 @@ class ResourceHandler(HTTPHandler):
             try:
                 # trigger backend to get resource
                 res = self.resources.get_resource(key)
+                security_handler.authorize(username, res)
                 self.backend.retrieve(res)
                 res = self.resources[key]
                 return res
-            except (KeyError, MissingAttributesException):
+            except (KeyError, MissingAttributesException, SecurityException):
                 raise
 
-    def update_resource(self, key, data):
+    def update_resource(self, key, data, username):
         """
         Updates a resource.
         
@@ -329,11 +353,12 @@ class ResourceHandler(HTTPHandler):
         try:
             #self.resources[key] = data
             res = self.resources.get_resource(key)
+            security_handler.authorize(username, res)
             self.backend.retrieve(res)
-        except (KeyError, MissingAttributesException):
+        except (KeyError, MissingAttributesException, SecurityException):
             raise
 
-    def delete_resource(self, key):
+    def delete_resource(self, key, username):
         """
         Deletes a resource.
         
@@ -342,9 +367,10 @@ class ResourceHandler(HTTPHandler):
         try:
             # trigger backend to delete
             res = self.resources.get_resource(key)
+            security_handler.authorize(username, res)
             self.backend.delete(res)
             del(self.resources[key])
-        except (KeyError, MissingAttributesException):
+        except (KeyError, MissingAttributesException, SecurityException):
             raise
 
     def resource_exists(self, key):
@@ -358,7 +384,7 @@ class ResourceHandler(HTTPHandler):
         else:
             return False
 
-    def trigger_action(self, key, name):
+    def trigger_action(self, key, name, username):
         """
         Trigger an action in the backend system. Backend should update state
         and links if needed.
@@ -367,7 +393,8 @@ class ResourceHandler(HTTPHandler):
         name -- name of the action.
         """
         try:
-            resource = self.resources.get_resource(key)
-            self.backend.action(resource, name)
-        except (KeyError, MissingActionException, StateException):
+            res = self.resources.get_resource(key)
+            security_handler.authorize(username, res)
+            self.backend.action(res, name)
+        except (KeyError, MissingActionException, StateException, SecurityException):
             raise

@@ -56,7 +56,7 @@ class SimpleSecurityHandler(SecurityHandler):
     and 'bar' with the password 'ssf'.
     """
 
-    users = {'foo':'ssf', 'bar':'ssf'}
+    users = {'foo':'ssf', 'bar':'ssf', '/C=DE/L=Munich/O=Sun/OU=Staff/CN=Foo': '', '/C=DE/L=Munich/O=Sun/OU=Staff/CN=Bar':''}
 
     def authenticate(self, username, password):
         if self.users.has_key(username) and self.users[username] == password:

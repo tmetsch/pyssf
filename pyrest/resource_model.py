@@ -39,6 +39,8 @@ class Resource(object):
         """This is a set of associated Links with resource (Multiplicity 0..n)"""
         self.data = ''
         """Data which was initially provided by the client in the body."""
+        self.user = 'default'
+        """The owner of this resource"""
 
     def get_action_links(self):
         """
