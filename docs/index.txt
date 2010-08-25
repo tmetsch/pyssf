@@ -37,8 +37,6 @@ Features:
  * Negotiation and federation of services between Grids/Clouds/Clusters
  * Integration point to integrate your products with Grids/Clouds/Clusters
 
-This page was updated: |today|
-
 Contents:
 
 .. toctree::
@@ -51,4 +49,8 @@ Contents:
    pyrest.txt
    pyssf.txt
 
+* `Coverage report <cover/index.html>`_
+
 * :ref:`search`
+
+

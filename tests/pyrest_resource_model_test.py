@@ -23,7 +23,7 @@ Created on Jul 12, 2010
 from pyrest.resource_model import Link, Resource, Category
 import unittest
 
-class ActionLinkTest(unittest.TestCase):
+class BasicTests(unittest.TestCase):
 
     # --------
     # TEST FOR SUCCESS
@@ -47,6 +47,13 @@ class ActionLinkTest(unittest.TestCase):
         res = resource.get_certain_categories('job')
         self.assertEquals(res[0].scheme, 'http://schemas.ogf.org/occi/resource#')
 
+    def test_cmp_for_success(self):
+        resource1 = Resource()
+        resource1.id = 'foo'
+        resource2 = Resource()
+        resource2.id = 'foo'
+        self.assertTrue(resource1.__cmp__(resource2))
+
     # --------
     # TEST FOR FAILUTE
     # --------
@@ -62,6 +69,13 @@ class ActionLinkTest(unittest.TestCase):
     def test_get_certain_categories_for_failure(self):
         # ???
         pass
+
+    def test_cmp_for_failure(self):
+        resource1 = Resource()
+        resource1.id = 'foo'
+        resource2 = Resource()
+        resource2.id = 'bar'
+        self.assertFalse(resource1.__cmp__(resource2))
 
     # --------
     # TEST FOR SANITY
