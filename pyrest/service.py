@@ -101,6 +101,10 @@ class SecurityHandler(object):
         raise SecurityException("Could not authenticate user.")
 
     def authorize(self, username, resource):
+        """
+        Very basic authorization which only assures that users do not
+        interfere with each other.
+        """
         if not username == resource.user:
             raise SecurityException("Not authorized.")
 

@@ -51,6 +51,8 @@ Contents:
 
 * `Coverage report <cover/index.html>`_
 
+* `API documentation <api/index.html>`_
+
 * :ref:`search`
 
 
