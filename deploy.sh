@@ -54,13 +54,15 @@ case "$1" in
     ;;
 
   deploy)
-    $0 build
-    $0 doc
+    #$0 build
+    #$0 doc
 	hg commit
     xmessage "Password required"
 	hg push
 	xmessage "Password required"
-    scp -r docs/_build/html/* $USERNAME,pyssf@web.sf.net:/home/groups/p/py/pyssf/htdocs
+    echo $USERNAME
+	echo $USER
+	scp -r docs/_build/html/* $USERNAME,pyssf@web.sf.net:/home/groups/p/py/pyssf/htdocs
     ;;
 
   *)

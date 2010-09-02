@@ -15,18 +15,30 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 # 
+from pyrest.myexceptions import SecurityException
 '''
 Created on Jul 5, 2010
 
 @author: tmetsch
 '''
-from mocks import DummyBackend, SimpleSecurityHandler
+from mocks import DummyBackend, SecurityHandler, SimpleSecurityHandler
 from pyrest.service import ResourceHandler
 import base64
 import pyrest.service as service
 import string
 import unittest
 import web
+
+class AbstractClassTests(unittest.TestCase):
+
+    sh = SecurityHandler()
+
+    # --------
+    # TEST FOR FAILURE
+    # --------
+
+    def test_if_not_implemeted_is_raised(self):
+        self.assertRaises(SecurityException, self.sh.authenticate, '', '')
 
 class ResourceCreationTests(unittest.TestCase):
 

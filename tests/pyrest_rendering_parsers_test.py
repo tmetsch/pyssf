@@ -45,7 +45,7 @@ class HTTPHeaderParserTest(unittest.TestCase):
     parser = HTTPHeaderParser()
     # a correct request
     correct_header = {'CONTENT_LENGTH': 0,
-              'HTTP_CATEGORY': 'compute;scheme="http://schemas.ogf.org/occi/resource#";label="Compute Resource", myimage;scheme="http://example.com/user/categories/templates#";',
+              'HTTP_CATEGORY': 'compute;scheme="http://schemas.ogf.org/occi/resource#";title="FooBar";label="Compute Resource", myimage;scheme="http://example.com/user/categories/templates#";',
               'wsgi.input': '' ,
               'REQUEST_METHOD': 'POST',
               'HTTP_HOST': '0.0.0.0:8080',
@@ -76,7 +76,7 @@ class HTTPHeaderParserTest(unittest.TestCase):
         self.category_two.scheme = 'http://example.com/user/categories/templates#'
         self.category_two.term = 'myimage'
         self.category_two.title = ''
-        self.category_three.related = ''
+        self.category_three.related = 'http://www.google.com'
         self.category_three.scheme = 'http://schemas.ogf.org/occi/resource#'
         self.category_three.term = 'job'
         self.category_three.title = ''
