@@ -24,6 +24,18 @@ from pydrmaa.job import JobFactory, Job, LSFJob, DRMAAJob
 import time
 import unittest
 
+class AbstractJobTest(unittest.TestCase):
+
+    job = Job()
+
+    # --------
+    # TEST FOR FAILURE
+    # --------
+
+    def test_not_implemented_throws_for_failure(self):
+        self.assertRaises(NotImplementedError, self.job.terminate)
+        self.assertRaises(NotImplementedError, self.job.get_state)
+
 class JobFactoryTest(unittest.TestCase):
 
     # --------

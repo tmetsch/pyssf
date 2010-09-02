@@ -20,12 +20,28 @@ Created on Jul 12, 2010
 
 @author: tmetsch
 '''
-from pyrest.backends import JobHandler
+from pyrest.backends import Handler, JobHandler
 from pyrest.myexceptions import MissingActionException, StateException
 from pyrest.myexceptions import MissingAttributesException
 from pyrest.resource_model import JobResource, Link
 import time
 import unittest
+
+class AbstractHandlerTest(unittest.TestCase):
+
+    handler = Handler()
+    resource = JobResource()
+
+    # --------
+    # TEST FOR FAILURE
+    # --------
+
+    def test_not_implemented_throws_for_failure(self):
+        self.assertRaises(NotImplementedError, self.handler.create, self.resource)
+        self.assertRaises(NotImplementedError, self.handler.retrieve, self.resource)
+        self.assertRaises(NotImplementedError, self.handler.update, self.resource)
+        self.assertRaises(NotImplementedError, self.handler.delete, self.resource)
+        self.assertRaises(NotImplementedError, self.handler.action, self.resource, "bla")
 
 class JobHandlerTest(unittest.TestCase):
 
@@ -66,7 +82,8 @@ class JobHandlerTest(unittest.TestCase):
 
     def test_update_for_success(self):
         # doesn't do anything
-        pass
+        self.backend.update(self.resource)
+        self.assertTrue(True)
 
     def test_delete_for_success(self):
         self.backend.create(self.resource)

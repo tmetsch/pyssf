@@ -21,9 +21,21 @@ Created on Jul 12, 2010
 @author: tmetsch
 '''
 from pyrest.myexceptions import MissingCategoriesException
-from pyrest.rendering_parsers import HTTPHeaderParser, HTTPData
+from pyrest.rendering_parsers import Parser, HTTPHeaderParser, HTTPData
 from pyrest.resource_model import Link, Category, Resource, JobResource
 import unittest
+
+class AbstractParserTest(unittest.TestCase):
+
+    parser = Parser()
+
+    # --------
+    # TEST FOR FAILURE
+    # --------
+
+    def test_not_implemented_throws_for_failure(self):
+        self.assertRaises(NotImplementedError, self.parser.to_resource, "111", None)
+        self.assertRaises(NotImplementedError, self.parser.from_resource, None)
 
 class HTTPHeaderParserTest(unittest.TestCase):
 
@@ -123,6 +135,10 @@ class HTTPHeaderParserTest(unittest.TestCase):
         request = HTTPData(new_header, None)
         res = self.parser.to_resource("123", request)
         self.assertEquals(len(res.links), 0)
+
+        # test that a faulty scheme without http in it doesn't show up...
+        test_data = HTTPData({'HTTP_CATEGORY': 'job;scheme="schemas.ogf.org/occi/resource#"'}, self.body)
+        self.assertRaises(MissingCategoriesException, self.parser.to_resource, "123", test_data)
 
         # missing scheme for category
         header = {'HTTP_CATEGORY': 'job;scheme=;label=Tada'}
