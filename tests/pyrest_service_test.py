@@ -188,7 +188,7 @@ class AttributeTests(unittest.TestCase):
 
     # Note: more tests are done in the parser tests
 
-    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep'}
+    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 'HTTP_ATTRIBUTE': 'occi.drmaa.remote_command = /bin/sleep'}
 
     def test_attributes_for_sanity(self):
         # pass along some attributes and see if they can be retrieved

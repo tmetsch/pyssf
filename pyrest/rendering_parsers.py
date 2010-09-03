@@ -181,17 +181,19 @@ class HTTPHeaderParser(Parser):
 
     def _get_job_attributes_from_header(self, heads):
         """
-        Returns a list of attributes found in the header which start with the
-        'occi.drmaa.' in the key section. Otherwise returns an empty dictionary.
+        Returns a list of attributes found in the header. Otherwise returns an
+        empty dictionary.
         
         heads -- headers to parse the attributes from.
         """
         result = {}
-        for item in heads.keys():
-            if item.find('HTTP_OCCI.DRMAA.') > -1:
-                result[item.lstrip('HTTP_').lower()] = heads[item]
-            elif item.find('HTTP_OCCI_DRMAA_') > -1:
-                result['occi.drmaa.' + item[16:].lower()] = heads[item]
+        if 'HTTP_ATTRIBUTE' in heads.keys():
+            for item in heads['HTTP_ATTRIBUTE'].split(','):
+                tmp = item.split("=")
+                if len(tmp[0].strip()) > 0 and len(tmp[1].strip()) > 0:
+                    result[tmp[0].strip()] = tmp[1].strip()
+                else:
+                    break
         return result
 
     def _create_categories_for_header(self, categories):

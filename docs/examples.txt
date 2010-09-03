@@ -123,8 +123,7 @@ A simple python program to submit a job would look like::
     
     # create HTTP headers with the right category (mandatory field ) and attributes
     heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 
-             'occi.drmaa.remote_command': '/bin/sleep', 
-             'occi.drmaa.args': '10'}
+             'Attribute': 'occi.drmaa.remote_command=/bin/sleep, occi.drmaa.args=10'}
     response = h.request('http://localhost:8080/','POST', headers=heads)
     
     # get the URL of the newly created resource...
@@ -143,8 +142,7 @@ A simple client which corresponds to the setup described above::
     import string
     
     heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#"',
-             'occi.drmaa.remote_command':'/bin/sleep',
-             'occi.drmaa.args':'10',
+             'Attribute': 'occi.drmaa.remote_command=/bin/sleep, occi.drmaa.args=10',
              'Authorization': 'Basic ' + string.strip(base64.encodestring('foo' + ':' + 'bar')) }
     
     # setup SSL connection
@@ -173,8 +171,7 @@ This is a simple client using the httplib library::
     KEYFILE = '<path to key>/newkey.pem'
     CERTFILE = '<path to cert>/newcert.pem'
     heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#"',
-         'occi.drmaa.remote_command':'/bin/sleep',
-         'occi.drmaa.args':'10'}
+             'Attribute': 'occi.drmaa.remote_command=/bin/sleep, occi.drmaa.args=10'}
     
     # create a PKI secured connection
     conn = httplib.HTTPSConnection('localhost', 81, key_file = KEYFILE, cert_file = CERTFILE)

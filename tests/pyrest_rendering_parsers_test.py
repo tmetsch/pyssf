@@ -165,6 +165,12 @@ class HTTPHeaderParserTest(unittest.TestCase):
         request = HTTPData(header, None)
         self.assertRaises(MissingCategoriesException, self.parser.to_resource, "123", request)
 
+        # faulty attributes
+        header = {'HTTP_CATEGORY': 'job;scheme="http://schemas.ogf.org/occi/resource#"', 'HTTP_ATTRIBUTE': ' occi.drmaa.remote_command = , occi.drmaa.args = 10'}
+        request = HTTPData(header, None)
+        tmp = self.parser.to_resource("123", request)
+        self.assertFalse('occi.drmaa.remote_command' in tmp.attributes)
+
     def test_from_resource_for_failure(self):
         # ??? this should never happen
         pass
@@ -187,12 +193,12 @@ class HTTPHeaderParserTest(unittest.TestCase):
         res = self.parser.to_resource("456", test_data)
 
         # check if given attributes are in the job resource
-        test_data = HTTPData({'HTTP_CATEGORY': 'job;scheme="http://schemas.ogf.org/occi/resource#"', 'HTTP_OCCI.DRMAA.EXECUTABLE': '/bin/sleep'}, self.body)
+        test_data = HTTPData({'HTTP_CATEGORY': 'job;scheme="http://schemas.ogf.org/occi/resource#"', 'HTTP_ATTRIBUTE': ' occi.drmaa.remote_command = "/bin/sleep", occi.drmaa.args = 10'}, self.body)
         res = self.parser.to_resource("456", test_data)
         # category
         self.assertEquals(res.get_certain_categories('job')[0].term, 'job')
         # get attribute
-        self.assertEquals(res.attributes['occi.drmaa.executable'], '/bin/sleep')
+        self.assertEquals(res.attributes['occi.drmaa.remote_command'], '"/bin/sleep"')
 
         # test links
         new_header = {'HTTP_CATEGORY': 'job;scheme="http://schemas.ogf.org/occi/resource#"', 'HTTP_LINK': '</network/566-566-566>; class="link"'}

@@ -39,6 +39,8 @@ class Resource(object):
         """This is a set of associated Links with resource (Multiplicity 0..n)"""
         self.data = ''
         """Data which was initially provided by the client in the body."""
+        self.attributes = {}
+        """Dictionary containing the attributes for this resource."""
         self.user = 'default'
         """The owner of this resource"""
 
@@ -108,6 +110,4 @@ class JobResource(Resource):
     """
     def __init__(self):
         super(JobResource, self).__init__()
-        self.attributes = {}
-        """Attributes assigned to this resource."""
 
