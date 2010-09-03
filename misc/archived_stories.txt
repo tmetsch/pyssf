@@ -1,0 +1,18 @@
+R,S30,Develop & Integrate RESTful Interface
+R,S30.2,Categories
+R,S30.3,Basic HTTP handling & Resource creation
+R,S30.4,Links
+R,S30.5,Actions
+R,S30.7,Attributes
+R,S30.10,Error codes and handling
+R,S40,Create a pyLSF interface
+R,S70,Setup Software Development Environment (build tools etc)
+R,S80,Create a modular SSF system which will act a Integration-Point / Enhanced Frontend
+R,S100,Document code!
+R,S110,Look into mutability of links and categories.
+R,S120,pyrest backend to interface pydrmaa
+R,S120.1,create a pydrmaa backend for simple job submission
+R,S140,Let DMRMAAv2 interface with LSF directly
+R,S160,Test if pydrmaa (v1) is usable instead of pylsf
+R,S170,Work on extensibility
+R,S180,Update schemes
