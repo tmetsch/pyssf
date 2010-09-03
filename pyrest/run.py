@@ -69,7 +69,4 @@ application = web.application(urls, globals())
 #ResourceHandler.backend = MyHandler()
 
 if __name__ == "__main__":
-    """
-    Finally run the application.
-    """
     application.run()

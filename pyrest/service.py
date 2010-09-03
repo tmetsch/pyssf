@@ -23,18 +23,18 @@ Created on Jul 2, 2010
 @author: tmetsch
 '''
 
-from backends import JobHandler
-from myexceptions import MissingAttributesException, StateException
-from myexceptions import MissingCategoriesException, MissingActionException
-from myexceptions import SecurityException
-from rendering_parsers import HTTPHeaderParser, HTTPData
+from pyrest.backends import JobHandler
+from pyrest.myexceptions import MissingActionException
+from pyrest.myexceptions import MissingAttributesException, StateException
+from pyrest.myexceptions import MissingCategoriesException
+from pyrest.myexceptions import SecurityException
+from pyrest.rendering_parsers import HTTPHeaderParser, HTTPData
 import re
 import uuid
 import web
 
-"""
-The following stuff is here for Storage of the Resources.
-"""
+
+# The following stuff is here for Storage of the Resources.
 
 class NonPersistentResourceDictionary(dict):
     """
@@ -85,9 +85,7 @@ class PersistentResourceDictionary(dict):
     """
     pass
 
-"""
-The following part is here for basic HTTP handling.
-"""
+# The following part is here for basic HTTP handling.
 
 class SecurityHandler(object):
     """
@@ -108,16 +106,16 @@ class SecurityHandler(object):
         if not username == resource.user:
             raise SecurityException("Not authorized.")
 
-authentication_enabled = False
-security_handler = SecurityHandler()
+AUTHENTICATION_ENABLED = False
+SECURITY_HANDLER = SecurityHandler()
 
 def authenticate(target):
     """
     Authenticate the user.
     """
     def wrapper(*args, **kwargs):
-        if authentication_enabled:
-            if security_handler is None:
+        if AUTHENTICATION_ENABLED:
+            if SECURITY_HANDLER is None:
                 return web.Unauthorized("Could not determine an security"
                                         + "handler.")
             try:
@@ -128,7 +126,7 @@ def authenticate(target):
                     credentials = base64.b64decode(tmp).split(':')
                     username = credentials[0]
                     password = credentials[1]
-                    security_handler.authenticate(username, password)
+                    SECURITY_HANDLER.authenticate(username, password)
                 elif 'HTTP_SSL_CLIENT_CERT_DN' in web.ctx.env:
                     # when using Apache mod_wsgi
                     username = web.ctx.env['HTTP_SSL_CLIENT_CERT_DN'].strip()
@@ -144,15 +142,18 @@ def authenticate(target):
 
     return wrapper
 
-def validate_key(fn):
+def validate_key(name):
     """
     Decorator to validate the given keys!
     """
     VALID_KEY = re.compile('[a-z0-9-/]*')
     def new(*args, **kwargs):
+        """
+        Checks the arguments.
+        """
         if VALID_KEY.match(args[1]) is None:
             web.BadRequest(), 'Invalid key provided!'
-        return fn(*args, **kwargs)
+        return name(*args, **kwargs)
     return new
 
 class HTTPHandler(object):
@@ -163,7 +164,7 @@ class HTTPHandler(object):
 
     @authenticate
     @validate_key
-    def POST(self, name, username = "default", *data):
+    def POST(self, name, username = "default"):
         """
         Handles the POST request - triggers creation of a resource. Will
         return a location of the newly created resource.
@@ -196,7 +197,8 @@ class HTTPHandler(object):
                 self.create_resource(str(name), request, username)
                 web.header("Location", "/" + str(name))
                 return 'OK'
-            except (MissingCategoriesException, MissingAttributesException) as ex:
+            except (MissingCategoriesException,
+                    MissingAttributesException) as ex:
                 return web.BadRequest(), str(ex)
         else:
             return web.NotFound("Couldn't create sub resource of non-existing"
@@ -204,7 +206,7 @@ class HTTPHandler(object):
 
     @authenticate
     @validate_key
-    def GET(self, name, username = 'default', * data):
+    def GET(self, name, username = 'default'):
         """
         Handles the GET request - triggers the service to return information.
         
@@ -242,7 +244,7 @@ class HTTPHandler(object):
 
     @authenticate
     @validate_key
-    def PUT(self, name = None, username = "default", *data):
+    def PUT(self, name = None, username = "default"):
         """
         Handles the PUT request - triggers either the creation or updates a 
         resource.
@@ -266,7 +268,8 @@ class HTTPHandler(object):
         else:
             try:
                 self.create_resource(name, request, username)
-            except (MissingCategoriesException, MissingAttributesException) as ex:
+            except (MissingCategoriesException,
+                    MissingAttributesException) as ex:
                 return web.BadRequest(), str(ex)
             else:
                 web.OK()
@@ -296,9 +299,7 @@ class HTTPHandler(object):
         else:
             return web.NotFound()
 
-"""
-The final part actually does something.
-"""
+# The final part actually does something.
 
 class ResourceHandler(HTTPHandler):
     """
@@ -337,7 +338,7 @@ class ResourceHandler(HTTPHandler):
             try:
                 # trigger backend to get resource
                 res = self.resources.get_resource(key)
-                security_handler.authorize(username, res)
+                SECURITY_HANDLER.authorize(username, res)
                 self.backend.retrieve(res)
                 res = self.resources[key]
                 return res
@@ -357,8 +358,8 @@ class ResourceHandler(HTTPHandler):
         try:
             #self.resources[key] = data
             res = self.resources.get_resource(key)
-            security_handler.authorize(username, res)
-            self.backend.retrieve(res)
+            SECURITY_HANDLER.authorize(username, res)
+            self.backend.update(res)
         except (KeyError, MissingAttributesException, SecurityException):
             raise
 
@@ -371,7 +372,7 @@ class ResourceHandler(HTTPHandler):
         try:
             # trigger backend to delete
             res = self.resources.get_resource(key)
-            security_handler.authorize(username, res)
+            SECURITY_HANDLER.authorize(username, res)
             self.backend.delete(res)
             del(self.resources[key])
         except (KeyError, MissingAttributesException, SecurityException):
@@ -398,7 +399,8 @@ class ResourceHandler(HTTPHandler):
         """
         try:
             res = self.resources.get_resource(key)
-            security_handler.authorize(username, res)
+            SECURITY_HANDLER.authorize(username, res)
             self.backend.action(res, name)
-        except (KeyError, MissingActionException, StateException, SecurityException):
+        except (KeyError, MissingActionException, StateException,
+                SecurityException):
             raise

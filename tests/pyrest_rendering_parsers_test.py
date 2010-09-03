@@ -223,7 +223,7 @@ class HTTPHeaderParserTest(unittest.TestCase):
         # body
         self.assertEquals(res.body, self.body)
         # attributes
-        self.assertEquals(res.header['occi.drmaa.remote_command'], '/bin/sleep')
+        self.assertEquals(res.header['Attribute'], 'occi.drmaa.remote_command=/bin/sleep')
         # category
         self.assertEquals(res.header['Category'].split(';')[0], 'job')
         # links

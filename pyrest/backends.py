@@ -22,10 +22,10 @@ Created on Jul 9, 2010
 
 @author: tmetsch
 '''
-from myexceptions import MissingActionException
-from myexceptions import MissingAttributesException, StateException
 from pydrmaa.job import JobFactory
-from resource_model import JobResource, Link
+from pyrest.myexceptions import MissingActionException
+from pyrest.myexceptions import MissingAttributesException, StateException
+from pyrest.resource_model import JobResource, Link
 
 #def check_resource_type(func):
 #    def wrapper(*args):
@@ -38,6 +38,11 @@ from resource_model import JobResource, Link
 #    return wrapper
 
 class Handler(object):
+    """
+    A backend should support the routines described below. It triggers actions
+    and is in charge of dealing/manipulating/maintainig the data of the
+    Resources.
+    """
 
     def create(self, resource):
         """
@@ -88,7 +93,7 @@ class Handler(object):
         # trigger action & update state/attributes
         raise NotImplementedError
 
-    def _action_is_in_resource_description(self, resource, action):
+    def _action_is_in_description(self, resource, action):
         """
         Tests whether an given action is indeed currently defined by a link in
         a resource.
@@ -182,7 +187,7 @@ class JobHandler(Handler):
     def action(self, resource, action):
         if isinstance(resource, JobResource):
             # update attributes and links if needed and trigger action
-            if self._action_is_in_resource_description(resource, action):
+            if self._action_is_in_description(resource, action):
                 try:
                     job = self.jobs[resource.attributes['occi.drmaa.job_id']]
                 except:

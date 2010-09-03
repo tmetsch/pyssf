@@ -188,7 +188,7 @@ class AttributeTests(unittest.TestCase):
 
     # Note: more tests are done in the parser tests
 
-    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 'HTTP_ATTRIBUTE': 'occi.drmaa.remote_command = /bin/sleep'}
+    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 'Attribute': 'occi.drmaa.remote_command = /bin/sleep'}
 
     def test_attributes_for_sanity(self):
         # pass along some attributes and see if they can be retrieved
@@ -196,7 +196,7 @@ class AttributeTests(unittest.TestCase):
         url = response.headers['Location']
         response = service.APPLICATION.request(url)
         #print response
-        self.assertEquals(response.headers['occi.drmaa.remote_command'], '/bin/sleep')
+        self.assertEquals(response.headers['Attribute'], 'occi.drmaa.remote_command=/bin/sleep')
 
 class LinkTests(unittest.TestCase):
 
@@ -255,7 +255,8 @@ class ActionsTests(unittest.TestCase):
         kill_url = tmp[tmp.find('<') + 1:tmp.find('>')]
         service.APPLICATION.request(kill_url, method = "POST")
         response = service.APPLICATION.request(url)
-        self.assertEquals(response.headers['occi.drmaa.job_state'], 'EXIT')
+        print response.headers
+        self.assertEquals(response.headers['Attribute'], 'occi.drmaa.job_state=EXIT')
 
 class QueryTests(unittest.TestCase):
     pass
@@ -275,8 +276,8 @@ class SecurityTests(unittest.TestCase):
     def_heads2 = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep'}
 
     def setUp(self):
-        service.authentication_enabled = True
-        service.security_handler = SimpleSecurityHandler()
+        service.AUTHENTICATION_ENABLED = True
+        service.SECURITY_HANDLER = SimpleSecurityHandler()
 
     # --------
     # TEST FOR SUCCESS
@@ -321,10 +322,10 @@ class SecurityTests(unittest.TestCase):
 
     def test_authenticate_for_failure(self):
         # auth enabled but no security handler...
-        service.security_handler = None
+        service.SECURITY_HANDLER = None
         response = service.APPLICATION.request("/", method = "GET", headers = self.heads)
         self.assertEquals(response.status, '401 Unauthorized')
-        service.security_handler = SimpleSecurityHandler()
+        service.SECURITY_HANDLER = SimpleSecurityHandler()
 
         # test wrong password
         response = service.APPLICATION.request("/", method = "GET", headers = self.def_heads)

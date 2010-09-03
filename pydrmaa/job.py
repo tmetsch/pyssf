@@ -65,6 +65,9 @@ class JobFactory(object):
         return DRMAAJob(command, args)
 
 class DRMAAJob(Job):
+    """
+    A DRMAAv1 job.
+    """
 
     s = drmaa.Session()
     try:
@@ -77,15 +80,15 @@ class DRMAAJob(Job):
         self.remote_command = command
         self.args = args
 
-        self.jt = self.s.createJobTemplate()
-        self.jt.remoteCommand = command
-        self.jt.args = args
-        self.jt.joinFiles = True
+        self.job_template = self.s.createJobTemplate()
+        self.job_template.remoteCommand = command
+        self.job_template.args = args
+        self.job_template.joinFiles = True
 
-        self.job_id = self.s.runJob(self.jt)
+        self.job_id = self.s.runJob(self.job_template)
 
     def __del__(self):
-        self.s.deleteJobTemplate(self.jt)
+        self.s.deleteJobTemplate(self.job_template)
 
     def terminate(self):
         self.s.control(self.job_id, drmaa.JobControlAction.TERMINATE)

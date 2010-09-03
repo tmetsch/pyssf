@@ -23,8 +23,8 @@ Created on Jul 9, 2010
 @author: tmetsch
 '''
 
-from myexceptions import MissingCategoriesException
-from resource_model import Resource, Category, JobResource, Link
+from pyrest.myexceptions import MissingCategoriesException
+from pyrest.resource_model import Resource, Category, JobResource, Link
 import re
 
 class HTTPData(object):
@@ -269,11 +269,16 @@ class HTTPHeaderParser(Parser):
         res.header['Link'] = self._create_links_for_header(resource.links)
         # add attributes
         if isinstance(resource, JobResource):
+            attr_list = []
             for item in resource.attributes.keys():
-                res.header[item] = resource.attributes[item]
+                attr_list.append(str(item) + '=' + str(resource.attributes[item]))
+            res.header['Attribute'] = ','.join(attr_list)
         # data to body
         res.body = resource.data
         return res
 
 class RDFParser(Parser):
+    """
+    A to be done parser for RDF/RDFa documents.
+    """
     pass

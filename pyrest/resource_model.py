@@ -36,7 +36,8 @@ class Resource(object):
            There must be at minimum one Category associated 
            (Multiplicity 1..n)"""
         self.links = []
-        """This is a set of associated Links with resource (Multiplicity 0..n)"""
+        """This is a set of associated Links with resource 
+        (Multiplicity 0..n)"""
         self.data = ''
         """Data which was initially provided by the client in the body."""
         self.attributes = {}
@@ -83,7 +84,8 @@ class Category(object):
         self.term = ''
         """Target definition within the scheme (Multiplicity 1)"""
         self.scheme = ''
-        """A resource that defines the model of the referred term (Multiplicity 1)"""
+        """A resource that defines the model of the referred term 
+        (Multiplicity 1)"""
         self.title = ''
         """assigned links/actions (Multiplicity 0,1)"""
         self.related = []
