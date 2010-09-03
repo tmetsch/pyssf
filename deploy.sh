@@ -46,13 +46,19 @@ case "$1" in
     cd docs
     make clean
     cd ..
-	$0 coverage
-	# epydocgui epydoc.prj
-	mkdir docs/_build/html/lint/
-	pylint -f html pyrest pydrmaa ssf &> docs/_build/html/lint/index.html
-	cd docs
-	make html
+    $0 coverage
+    # epydocgui epydoc.prj
+    mkdir docs/_build/html/lint/
+    pylint -f html pyrest pydrmaa ssf &> docs/_build/html/lint/index.html
+    cd docs
+    make html
     cd ..
+    ;;
+
+  test)
+    $0 clean
+    $0 build
+    $0 coverage
     ;;
 
   deploy)
@@ -66,7 +72,7 @@ case "$1" in
     ;;
 
   *)
-    echo "Usage: $N {clean|build|coverage|doc|deploy}" >&2
+    echo "Usage: $N {clean|build|coverage|doc|test|deploy}" >&2
     exit 1
     ;;
 esac
