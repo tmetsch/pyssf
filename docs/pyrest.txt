@@ -15,6 +15,7 @@
    License along with this library; if not, write to the Free Software
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
    
+= - ^
 
 The pyrest package
 ==================
@@ -38,38 +39,33 @@ It consist of the following modules:
 
 The pyrest package follows the principals described in [OCCI]_.
 
+Structure of the pyrest package
+-------------------------------
+The following sections give an overview of the structure of the pyrest module.
+
 Service
--------
+^^^^^^^
+Uses [web.py]_ to implement a RESTful service. The following classes exist:
 
-Uses [web.py]_ to implement a RESTful service.
-
-Non Persistent Resource Dictionary
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Dictionary which holds resources from the resource model. But when using get
-and set it will return the proper HTTP Data needed by the service. This part is
-not persistent on failure or restart of the service all resource will be lost.
-
-Persistent Resource Dictionary
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Is not yet implemented.
-
-HTTP Handler
-^^^^^^^^^^^^
-Handler the basic HTTP CRUD operations. It implements the logic when a resource
-is created, updated or destroyed.
-
-Resource Handler
-^^^^^^^^^^^^^^^^
-Is derived form the HTTP Handler and has some convenient routines to update the
-resources in the Resource Dictionary.
+ * Non Persistent Resource Dictionary - Dictionary which holds resources from 
+   the resource model. But when using get and set it will return the proper 
+   HTTP Data needed by the service. This part is not persistent on failure or
+   restart of the service all resource will be lost.
+ * Persistent Resource Dictionary - Is not yet implemented.
+ * HTTP Handler - Handler the basic HTTP CRUD operations. It implements the
+   logic when a resource is created, updated or destroyed.
+ * Resource Handler - Is derived form the HTTP Handler and has some convenient
+   routines to update the resources in the Resource Dictionary.
 
 Rendering Parsers
------------------
+^^^^^^^^^^^^^^^^^
+Parsers map the information in the HTTP request to the resoucer model and back.
+An abstract Parser class describes the methods it needs. Right now the
+following Parser is implemented:
 
-The HTTP Header Parser
-^^^^^^^^^^^^^^^^^^^^^^
-Is derived from Parser. Does in general nothing more then parsing the HTTP
-header and look for attributes, links and categories
+ * The HTTP Header Parser - Is derived from Parser. Does in general nothing
+   more than parsing the HTTP header and look for attributes, links and
+   categories.
 
 .. note::
     If something is going to fail is is most probably in this class. It is not
@@ -77,14 +73,14 @@ header and look for attributes, links and categories
     can lead to issues. Still this part is reasonably tested.
 
 Backends
---------
+^^^^^^^^
 The backends actually trigger operations and map the HTTP/RESTful resource to
-something else.
+something else (like Virtual Machines or Jobs in a Cluster). The following
+backend is implemented:
 
-Job Handler
-^^^^^^^^^^^
-This Handler is capable of submitting jobs using the pydrmaa package. Creation
-of the resources should be done with the following category:
+ * Job Handler - This Handler is capable of submitting jobs using the pydrmaa
+   package. Creation of the resources should be done with the following
+   category:
 
     ========  =======================================
       Term      Scheme                               
@@ -92,7 +88,7 @@ of the resources should be done with the following category:
     job       "http://schemas.ogf.org/occi/resource#"
     ========  =======================================
 
-Currently the following attributes are supported:
+   Currently the following attributes are supported:
 
     =========================  ======================  ===========
       Attribute                Description             Example    
@@ -103,7 +99,7 @@ Currently the following attributes are supported:
                                (immutable)                        
     =========================  ======================  ===========
 
-Also the following links/actions can be used to manipulate the job:
+   Also the following links/actions can be used to manipulate the job:
 
     ===================  ===============================
       Link                 Description                  

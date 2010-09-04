@@ -21,9 +21,9 @@ The pydrmaa package
 This package has some modules helping to implement a RESTful [DRMAAv2]_
 interface.
 
-Job module
-----------
-The Job modules holds models and factories.
+Structure of the pydrmaa package
+--------------------------------
+The Job module holds models and factories.
 
 Job
 ^^^
@@ -53,8 +53,8 @@ LSF Job
 ^^^^^^^
 Derived from Job class. Uses the pylsf module to actually execute the commands.
 
-Simple job submission
----------------------
+A simple job submission
+-----------------------
 
 ::
 

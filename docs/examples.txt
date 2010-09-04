@@ -147,7 +147,6 @@ A simple client which corresponds to the setup described above::
     
     # setup SSL connection
     conn = httplib.HTTPSConnection('localhost', 8080)
-                                   #, key_file = KEYFILE,cert_file = CERTFILE)
     
     # create a resource
     conn.request("POST", "/", headers = heads)
