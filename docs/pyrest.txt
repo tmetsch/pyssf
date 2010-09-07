@@ -15,29 +15,21 @@
    License along with this library; if not, write to the Free Software
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
    
-= - ^
 
 The pyrest package
 ==================
 
-This package implements a generic RESTful interface. It can be used for
-all kinds of operations. For now it supports Job submission.
+The pyrest package can be used to given any given kind of application a remote
+RESTful interface. 
 
-It consist of the following modules:
- * **service** - This is the basic implementation of the RESTful service.
- * **resource_model** - The resource model.
- * **backends** - Backends are used to trigger actually operations.
- * **rendering_parsers** - Parsers which traverse between the data on the wire
-   and the resource model.
+.. image:: images/pyrest.png
+   :alt: pyREST setup
 
-.. note::
-    When using the pyrest module for other stuff then job submission you need
-    to create a new **resource** and update the rendering parsers. 
-
-.. note::
-    Currently pyrest does not handle the scheme given to links and categories.
-
-The pyrest package follows the principals described in [OCCI]_.
+While following the principals in [OCCI]_ it is very easy to use for remote
+clients. PyREST gives your application a modern RESTful interface an will
+manage the protocol and the resources. Security mechanisms and examples of how
+to use the services are described. All which needs to be done to give your
+Application a RESTful interface is to write a simple backend for your system.
 
 Structure of the pyrest package
 -------------------------------

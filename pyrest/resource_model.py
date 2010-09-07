@@ -23,47 +23,63 @@ Created on Jul 9, 2010
 @author: tmetsch
 '''
 
-class Resource(object):
+class Kind(object):
+    """
+    A OCCI Kind.
+    """
+    def __init__(self):
+        self.title = ''
+        """ Denotes the display name of an instance. 0,1 """
+        self.categories = []
+        """ Comprises the categories associated to this instance. 1...* """
+
+class Category(object):
+    """
+    A category.
+    """
+    def __init__(self):
+        self.term = ''
+        """ Target definition within the scheme (Multiplicity 1) """
+        self.scheme = ''
+        """ A resource that defines the model of the referred term 
+        (Multiplicity 1)"""
+        self.title = ''
+        """ Assigned links/actions (Multiplicity 0,1) """
+        self.attributes = []
+        """ Comprise the resource attributes defined by the Category. 
+        (Multiplicity 0..n) """
+        self.actions = []
+        """ Comprise the actions associated with the Category. 
+        (Multiplicity 0..n) """
+        self.related = []
+        """ A set of related categories (Multiplicity 0..n) """
+
+class Resource(Kind):
     """
     A resource.
     """
-
     def __init__(self):
+        super(Resource, self).__init__()
         self.id = ''
         """Immutable, unique identifier of the instance (Multiplicity 1)"""
-        self.categories = []
-        """This is a set of associated categories.
-           There must be at minimum one Category associated 
-           (Multiplicity 1..n)"""
+        self.summary = ''
+        """Holds a summarizing description of the Resource instance. 
+        (Multiplicity 0,1)"""
         self.links = []
         """This is a set of associated Links with resource 
         (Multiplicity 0..n)"""
+        self.actions = []
+        """List of actions associated with this resource
+        (Multiplicity 0..n)"""
+
+        # Not OCCI related attributes:
+
         self.data = ''
         """Data which was initially provided by the client in the body."""
-        self.attributes = {}
-        """Dictionary containing the attributes for this resource."""
         self.user = 'default'
         """The owner of this resource"""
-
-    def get_action_links(self):
-        """
-        Returns only the links which are basically a action. Empty list if none.
-        """
-        result = []
-        for item in self.links:
-            if item.link_class == 'action' and item.target is not '':
-                result.append(item)
-        return result
-
-    def get_certain_categories(self, name):
-        """
-        Return all categories with the given term. Empty list if none.
-        """
-        result = []
-        for item in self.categories:
-            if item.term == name:
-                result.append(item)
-        return result
+        self.attributes = {}
+        """Dictionary containing the attributes for this resource."""
 
     def __cmp__(self, instance):
         """
@@ -75,41 +91,18 @@ class Resource(object):
         else:
             return False
 
-
-class Category(object):
-    """
-    A category.
-    """
-    def __init__(self):
-        self.term = ''
-        """Target definition within the scheme (Multiplicity 1)"""
-        self.scheme = ''
-        """A resource that defines the model of the referred term 
-        (Multiplicity 1)"""
-        self.title = ''
-        """assigned links/actions (Multiplicity 0,1)"""
-        self.related = []
-        """A set of related categories (Multiplicity 0..n)"""
-
-class Link(object):
+class Link(Kind):
     """
     A link.
     """
     def __init__(self):
-        self.link_class = ''
-        """This denotes the type of Link (Multiplicity 0,1)"""
-        self.title = ''
-        """Display name for the Link (Multiplicity 0,1)"""
-        self.rel = ''
-        """The type of Link (Multiplicity 0,1)"""
+        super(Link, self).__init__()
         self.target = ''
         """The Resource to which the Link points to (Multiplicity 1)"""
 
-class JobResource(Resource):
-
+class Action(Kind):
     """
-    A job resource.
+    A action.
     """
     def __init__(self):
-        super(JobResource, self).__init__()
-
+        super(Action, self).__init__()

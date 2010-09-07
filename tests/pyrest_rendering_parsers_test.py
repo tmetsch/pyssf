@@ -22,7 +22,7 @@ Created on Jul 12, 2010
 '''
 from pyrest.myexceptions import MissingCategoriesException
 from pyrest.rendering_parsers import Parser, HTTPHeaderParser, HTTPData
-from pyrest.resource_model import Link, Category, Resource, JobResource
+from pyrest.resource_model import Link, Category, Resource
 import unittest
 
 class AbstractParserTest(unittest.TestCase):
@@ -60,7 +60,7 @@ class HTTPHeaderParserTest(unittest.TestCase):
     category_two = Category()
     category_three = Category()
     resource = Resource()
-    job_resource = JobResource()
+    job_resource = Resource()
 
     def setUp(self):
         self.correct_http_data = HTTPData(self.correct_header, self.body)

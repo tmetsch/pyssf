@@ -24,7 +24,7 @@ Created on Jul 9, 2010
 '''
 
 from pyrest.myexceptions import MissingCategoriesException
-from pyrest.resource_model import Resource, Category, JobResource, Link
+from pyrest.resource_model import Resource, Category, Link
 import re
 
 class HTTPData(object):
@@ -132,54 +132,7 @@ class HTTPHeaderParser(Parser):
             + 'found.')
         return terms, result
 
-    def _get_links_from_header(self, heads):
-        """
-        Retrieve all links from the header but doesn't look at action kinds.
-        Those should not be set by the user.
-        
-        heads -- headers to parse the links from.
-        """
-        # only target in mandatory...
-        result = []
-        try:
-            header = heads['HTTP_LINK']
-        except:
-            return result # this is actually okay :-)
-        links = header.split(',')
-        for item in links:
-            link = Link()
-            # find target
-            begin = item.find('<')
-            end = item.find('>')
-            if begin < end and begin is not - 1 and end is not - 1:
-                link.target = item[begin + 1:end]
-            else:
-                break
-            # find class
-            begin = item.find('class="')
-            if begin is not - 1:
-                tmp = item[begin + 7:]
-                link_class = tmp[:tmp.find('"')]
-                if link_class != 'action':
-                    link.link_class = link_class
-                else:
-                    break
-
-            # find rel
-            begin = item.find('rel="')
-            if begin is not - 1:
-                tmp = item[begin + 5:]
-                link.rel = (tmp[:tmp.find('"')])
-
-            # find 
-            begin = item.find('title="')
-            if begin is not - 1:
-                tmp = item[begin + 7:]
-                link.title = (tmp[:tmp.find('"')])
-            result.append(link)
-        return result
-
-    def _get_job_attributes_from_header(self, heads):
+    def _get_attributes_from_header(self, heads):
         """
         Returns a list of attributes found in the header. Otherwise returns an
         empty dictionary.
@@ -213,26 +166,29 @@ class HTTPHeaderParser(Parser):
             category_string.append(text)
         return ','.join(category_string)
 
-    def _create_links_for_header(self, links):
+    def _create_attributes_for_header(self, attributes):
         """
-        Creates a string which can be added to the header - containing all
-        links.
+        Create a string which can be added to the header - containing all
+        attributes.
         
-        links -- list of links (Link)
+        attributes -- list of the attributes to add.
         """
-        # only target in mandatory...
-        link_string = []
-        for item in links:
-            text = ''
-            text += '<' + item.target + '>'
-            if item.link_class is not '':
-                text += ';class="' + item.link_class + '"'
-            if item.rel is not '':
-                text += ';rel="' + item.rel + '"'
-            if item.title is not '':
-                text += ';title="' + item.title + '"'
-            link_string.append(text)
-        return ','.join(link_string)
+        attr_list = []
+        for item in attributes.keys():
+            attr_list.append(str(item) + '=' + str(attributes[item]))
+        return ','.join(attr_list)
+
+    def _create_actions_for_header(self, actions):
+        """
+        Create a string which can be added to the header - containing all
+        the links to actions.
+        
+        actions -- list of the actions to add.
+        """
+        action_list = []
+        for item in actions:
+            pass
+        return ','.join(action_list)
 
     def to_resource(self, key, http_data):
         if key is None or http_data is None:
@@ -244,18 +200,10 @@ class HTTPHeaderParser(Parser):
         except MissingCategoriesException:
             raise
 
-        # XXX: add more resource if needed
-        try:
-            terms.index('job')
-            res = JobResource()
-            res.attributes = self._get_job_attributes_from_header(http_data.header)
-        except:
-            res = Resource()
-
+        res = Resource()
         res.id = key
         res.categories = categories
-        # add links <- done by backend
-        res.links = self._get_links_from_header(http_data.header)
+        res.attributes = self._get_attributes_from_header(http_data.header)
 
         # append data from body - might be needed for OVF files etc.
         if http_data.body is not '':
@@ -266,13 +214,10 @@ class HTTPHeaderParser(Parser):
         res = HTTPData
         # add links and categories to header
         res.header['Category'] = self._create_categories_for_header(resource.categories)
-        res.header['Link'] = self._create_links_for_header(resource.links)
         # add attributes
-        if isinstance(resource, JobResource):
-            attr_list = []
-            for item in resource.attributes.keys():
-                attr_list.append(str(item) + '=' + str(resource.attributes[item]))
-            res.header['Attribute'] = ','.join(attr_list)
+        res.header['Attribute'] = self._create_attributes_for_header(resource.attributes)
+        # add links & actions
+        res.header['Link'] = self._create_actions_for_header(resource.links)
         # data to body
         res.body = resource.data
         return res

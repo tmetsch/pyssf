@@ -25,7 +25,7 @@ Created on Jul 9, 2010
 from pydrmaa.job import JobFactory
 from pyrest.myexceptions import MissingActionException
 from pyrest.myexceptions import MissingAttributesException, StateException
-from pyrest.resource_model import JobResource, Link
+from pyrest.resource_model import Resource, Link
 
 #def check_resource_type(func):
 #    def wrapper(*args):
