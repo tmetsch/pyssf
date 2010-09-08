@@ -109,9 +109,9 @@ class JobHandler(Handler):
 
     def __init__(self):
         """
-        Registers the category this backend can handle.
+        TODO: Registers the category this backend can handle.
         """
-        print self.category
+        pass
 
     def create(self, resource):
         if self.category in resource.categories:

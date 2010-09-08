@@ -210,6 +210,7 @@ class HTTPHeaderParser(Parser):
         return res
 
     def from_resource(self, resource):
+        # FIXME: handle empty cats, attr and links :-)
         res = HTTPData
         # add links and categories to header
         res.header['Category'] = self._create_categories_for_header(resource.categories)

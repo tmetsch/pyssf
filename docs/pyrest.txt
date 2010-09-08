@@ -74,11 +74,11 @@ backend is implemented:
    package. Creation of the resources should be done with the following
    category:
 
-    ========  =======================================
+    ========  ====================================
       Term      Scheme                               
-    ========  =======================================
-    job       "http://schemas.ogf.org/occi/resource#"
-    ========  =======================================
+    ========  ====================================
+    job       "http://schemas.ogf.org/occi/drmaa#"
+    ========  ====================================
 
    Currently the following attributes are supported:
 
