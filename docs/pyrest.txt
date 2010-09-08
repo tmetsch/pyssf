@@ -49,6 +49,10 @@ Uses [web.py]_ to implement a RESTful service. The following classes exist:
  * Resource Handler - Is derived form the HTTP Handler and has some convenient
    routines to update the resources in the Resource Dictionary.
 
+Resource Model
+^^^^^^^^^^^^^^
+Implementation of the [OCCI]_ code model.
+
 Rendering Parsers
 ^^^^^^^^^^^^^^^^^
 Parsers map the information in the HTTP request to the resoucer model and back.
