@@ -24,11 +24,11 @@ Created on Jul 2, 2010
 '''
 
 from pyrest.backends import JobHandler
-from pyrest.myexceptions import MissingActionException
-from pyrest.myexceptions import MissingAttributesException, StateException
-from pyrest.myexceptions import MissingCategoriesException
-from pyrest.myexceptions import SecurityException
+from pyrest.myexceptions import MissingActionException, \
+    MissingAttributesException, StateException, MissingCategoriesException, \
+    SecurityException
 from pyrest.rendering_parsers import HTTPHeaderParser, HTTPData
+from pyrest.resource_model import Action, Category
 import re
 import uuid
 import web
@@ -173,7 +173,7 @@ class HTTPHandler(object):
         *data -- if available (this it the body of the HTTP message).
         """
         # handle actions
-        index = web.ctx.env['PATH_INFO'].find(';')
+        index = web.ctx.env['PATH_INFO'].find(';action=')
         if index is not - 1:
             key = web.ctx.env['PATH_INFO'][1:index]
             actionclass = web.ctx.env['PATH_INFO'][index + 1:]
@@ -389,18 +389,24 @@ class ResourceHandler(HTTPHandler):
         else:
             return False
 
-    def trigger_action(self, key, name, username):
+    def trigger_action(self, key, term, username):
         """
         Trigger an action in the backend system. Backend should update state
         and links if needed.
         
         key -- the id for the resource.
-        name -- name of the action.
+        term -- name of the action.
         """
         try:
+            # FIXME: this needs to be cleaned up!
             res = self.resources.get_resource(key)
             SECURITY_HANDLER.authorize(username, res)
-            self.backend.action(res, name)
+            action = Action()
+            cat = Category()
+            cat.term = term[term.find("=") + 1:]
+            cat.scheme = JobHandler.terminate_category.scheme
+            action.categories = [cat]
+            self.backend.action(res, action)
         except (KeyError, MissingActionException, StateException,
                 SecurityException):
             raise

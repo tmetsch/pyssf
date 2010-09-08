@@ -24,7 +24,7 @@ Created on Jul 9, 2010
 '''
 
 from pyrest.myexceptions import MissingCategoriesException
-from pyrest.resource_model import Resource, Category, Link
+from pyrest.resource_model import Resource, Category
 import re
 
 class HTTPData(object):
@@ -77,7 +77,6 @@ class HTTPHeaderParser(Parser):
         heads -- the HTTP header dictionary.
         """
         result = []
-        terms = []
         try:
             header = heads['HTTP_CATEGORY']
         except:
@@ -94,7 +93,6 @@ class HTTPHeaderParser(Parser):
                 term = tmp[0].strip(' ')
                 if re.match("^[\w\d_-]*$", term) and term is not '':
                     category.term = term
-                    terms.append(category.term)
                 else:
                     raise MissingCategoriesException('No valid term for given'
                                                    + 'category could be'
@@ -130,7 +128,7 @@ class HTTPHeaderParser(Parser):
         if len(result) == 0:
             raise MissingCategoriesException('No valid categories could be'
             + 'found.')
-        return terms, result
+        return result
 
     def _get_attributes_from_header(self, heads):
         """
@@ -178,7 +176,7 @@ class HTTPHeaderParser(Parser):
             attr_list.append(str(item) + '=' + str(attributes[item]))
         return ','.join(attr_list)
 
-    def _create_actions_for_header(self, actions):
+    def _create_actions_for_header(self, resource):
         """
         Create a string which can be added to the header - containing all
         the links to actions.
@@ -186,8 +184,9 @@ class HTTPHeaderParser(Parser):
         actions -- list of the actions to add.
         """
         action_list = []
-        for item in actions:
-            pass
+        for item in resource.actions:
+            action_list.append("</" + resource.id + ";action="
+                               + item.categories[0].term + ">")
         return ','.join(action_list)
 
     def to_resource(self, key, http_data):
@@ -196,7 +195,7 @@ class HTTPHeaderParser(Parser):
 
         # parse categories
         try:
-            terms, categories = self._get_categories_from_header(http_data.header)
+            categories = self._get_categories_from_header(http_data.header)
         except MissingCategoriesException:
             raise
 
@@ -217,7 +216,8 @@ class HTTPHeaderParser(Parser):
         # add attributes
         res.header['Attribute'] = self._create_attributes_for_header(resource.attributes)
         # add links & actions
-        res.header['Link'] = self._create_actions_for_header(resource.links)
+        # FIXME: add links as well - not just actions
+        res.header['Link'] = self._create_actions_for_header(resource)
         # data to body
         res.body = resource.data
         return res

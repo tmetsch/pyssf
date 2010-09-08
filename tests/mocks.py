@@ -20,20 +20,17 @@ Created on Jul 20, 2010
 
 @author: tmetsch
 '''
-from pyrest.backends import Handler
+from pyrest.backends import Handler, JobHandler
 from pyrest.myexceptions import MissingActionException, SecurityException
-from pyrest.resource_model import Link
+from pyrest.resource_model import Action
 from pyrest.service import SecurityHandler
 
 class DummyBackend(Handler):
 
     def create(self, resource):
-        link = Link()
-        link.link_class = 'action'
-        link.rel = 'http://schemas.ogf.org/occi/drmaa/action#release'
-        link.target = '/' + resource.id + ';release'
-        link.title = 'Kill Job'
-        resource.links.append(link)
+        action = Action()
+        action.categories = [JobHandler.terminate_category]
+        resource.actions = [action]
 
     def update(self, resource):
         pass
@@ -45,8 +42,9 @@ class DummyBackend(Handler):
         pass
 
     def action(self, resource, action):
-        if action == 'release':
+        if action in resource.actions:
             resource.attributes['occi.drmaa.job_state'] = 'EXIT'
+            resource.actions = []
         else:
             raise MissingActionException('Non existing action called!')
 

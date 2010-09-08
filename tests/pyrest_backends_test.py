@@ -23,14 +23,14 @@ Created on Jul 12, 2010
 from pyrest.backends import Handler, JobHandler
 from pyrest.myexceptions import MissingActionException, StateException
 from pyrest.myexceptions import MissingAttributesException
-from pyrest.resource_model import JobResource, Link
+from pyrest.resource_model import Resource, Action
 import time
 import unittest
 
 class AbstractHandlerTest(unittest.TestCase):
 
     handler = Handler()
-    resource = JobResource()
+    resource = Resource()
 
     # --------
     # TEST FOR FAILURE
@@ -46,8 +46,8 @@ class AbstractHandlerTest(unittest.TestCase):
 class JobHandlerTest(unittest.TestCase):
 
     backend = JobHandler()
-    resource = JobResource()
-    resource.attributes['occi.drmaa.remote_command'] = '/bin/echo'
+    resource = Resource()
+    action = Action()
 
     def setUp(self):
         try:
@@ -57,13 +57,8 @@ class JobHandlerTest(unittest.TestCase):
         self.resource.id = '123'
         self.resource.attributes = {}
         self.resource.attributes['occi.drmaa.remote_command'] = '/bin/echo'
-        self.resource.links = []
-        link = Link()
-        link.link_class = 'action'
-        link.rel = 'http://schemas.ogf.org/occi/ drmaa/action#terminate'
-        link.target = '/' + self.resource.id + ';terminate'
-        link.title = 'Terminate Job'
-        self.resource.links = [link]
+        self.resource.categories = [JobHandler.category]
+        self.action.categories = [JobHandler.terminate_category]
 
     # --------
     # TEST FOR SUCCESS
@@ -77,8 +72,8 @@ class JobHandlerTest(unittest.TestCase):
     def test_retrieve_for_success(self):
         self.backend.create(self.resource)
         self.backend.retrieve(self.resource)
-        # we expect a link
-        self.assertTrue(len(self.resource.links) > 0)
+        # we expect a state
+        self.assertFalse(self.resource.attributes['occi.drmaa.job_state'] == '')
 
     def test_update_for_success(self):
         # doesn't do anything
@@ -94,9 +89,9 @@ class JobHandlerTest(unittest.TestCase):
     def test_action_for_success(self):
         self.setUp()
         self.backend.create(self.resource)
-        self.backend.action(self.resource, 'terminate')
+        self.backend.action(self.resource, self.action)
         # no more links should be there
-        self.assertEquals(len(self.resource.links), 0)
+        self.assertEquals(len(self.resource.actions), 0)
 
     # --------
     # TEST FOR FAILURE
@@ -104,7 +99,7 @@ class JobHandlerTest(unittest.TestCase):
 
     def test_create_for_failure(self):
         # test create without arg.
-        self.resource.attributes = []
+        self.resource.attributes = {}
         self.assertRaises(MissingAttributesException, self.backend.create, self.resource)
 
     def test_retrieve_for_failure(self):
@@ -121,12 +116,14 @@ class JobHandlerTest(unittest.TestCase):
 
     def test_action_for_failure(self):
         # non existent action...
+        non_existing_action = Action()
+
         self.backend.create(self.resource)
-        self.assertRaises(MissingActionException, self.backend.action, self.resource, 'blabber')
+        self.assertRaises(MissingActionException, self.backend.action, self.resource, non_existing_action)
 
         # non existent resource
         self.setUp()
-        self.assertRaises(StateException, self.backend.action, self.resource, 'terminate')
+        self.assertRaises(StateException, self.backend.action, self.resource, self.resource.actions[0])
 
     # --------
     # TEST FOR SANITY
@@ -136,8 +133,8 @@ class JobHandlerTest(unittest.TestCase):
         # test if right links are there
         self.resource.links = []
         self.backend.create(self.resource)
-        # release should be added
-        self.assertEquals(self.resource.links[0].target, '/123;terminate')
+        # terminate action should be added
+        self.assertTrue(JobHandler.terminate_category in self.resource.actions[0].categories)
 
         # check if state changes when done...wait for LSF
         time.sleep(20)
@@ -150,12 +147,10 @@ class JobHandlerTest(unittest.TestCase):
         self.backend.create(self.resource)
 
         # check if terminate action got added to a running job
-        self.resource.links = []
         time.sleep(20)
         self.backend.retrieve(self.resource)
+        self.assertTrue(JobHandler.terminate_category in self.resource.actions[0].categories)
         self.assertEquals(self.resource.attributes['occi.drmaa.job_state'], 'running')
-        self.assertTrue(len(self.resource.links) == 1)
-        self.assertEquals(self.resource.links[0].target, '/123;terminate')
 
     def test_update_for_sanity(self):
         # doesn't do anything
@@ -170,7 +165,7 @@ class JobHandlerTest(unittest.TestCase):
     def test_action_for_sanity(self):
         # check if links/state have been set right...
         self.backend.create(self.resource)
-        self.backend.action(self.resource, 'terminate')
+        self.backend.action(self.resource, self.resource.actions[0])
         # no more links should be there
         self.assertEquals(len(self.resource.links), 0)
 

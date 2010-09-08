@@ -33,6 +33,12 @@ class Kind(object):
         self.categories = []
         """ Comprises the categories associated to this instance. 1...* """
 
+    def __eq__(self, instance):
+        if self.categories == instance.categories:
+            return True
+        else:
+            return False
+
 class Category(object):
     """
     A category.
@@ -48,16 +54,27 @@ class Category(object):
         self.attributes = []
         """ Comprise the resource attributes defined by the Category. 
         (Multiplicity 0..n) """
-        self.actions = []
-        """ Comprise the actions associated with the Category. 
-        (Multiplicity 0..n) """
         self.related = []
         """ A set of related categories (Multiplicity 0..n) """
+
+    def __eq__(self, instance):
+        if self.term == instance.term and self.scheme == instance.scheme:
+            return True
+        else:
+            return False
 
 class Resource(Kind):
     """
     A resource.
     """
+
+    category = Category()
+    category.attributes = ['id', 'summary', 'links', 'actions']
+    category.related = []
+    category.scheme = 'http://schemas.ogf.org/occi/core#'
+    category.term = 'resource'
+    category.title = 'A Resource'
+
     def __init__(self):
         super(Resource, self).__init__()
         self.id = ''
@@ -72,8 +89,7 @@ class Resource(Kind):
         """List of actions associated with this resource
         (Multiplicity 0..n)"""
 
-        # Not OCCI related attributes:
-
+        # following are not in the spec - but needed.
         self.data = ''
         """Data which was initially provided by the client in the body."""
         self.user = 'default'
@@ -81,7 +97,17 @@ class Resource(Kind):
         self.attributes = {}
         """Dictionary containing the attributes for this resource."""
 
-    def __cmp__(self, instance):
+    def get_certain_categories(self, name):
+        """
+        Return all categories with the given term. Empty list if none.
+        """
+        result = []
+        for item in self.categories:
+            if item.term == name:
+                result.append(item)
+        return result
+
+    def __eq__(self, instance):
         """
         Very weak test if two resources are the same. Since by rule ids are
         unique: two resources with same id are considered identical.
@@ -95,6 +121,14 @@ class Link(Kind):
     """
     A link.
     """
+
+    category = Category()
+    category.attributes = ['target']
+    category.related = []
+    category.scheme = 'http://schemas.ogf.org/occi/core#link'
+    category.term = 'link'
+    category.title = 'A Link'
+
     def __init__(self):
         super(Link, self).__init__()
         self.target = ''
@@ -104,5 +138,13 @@ class Action(Kind):
     """
     A action.
     """
+
+    category = Category()
+    category.attributes = []
+    category.related = []
+    category.scheme = 'http://schemas.ogf.org/occi/core#action'
+    category.term = 'action'
+    category.title = 'An Action'
+
     def __init__(self):
         super(Action, self).__init__()

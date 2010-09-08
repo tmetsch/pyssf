@@ -20,7 +20,8 @@ Created on Jul 12, 2010
 
 @author: tmetsch
 '''
-from pyrest.resource_model import Link, Resource, Category
+from pyrest.resource_model import Resource, Category, Kind
+from pyrest.backends import JobHandler
 import unittest
 
 class BasicTests(unittest.TestCase):
@@ -28,15 +29,6 @@ class BasicTests(unittest.TestCase):
     # --------
     # TEST FOR SUCCESS
     # --------
-
-    def test_get_action_links_for_success(self):
-        action_link = Link()
-        resource = Resource()
-        action_link.target = "http://example.com/123/#tada"
-        action_link.link_class = "action"
-        resource.links.append(action_link)
-        res = resource.get_action_links()
-        self.assertEquals(res[0].link_class, action_link.link_class)
 
     def test_get_certain_categories_for_success(self):
         category = Category()
@@ -47,51 +39,51 @@ class BasicTests(unittest.TestCase):
         res = resource.get_certain_categories('job')
         self.assertEquals(res[0].scheme, 'http://schemas.ogf.org/occi/resource#')
 
-    def test_cmp_for_success(self):
+    def test_resource_eq_for_success(self):
         resource1 = Resource()
         resource1.id = 'foo'
         resource2 = Resource()
         resource2.id = 'foo'
-        self.assertTrue(resource1.__cmp__(resource2))
+        self.assertTrue(resource1.__eq__(resource2))
+
+    def test_kind_eq_for_success(self):
+        # includes tests for category comp. because kind == kind if cat = cat!
+        kind1 = Kind()
+        kind1.title = 'bla'
+        kind1.categories = [Resource.category]
+        kind2 = Kind()
+        kind2.title = 'foo'
+        kind2.categories = [Resource.category]
+        self.assertTrue(kind1, kind2)
 
     # --------
     # TEST FOR FAILUTE
     # --------
 
-    def test_get_action_links_for_failure(self):
-        # when a action link is given without target -> res = 0!
-        action_link = Link()
-        resource = Resource()
-        action_link.link_class = "action"
-        resource.links.append(action_link)
-        self.assertEquals([], resource.get_action_links())
-
     def test_get_certain_categories_for_failure(self):
         # ???
         pass
 
-    def test_cmp_for_failure(self):
+    def test_resource_eq_for_failure(self):
         resource1 = Resource()
         resource1.id = 'foo'
         resource2 = Resource()
         resource2.id = 'bar'
-        self.assertFalse(resource1.__cmp__(resource2))
+        self.assertFalse(resource1.__eq__(resource2))
+
+    def test_kind_eq_for_failure(self):
+        # includes tests for category comp. because kind == kind if cat = cat!
+        kind1 = Kind()
+        kind1.title = 'bla'
+        kind1.categories = [Resource.category]
+        kind2 = Kind()
+        kind2.title = 'foo'
+        kind2.categories = [JobHandler.category]
+        self.assertFalse(kind1.__eq__(kind2))
 
     # --------
     # TEST FOR SANITY
     # --------
-
-    def test_get_action_links_for_sanity(self):
-        action_link = Link()
-        other_link = Link()
-        resource = Resource()
-        action_link.target = "http://example.com/123/#tada"
-        action_link.link_class = "action"
-        other_link.target = "http://example.com/abc/#job"
-        other_link.link_class = "category"
-        resource.links.append(action_link)
-        resource.links.append(other_link)
-        self.assertEquals(1, len(resource.get_action_links()))
 
     def test_get_certain_categories_for_sanity(self):
         # already done in success test.

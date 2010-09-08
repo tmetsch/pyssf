@@ -203,12 +203,15 @@ class LinkTests(unittest.TestCase):
     # Note: more test are done in the parser tests
     heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 'Link': '</123>;class="test";rel="http://example.com/next/job";title="Next job"', 'occi.drmaa.remote_command':'/bin/sleep'}
 
-    def test_links_far_sanity(self):
-        # pass along some attributes and see if they can be retrieved
+    def test_links_for_sanity(self):
+        pass
+
+    def test_links_in_header_for_success(self):
+        # test if a terminate link is added
         response = service.APPLICATION.request("/", method = "POST", headers = self.heads)
         url = response.headers['Location']
         response = service.APPLICATION.request(url)
-        self.assertEquals(response.headers['Link'].split(';')[0], '</123>')
+        self.assertEquals(response.headers['Link'].split(';')[1], 'action=terminate>')
 
 class ActionsTests(unittest.TestCase):
 
@@ -255,7 +258,6 @@ class ActionsTests(unittest.TestCase):
         kill_url = tmp[tmp.find('<') + 1:tmp.find('>')]
         service.APPLICATION.request(kill_url, method = "POST")
         response = service.APPLICATION.request(url)
-        print response.headers
         self.assertEquals(response.headers['Attribute'], 'occi.drmaa.job_state=EXIT')
 
 class QueryTests(unittest.TestCase):
