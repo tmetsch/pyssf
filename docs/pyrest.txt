@@ -84,7 +84,7 @@ The following backend is implemented:
    registered category:
 
     ========  ====================================
-      Term      Scheme                               
+      Term      Scheme                            
     ========  ====================================
     job       "http://schemas.ogf.org/occi/drmaa#"
     ========  ====================================
