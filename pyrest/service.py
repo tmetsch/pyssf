@@ -33,6 +33,7 @@ import uuid
 import web
 
 RENDERING_PARSER = HTTPHeaderParser()
+AUTHENTICATION_ENABLED = False
 
 # The following stuff is here for Storage of the Resources.
 
@@ -105,7 +106,6 @@ class SecurityHandler(object):
         if not username == resource.user:
             raise SecurityException("Not authorized.")
 
-AUTHENTICATION_ENABLED = False
 SECURITY_HANDLER = SecurityHandler()
 
 def authenticate(target):

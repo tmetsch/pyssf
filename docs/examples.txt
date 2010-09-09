@@ -122,7 +122,7 @@ A simple python program to submit a job would look like::
     h = httplib2.Http()
     
     # create HTTP headers with the right category (mandatory field ) and attributes
-    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/drmaa#";label="Job Resource"', 
+    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/drmaa#";label="Job Resource"',
              'Attribute': 'occi.drmaa.remote_command=/bin/sleep, occi.drmaa.args=10'}
     response = h.request('http://localhost:8080/','POST', headers=heads)
     
@@ -130,8 +130,16 @@ A simple python program to submit a job would look like::
     url = str(response)[str(response).find('location') + 12:]
     url = 'http://localhost:8080' + url[:url.find(',') - 1]
     
-    # and delete it
-    h.request(url,'DELETE')
+    # get the newly created resource
+    response = h.request(url,'GET')
+    
+    # run the terminate action
+    terminate_link = str(response)[str(response).find('link') + 9:str(response).find('>')]
+    terminate_header = {'Category': 'terminate;scheme="http://schemas.ogf.org/occi/drmaa/action#"'}
+    response = h.request('http://localhost:8080' + terminate_link, 'POST', headers=terminate_header)
+    
+    # delete the resource
+    print h.request(url,'DELETE')
 
 A pyrest client using SSL and basic authentication
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
