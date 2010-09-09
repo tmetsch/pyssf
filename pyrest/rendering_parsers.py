@@ -24,7 +24,7 @@ Created on Jul 9, 2010
 '''
 
 from pyrest.myexceptions import MissingCategoriesException
-from pyrest.resource_model import Resource, Category
+from pyrest.resource_model import Resource, Category, Action
 import re
 
 class HTTPData(object):
@@ -46,9 +46,17 @@ class Parser(object):
     HTTPData strcuture.
     """
 
+    def to_action(self, http_data):
+        """
+        Parse an action request and return a Action.
+        
+        http_data -- the incoming data.
+        """
+        raise NotImplementedError
+
     def to_resource(self, key, http_data):
         """
-        Parse the incoming data and return a Resource
+        Parse the incoming data and return a Resource.
         
         key -- a unique identifier.
         http_data -- the incoming data.
@@ -160,7 +168,7 @@ class HTTPHeaderParser(Parser):
             if len(item.related) > 0:
                 text += ";rel" + str(item.related)
             if item.title is not '':
-                text += ";label=" + item.title
+                text += ";title=" + item.title
             category_string.append(text)
         return ','.join(category_string)
 
@@ -188,6 +196,21 @@ class HTTPHeaderParser(Parser):
             action_list.append("</" + resource.id + ";action="
                                + item.categories[0].term + ">")
         return ','.join(action_list)
+
+    def to_action(self, http_data):
+        if http_data is None:
+            raise MissingCategoriesException("Header cannot be None!")
+
+        try:
+            categories = self._get_categories_from_header(http_data.header)
+        except MissingCategoriesException:
+            raise
+
+        action = Action()
+        action.categories = categories
+
+        # dropping data in the body :-)
+        return action
 
     def to_resource(self, key, http_data):
         if key is None or http_data is None:

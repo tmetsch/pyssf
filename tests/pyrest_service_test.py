@@ -55,7 +55,7 @@ class ResourceCreationTests(unittest.TestCase):
 
     service.APPLICATION = web.application(('/(.*)', 'ResourceHandler'), globals())
     service.ResourceHandler.backend = DummyBackend()
-    heads = {'Category': 'compute;scheme="http://schemas.ogf.org/occi/resource#";label="Compute Resource"'}
+    heads = {'Category': 'compute;scheme="http://schemas.ogf.org/occi/resource#";title="Compute Resource"'}
 
     def test_post_for_success(self):
         # simple post on entry point should return 200 OK
@@ -168,7 +168,7 @@ class ResourceCreationTests(unittest.TestCase):
 class CategoriesTests(unittest.TestCase):
 
     # Note: more tests are done in the parser tests
-    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep'}
+    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";title="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep'}
 
     def test_categories_for_failure(self):
         # if a post is done without category -> Fail
@@ -188,20 +188,19 @@ class AttributeTests(unittest.TestCase):
 
     # Note: more tests are done in the parser tests
 
-    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 'Attribute': 'occi.drmaa.remote_command = /bin/sleep'}
+    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";title="Job Resource"', 'Attribute': 'occi.drmaa.remote_command = /bin/sleep'}
 
     def test_attributes_for_sanity(self):
         # pass along some attributes and see if they can be retrieved
         response = service.APPLICATION.request("/", method = "POST", headers = self.heads)
         url = response.headers['Location']
         response = service.APPLICATION.request(url)
-        #print response
         self.assertEquals(response.headers['Attribute'], 'occi.drmaa.remote_command=/bin/sleep')
 
 class LinkTests(unittest.TestCase):
 
     # Note: more test are done in the parser tests
-    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 'Link': '</123>;class="test";rel="http://example.com/next/job";title="Next job"', 'occi.drmaa.remote_command':'/bin/sleep'}
+    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";title="Job Resource"', 'Link': '</123>;class="test";rel="http://example.com/next/job";title="Next job"', 'occi.drmaa.remote_command':'/bin/sleep'}
 
     def test_links_for_sanity(self):
         pass
@@ -215,7 +214,8 @@ class LinkTests(unittest.TestCase):
 
 class ActionsTests(unittest.TestCase):
 
-    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep'}
+    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";title="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep'}
+    action_heads = {'Category': 'terminate;scheme="http://schemas.ogf.org/occi/drmaa/action#"'}
 
     def test_trigger_action_for_success(self):
         response = service.APPLICATION.request("/", method = "POST", headers = self.heads)
@@ -223,7 +223,7 @@ class ActionsTests(unittest.TestCase):
         response = service.APPLICATION.request(url)
         tmp = response.headers['Link'].split(',').pop()
         kill_url = tmp[tmp.find('<') + 1:tmp.find('>')]
-        response = service.APPLICATION.request(kill_url, method = "POST")
+        response = service.APPLICATION.request(kill_url, method = "POST", headers = self.action_heads)
         self.assertEquals(response.status, '200 OK')
 
     def test_trigger_action_for_failure(self):
@@ -256,7 +256,7 @@ class ActionsTests(unittest.TestCase):
         response = service.APPLICATION.request(url)
         tmp = response.headers['Link'].split(',').pop()
         kill_url = tmp[tmp.find('<') + 1:tmp.find('>')]
-        service.APPLICATION.request(kill_url, method = "POST")
+        service.APPLICATION.request(kill_url, method = "POST", headers = self.action_heads)
         response = service.APPLICATION.request(url)
         self.assertEquals(response.headers['Attribute'], 'occi.drmaa.job_state=EXIT')
 
@@ -265,8 +265,10 @@ class QueryTests(unittest.TestCase):
 
 class SecurityTests(unittest.TestCase):
 
-    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep', 'Authorization': 'Basic ' + string.strip(base64.encodestring('foo' + ':' + 'ssf'))}
-    heads2 = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep', 'Authorization': 'Basic ' + string.strip(base64.encodestring('bar' + ':' + 'ssf'))}
+    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";title="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep', 'Authorization': 'Basic ' + string.strip(base64.encodestring('foo' + ':' + 'ssf'))}
+    heads2 = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";title="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep', 'Authorization': 'Basic ' + string.strip(base64.encodestring('bar' + ':' + 'ssf'))}
+
+    action_heads = {'Category': 'terminate;scheme="http://schemas.ogf.org/occi/drmaa/action#"', 'Authorization': 'Basic ' + string.strip(base64.encodestring('foo' + ':' + 'ssf'))}
 
     heads_apache = heads.copy()
     heads_apache.pop("Authorization")
@@ -275,7 +277,7 @@ class SecurityTests(unittest.TestCase):
     heads_apache2['SSL_CLIENT_CERT_DN'] = '/C=DE/L=Munich/O=Sun/OU=Staff/CN=Bar'
 
     def_heads = {'Authorization': 'Basic ' + string.strip(base64.encodestring('foo' + ':' + 'asd'))}
-    def_heads2 = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";label="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep'}
+    def_heads2 = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";title="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep'}
 
     def setUp(self):
         service.AUTHENTICATION_ENABLED = True
@@ -299,7 +301,7 @@ class SecurityTests(unittest.TestCase):
 
         tmp = response.headers['Link'].split(',').pop()
         action_url = tmp[tmp.find('<') + 1:tmp.find('>')]
-        response = service.APPLICATION.request(action_url, method = "POST", headers = self.heads)
+        response = service.APPLICATION.request(action_url, method = "POST", headers = self.action_heads)
         self.assertEquals(response.status, '200 OK')
 
         response = service.APPLICATION.request(url, method = "PUT", headers = self.heads)

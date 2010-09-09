@@ -28,11 +28,11 @@ from pyrest.myexceptions import MissingActionException, \
     MissingAttributesException, StateException, MissingCategoriesException, \
     SecurityException
 from pyrest.rendering_parsers import HTTPHeaderParser, HTTPData
-from pyrest.resource_model import Action, Category
 import re
 import uuid
 import web
 
+RENDERING_PARSER = HTTPHeaderParser()
 
 # The following stuff is here for Storage of the Resources.
 
@@ -46,7 +46,6 @@ class NonPersistentResourceDictionary(dict):
     
     This one now uses HTTPHeaderParser
     """
-    parser = HTTPHeaderParser()
 
     def __init__(self):
         dict.__init__(self)
@@ -56,11 +55,11 @@ class NonPersistentResourceDictionary(dict):
             item = dict.__getitem__(self, key)
         except KeyError:
             raise
-        return self.parser.from_resource(item)
+        return RENDERING_PARSER.from_resource(item)
 
     def __setitem__(self, key, value):
         try:
-            item = self.parser.to_resource(key, value)
+            item = RENDERING_PARSER.to_resource(key, value)
         except MissingCategoriesException:
             raise
         return dict.__setitem__(self, key, item)
@@ -176,12 +175,13 @@ class HTTPHandler(object):
         index = web.ctx.env['PATH_INFO'].find(';action=')
         if index is not - 1:
             key = web.ctx.env['PATH_INFO'][1:index]
-            actionclass = web.ctx.env['PATH_INFO'][index + 1:]
             try:
-                self.trigger_action(key, actionclass, username)
+                request = HTTPData(web.ctx.env, web.data())
+                self.trigger_action(key, request, username)
                 web.OK()
                 return 'OK'
-            except (StateException, MissingActionException) as ex:
+            except (StateException, MissingCategoriesException,
+                    MissingActionException) as ex:
                 return web.BadRequest(), str(ex)
             except KeyError:
                 return web.NotFound()
@@ -389,24 +389,19 @@ class ResourceHandler(HTTPHandler):
         else:
             return False
 
-    def trigger_action(self, key, term, username):
+    def trigger_action(self, key, data, username):
         """
         Trigger an action in the backend system. Backend should update state
         and links if needed.
         
         key -- the id for the resource.
-        term -- name of the action.
+        data -- HTTP data for the action request.
         """
         try:
-            # FIXME: this needs to be cleaned up!
             res = self.resources.get_resource(key)
             SECURITY_HANDLER.authorize(username, res)
-            action = Action()
-            cat = Category()
-            cat.term = term[term.find("=") + 1:]
-            cat.scheme = JobHandler.terminate_category.scheme
-            action.categories = [cat]
+            action = RENDERING_PARSER.to_action(data)
             self.backend.action(res, action)
-        except (KeyError, MissingActionException, StateException,
-                SecurityException):
+        except (KeyError, MissingCategoriesException, MissingActionException,
+                StateException, SecurityException):
             raise

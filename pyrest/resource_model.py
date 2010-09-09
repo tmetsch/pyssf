@@ -125,7 +125,7 @@ class Link(Kind):
     category = Category()
     category.attributes = ['target']
     category.related = []
-    category.scheme = 'http://schemas.ogf.org/occi/core#link'
+    category.scheme = 'http://schemas.ogf.org/occi/core#'
     category.term = 'link'
     category.title = 'A Link'
 
@@ -142,7 +142,7 @@ class Action(Kind):
     category = Category()
     category.attributes = []
     category.related = []
-    category.scheme = 'http://schemas.ogf.org/occi/core#action'
+    category.scheme = 'http://schemas.ogf.org/occi/core#'
     category.term = 'action'
     category.title = 'An Action'
 

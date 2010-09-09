@@ -22,8 +22,16 @@ Created on Jul 19, 2010
 
 @author: tmetsch
 '''
-from pylsf import lsf
-import drmaa
+try:
+    from pylsf import lsf
+except ImportError:
+    print("Warning: pylsf not initialized properly - check if '_lsf.so' is in"
+          + " your PYTHONPATH.")
+try:
+    import drmaa
+except ImportError:
+    print("Warning: drmaa-python not initialized properly - check if the"
+          + " prerequisite package is installed!")
 import os
 
 class Job(object):
