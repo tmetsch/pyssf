@@ -15,16 +15,18 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 # 
-from pyrest.backends import JobHandler
 '''
 Created on Jul 12, 2010
 
 @author: tmetsch
 '''
+
+from pyrest.backends import JobHandler
 from pyrest.myexceptions import MissingCategoriesException
 from pyrest.rendering_parsers import Parser, HTTPHeaderParser, HTTPData
 from pyrest.resource_model import Action, Category, Resource
 import unittest
+
 
 class AbstractParserTest(unittest.TestCase):
 
@@ -37,6 +39,7 @@ class AbstractParserTest(unittest.TestCase):
     def test_not_implemented_throws_for_failure(self):
         self.assertRaises(NotImplementedError, self.parser.to_resource, "111", None)
         self.assertRaises(NotImplementedError, self.parser.from_resource, None)
+        self.assertRaises(NotImplementedError, self.parser.to_action, None)
 
 class HTTPHeaderParserTest(unittest.TestCase):
 
@@ -142,6 +145,7 @@ class HTTPHeaderParserTest(unittest.TestCase):
 
     def test_to_action_for_failure(self):
         self.assertRaises(MissingCategoriesException, self.parser.to_action, HTTPData({}, None))
+        self.assertRaises(MissingCategoriesException, self.parser.to_action, None)
 
     def test_to_resource_for_failure(self):
         # missing categories -> fail big time!

@@ -20,12 +20,62 @@ Created on Jul 12, 2010
 
 @author: tmetsch
 '''
+from pyrest import backends
 from pyrest.backends import Handler, JobHandler
-from pyrest.myexceptions import MissingActionException, StateException
-from pyrest.myexceptions import MissingAttributesException
+from pyrest.myexceptions import MissingActionException, StateException, \
+    MissingAttributesException
 from pyrest.resource_model import Resource, Action
+from tests import mocks
 import time
 import unittest
+
+class BackendTest(unittest.TestCase):
+
+
+    dummy = mocks.DummyBackend()
+
+    def setUp(self):
+        backends.registered_backends = {}
+
+    # --------
+    # TEST FOR SUCCESS
+    # --------
+
+    def test_register_for_success(self):
+        backends.register([self.dummy.category], self.dummy)
+        self.assertTrue(len(backends.registered_backends) > 0)
+
+    def test_find_handler_for_success(self):
+        backends.register([self.dummy.category], self.dummy)
+        handler = backends.find_right_backend([self.dummy.category])
+        self.assertTrue(isinstance(handler, mocks.DummyBackend))
+
+    # --------
+    # TEST FOR FAILURE
+    # --------
+
+    def test_register_for_failure(self):
+        # register invalid handler
+        self.assertRaises(AttributeError, backends.register, [self.dummy.category], self)
+
+        # register prev register
+        backends.register([self.dummy.category], self.dummy)
+        self.assertRaises(AttributeError, backends.register, [self.dummy.category], self.dummy)
+
+    def test_find_handler_for_failure(self):
+        # test for non-exit handler should return basic handler!
+        backends.register([self.dummy.category], self.dummy)
+        handler = backends.find_right_backend([self.dummy.action_category])
+        self.assertTrue(isinstance(handler, Handler))
+
+    # --------
+    # TEST FOR SANITY
+    # --------
+
+    def test_registering_for_sanity(self):
+        backends.register([self.dummy.category], self.dummy)
+        self.assertEquals(self.dummy, backends.find_right_backend([self.dummy.category]))
+
 
 class AbstractHandlerTest(unittest.TestCase):
 

@@ -27,10 +27,46 @@ from pyrest.myexceptions import MissingActionException, \
     MissingAttributesException, StateException
 from pyrest.resource_model import Resource, Category, Action
 
+registered_backends = {}
+
+def register(categories, handler):
+    """
+    Register a job handler for the service - the categories the handler
+    can deal with need to be specified.
+    
+    If two handlers can deal with the same categories - the more recent
+    registered one is taken!
+    
+    categories -- list of categories (for resource, links and actions).
+    handler -- the handler. 
+    """
+    if not isinstance(handler, Handler):
+        raise AttributeError("Second argument needs to derive from Handler"
+                           + " class.")
+    else:
+        for category in categories:
+            if registered_backends.has_key(category.scheme + category.term):
+                raise AttributeError("A handler for this category is already"
+                                   + "registered.")
+            else:
+                registered_backends[category.scheme + category.term] = handler
+
+def find_right_backend(categories):
+    """
+    Retrieve a backend which is able to deal with the first given category.
+    
+    categories -- The category a backend is needed for.
+    """
+    for category in categories:
+        cat_id = category.scheme + category.term
+        if cat_id in registered_backends.keys():
+            return registered_backends[cat_id]
+    return Handler()
+
 class Handler(object):
     """
     A backend should support the routines described below. It triggers actions
-    and is in charge of dealing/manipulating/maintainig the data of the
+    and is in charge of dealing/manipulating/maintaining the data of the
     Resources.
     """
 
@@ -109,9 +145,9 @@ class JobHandler(Handler):
 
     def __init__(self):
         """
-        TODO: Registers the category this backend can handle.
+        Registers the category this backend can handle.
         """
-        pass
+        register([self.category, self.terminate_category], self)
 
     def create(self, resource):
         if self.category in resource.categories:

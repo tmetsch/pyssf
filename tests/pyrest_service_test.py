@@ -15,19 +15,22 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 # 
-from pyrest.myexceptions import SecurityException
-'''
-Created on Jul 5, 2010
-
-@author: tmetsch
-'''
 from mocks import DummyBackend, SecurityHandler, SimpleSecurityHandler
+from pyrest.myexceptions import SecurityException
 from pyrest.service import ResourceHandler
 import base64
 import pyrest.service as service
 import string
 import unittest
 import web
+'''
+Created on Jul 5, 2010
+
+@author: tmetsch
+'''
+
+app = web.application(('/(.*)', 'ResourceHandler'), globals())
+dummy = DummyBackend()
 
 class AbstractClassTests(unittest.TestCase):
 
@@ -53,44 +56,40 @@ class ResourceCreationTests(unittest.TestCase):
     # TEST FOR SUCCESS
     # --------
 
-    service.APPLICATION = web.application(('/(.*)', 'ResourceHandler'), globals())
-    service.ResourceHandler.backend = DummyBackend()
-    heads = {'Category': 'compute;scheme="http://schemas.ogf.org/occi/resource#";title="Compute Resource"'}
-
     def test_post_for_success(self):
         # simple post on entry point should return 200 OK
-        response = service.APPLICATION.request("/", method = "POST", headers = self.heads)
+        response = app.request("/", method = "POST", headers = dummy.http_category)
         self.assertEquals(response.status, '200 OK')
 
-        #response = service.APPLICATION.request("/job/", method = "POST")
+        #response = app.request("/job/", method = "POST")
         #self.assertEquals(response.status, '200 OK')
 
     def test_get_for_success(self):
         # simple post and get on the returned location should return 200 OK
-        response = service.APPLICATION.request("/", method = "POST", headers = self.heads)
+        response = app.request("/", method = "POST", headers = dummy.http_category)
         loc = response.headers['Location']
-        response = service.APPLICATION.request(loc)
+        response = app.request(loc)
         self.assertEquals(response.status, '200 OK')
 
         # get on */ should return listing
-        response = service.APPLICATION.request("/")
+        response = app.request("/")
         self.assertEquals(response.status, '200 OK')
         self.assertEquals(response.data, 'Listing sub resources...')
 
     def test_put_for_success(self):
         # Put on specified resource should return 200 OK (non-existent)
-        response = service.APPLICATION.request("/123", method = "PUT", headers = self.heads)
+        response = app.request("/123", method = "PUT", headers = dummy.http_category)
         self.assertEquals(response.status, '200 OK')
 
         # put on existent should update
-        response = service.APPLICATION.request("/123", method = "PUT", headers = self.heads, data = "hello")
+        response = app.request("/123", method = "PUT", headers = dummy.http_category, data = "hello")
         self.assertEquals(response.status, '200 OK')
 
     def test_delete_for_success(self):
         # Del on created resource should return 200 OK
-        response = service.APPLICATION.request("/", method = "POST", headers = self.heads)
+        response = app.request("/", method = "POST", headers = dummy.http_category)
         loc = response.headers['Location']
-        response = service.APPLICATION.request(loc, method = "DELETE")
+        response = app.request(loc, method = "DELETE")
         self.assertEquals(response.status, '200 OK')
 
     # --------
@@ -99,12 +98,12 @@ class ResourceCreationTests(unittest.TestCase):
 
     def test_post_for_failure(self):
         # post to non-existent resource should return 404
-        response = service.APPLICATION.request("/123", method = "POST", headers = self.heads)
+        response = app.request("/123", method = "POST", headers = dummy.http_category)
         self.assertEquals(response.status, '404 Not Found')
 
     def test_get_for_failure(self):
         # get on non existent should return 404
-        response = service.APPLICATION.request("/123")
+        response = app.request("/123")
         self.assertEquals(response.status, '404 Not Found')
 
     def test_put_for_failure(self):
@@ -113,7 +112,7 @@ class ResourceCreationTests(unittest.TestCase):
 
     def test_delete_for_failure(self):
         # delete of non existent should return 404
-        response = service.APPLICATION.request("/123", method = "DELETE")
+        response = app.request("/123", method = "DELETE")
         self.assertEquals(response.status, '404 Not Found')
 
     # --------
@@ -122,153 +121,149 @@ class ResourceCreationTests(unittest.TestCase):
 
     def test_post_for_sanity(self):
         # first create (post) then get
-        response = service.APPLICATION.request("/", method = "POST", headers = self.heads, data = "some data")
+        response = app.request("/", method = "POST", headers = dummy.http_category, data = "some data")
         self.assertEquals(response.status, '200 OK')
         loc = response.headers['Location']
-        response = service.APPLICATION.request(loc)
+        response = app.request(loc)
         self.assertEquals(response.data, 'some data')
 
         # post to existent url should create sub resource 
-        # TODO
+        # TODO: here!
 
     def test_get_for_sanity(self):
         # first create (put) than test get on parent for listing
-        service.APPLICATION.request("/job/123", method = "PUT", headers = self.heads, data = "hello")
-        response = service.APPLICATION.request("/job/")
+        app.request("/job/123", method = "PUT", headers = dummy.http_category, data = "hello")
+        response = app.request("/job/")
         self.assertEquals(response.data, 'Listing sub resources...')
 
     def test_put_for_sanity(self):
         # put on existent should update
-        response = service.APPLICATION.request("/", method = "POST", headers = self.heads, data = "some data")
+        response = app.request("/", method = "POST", headers = dummy.http_category, data = "some data")
         self.assertEquals(response.status, '200 OK')
         loc = response.headers['Location']
-        response = service.APPLICATION.request(loc)
+        response = app.request(loc)
         self.assertEquals(response.data, "some data")
-        response = service.APPLICATION.request(loc, method = "PUT", headers = self.heads, data = "other data")
+        response = app.request(loc, method = "PUT", headers = dummy.http_category, data = "other data")
         self.assertEquals(response.status, '200 OK')
-        response = service.APPLICATION.request(loc)
-        # TODO needs proper backend!
+        response = app.request(loc)
+        # FIXME: look into update!
         #self.assertEquals(response.data, "other data")
 
         # put on non-existent should create
-        response = service.APPLICATION.request("/abc", method = "PUT", headers = self.heads, data = "some data")
+        response = app.request("/abc", method = "PUT", headers = dummy.http_category, data = "some data")
         self.assertEquals(response.status, '200 OK')
-        response = service.APPLICATION.request("/abc")
+        response = app.request("/abc")
         self.assertEquals(response.status, '200 OK')
 
     def test_delete_for_sanity(self):
         # create and delete an entry than try get
-        response = service.APPLICATION.request("/", method = "POST", headers = self.heads, data = "some data")
+        response = app.request("/", method = "POST", headers = dummy.http_category, data = "some data")
         self.assertEquals(response.status, '200 OK')
         loc = response.headers['Location']
-        response = service.APPLICATION.request(loc, method = "DELETE")
-        response = service.APPLICATION.request(loc)
+        response = app.request(loc, method = "DELETE")
+        response = app.request(loc)
         self.assertEquals(response.status, "404 Not Found")
 
 class CategoriesTests(unittest.TestCase):
 
     # Note: more tests are done in the parser tests
-    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";title="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep'}
 
     def test_categories_for_failure(self):
         # if a post is done without category -> Fail
-        response = service.APPLICATION.request("/", method = "POST")
+        response = app.request("/", method = "POST")
         self.assertEquals('400 Bad Request', str(response.status))
 
     def test_categories_for_sanity(self):
         # if a post is done and later a get should return same category
-        response = service.APPLICATION.request("/", method = "POST", headers = self.heads)
+        response = app.request("/", method = "POST", headers = dummy.http_category)
         url = response.headers['Location']
-        response = service.APPLICATION.request(url)
+        response = app.request(url)
         cat = response.headers['Category'].split(';')
-        self.assertEquals(cat[0], 'job')
-        self.assertEquals(cat[1].split('=')[-1:].pop(), 'http://schemas.ogf.org/occi/resource#')
+        self.assertEquals(cat[0], dummy.category.term)
+        self.assertEquals(cat[1].split('=')[-1:].pop(), dummy.category.scheme)
 
 class AttributeTests(unittest.TestCase):
 
     # Note: more tests are done in the parser tests
 
-    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";title="Job Resource"', 'Attribute': 'occi.drmaa.remote_command = /bin/sleep'}
-
     def test_attributes_for_sanity(self):
         # pass along some attributes and see if they can be retrieved
-        response = service.APPLICATION.request("/", method = "POST", headers = self.heads)
+        response = app.request("/", method = "POST", headers = dummy.http_category_with_attr)
         url = response.headers['Location']
-        response = service.APPLICATION.request(url)
-        self.assertEquals(response.headers['Attribute'], 'occi.drmaa.remote_command=/bin/sleep')
+        response = app.request(url)
+        self.assertEquals(response.headers['Attribute'], 'occi.pyssf.test=Bar')
 
 class LinkTests(unittest.TestCase):
 
     # Note: more test are done in the parser tests
-    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";title="Job Resource"', 'Link': '</123>;class="test";rel="http://example.com/next/job";title="Next job"', 'occi.drmaa.remote_command':'/bin/sleep'}
 
     def test_links_for_sanity(self):
         pass
 
     def test_links_in_header_for_success(self):
         # test if a terminate link is added
-        response = service.APPLICATION.request("/", method = "POST", headers = self.heads)
+        response = app.request("/", method = "POST", headers = dummy.http_category)
         url = response.headers['Location']
-        response = service.APPLICATION.request(url)
-        self.assertEquals(response.headers['Link'].split(';')[1], 'action=terminate>')
+        response = app.request(url)
+        self.assertEquals(response.headers['Link'].split(';')[1], 'action=' + dummy.action_category.term + '>')
 
 class ActionsTests(unittest.TestCase):
 
-    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";title="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep'}
-    action_heads = {'Category': 'terminate;scheme="http://schemas.ogf.org/occi/drmaa/action#"'}
-
     def test_trigger_action_for_success(self):
-        response = service.APPLICATION.request("/", method = "POST", headers = self.heads)
+        response = app.request("/", method = "POST", headers = dummy.http_category)
         url = response.headers['Location']
-        response = service.APPLICATION.request(url)
+        response = app.request(url)
         tmp = response.headers['Link'].split(',').pop()
-        kill_url = tmp[tmp.find('<') + 1:tmp.find('>')]
-        response = service.APPLICATION.request(kill_url, method = "POST", headers = self.action_heads)
+        action_url = tmp[tmp.find('<') + 1:tmp.find('>')]
+        response = app.request(action_url, method = "POST", headers = dummy.http_action_category)
         self.assertEquals(response.status, '200 OK')
 
     def test_trigger_action_for_failure(self):
         # only post allowed!
-        response = service.APPLICATION.request("/", method = "POST", headers = self.heads)
+        response = app.request("/", method = "POST", headers = dummy.http_category)
         url = response.headers['Location']
-        response = service.APPLICATION.request(url)
+        response = app.request(url)
         tmp = response.headers['Link'].split(',').pop()
         kill_url = tmp[tmp.find('<') + 1:tmp.find('>')]
-        response = service.APPLICATION.request(kill_url, method = "PUT")
+        response = app.request(kill_url, method = "PUT")
         self.assertEquals('400 Bad Request', str(response.status))
 
         # trigger not existing action!
-        response = service.APPLICATION.request("/", method = "POST", headers = self.heads)
+        response = app.request("/", method = "POST", headers = dummy.http_category)
         url = response.headers['Location']
-        response = service.APPLICATION.request(url)
+        response = app.request(url)
         tmp = response.headers['Link'].split(',').pop()
         kill_url = tmp[tmp.find('<') + 1:tmp.find('>')]
-        response = service.APPLICATION.request(kill_url + 'all', method = "POST")
+        response = app.request(kill_url + 'all', method = "POST")
         self.assertEquals(str(response.status), '400 Bad Request')
 
         # trigger action on non existing resource
-        response = service.APPLICATION.request('http://abc.com/all;kill', method = "POST")
+        response = app.request('http://abc.com/all;kill', method = "POST")
         self.assertEquals(response.status, '404 Not Found')
 
     def test_trigger_action_for_sanity(self):
         # check if result is okay :-)
-        response = service.APPLICATION.request("/", method = "POST", headers = self.heads)
+        response = app.request("/", method = "POST", headers = dummy.http_category)
         url = response.headers['Location']
-        response = service.APPLICATION.request(url)
+        response = app.request(url)
         tmp = response.headers['Link'].split(',').pop()
         kill_url = tmp[tmp.find('<') + 1:tmp.find('>')]
-        service.APPLICATION.request(kill_url, method = "POST", headers = self.action_heads)
-        response = service.APPLICATION.request(url)
-        self.assertEquals(response.headers['Attribute'], 'occi.drmaa.job_state=EXIT')
+        app.request(kill_url, method = "POST", headers = dummy.http_action_category)
+        response = app.request(url)
+        self.assertEquals(response.headers['Attribute'], 'occi.pyssf.test=Foo')
 
 class QueryTests(unittest.TestCase):
     pass
 
 class SecurityTests(unittest.TestCase):
 
-    heads = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";title="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep', 'Authorization': 'Basic ' + string.strip(base64.encodestring('foo' + ':' + 'ssf'))}
-    heads2 = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";title="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep', 'Authorization': 'Basic ' + string.strip(base64.encodestring('bar' + ':' + 'ssf'))}
+    heads = dummy.http_category.copy()
+    heads['Authorization'] = 'Basic ' + string.strip(base64.encodestring('foo' + ':' + 'ssf'))
+    heads2 = dummy.http_category.copy()
+    heads2['Authorization'] = 'Basic ' + string.strip(base64.encodestring('bar' + ':' + 'ssf'))
 
-    action_heads = {'Category': 'terminate;scheme="http://schemas.ogf.org/occi/drmaa/action#"', 'Authorization': 'Basic ' + string.strip(base64.encodestring('foo' + ':' + 'ssf'))}
+    action_heads = dummy.http_action_category.copy()
+    action_heads['Authorization'] = 'Basic ' + string.strip(base64.encodestring('foo' + ':' + 'ssf'))
 
     heads_apache = heads.copy()
     heads_apache.pop("Authorization")
@@ -277,7 +272,7 @@ class SecurityTests(unittest.TestCase):
     heads_apache2['SSL_CLIENT_CERT_DN'] = '/C=DE/L=Munich/O=Sun/OU=Staff/CN=Bar'
 
     def_heads = {'Authorization': 'Basic ' + string.strip(base64.encodestring('foo' + ':' + 'asd'))}
-    def_heads2 = {'Category': 'job;scheme="http://schemas.ogf.org/occi/resource#";title="Job Resource"', 'occi.drmaa.remote_command':'/bin/sleep'}
+    def_heads2 = dummy.http_category
 
     def setUp(self):
         service.AUTHENTICATION_ENABLED = True
@@ -289,35 +284,35 @@ class SecurityTests(unittest.TestCase):
 
     def test_authenticate_for_success(self):
         # test login
-        response = service.APPLICATION.request("/", method = "GET", headers = self.heads)
+        response = app.request("/", method = "GET", headers = self.heads)
         self.assertEquals(response.status, '200 OK')
 
     def test_authorization_for_success(self):
-        response = service.APPLICATION.request("/", method = "POST", headers = self.heads)
+        response = app.request("/", method = "POST", headers = self.heads)
         self.assertEquals(response.status, '200 OK')
         url = response.headers['Location']
-        response = service.APPLICATION.request(url, method = "GET", headers = self.heads)
+        response = app.request(url, method = "GET", headers = self.heads)
         self.assertEquals(response.status, '200 OK')
 
         tmp = response.headers['Link'].split(',').pop()
         action_url = tmp[tmp.find('<') + 1:tmp.find('>')]
-        response = service.APPLICATION.request(action_url, method = "POST", headers = self.action_heads)
+        response = app.request(action_url, method = "POST", headers = self.action_heads)
         self.assertEquals(response.status, '200 OK')
 
-        response = service.APPLICATION.request(url, method = "PUT", headers = self.heads)
+        response = app.request(url, method = "PUT", headers = self.heads)
         self.assertEquals(response.status, '200 OK')
-        response = service.APPLICATION.request(url, method = "DELETE", headers = self.heads)
+        response = app.request(url, method = "DELETE", headers = self.heads)
         self.assertEquals(response.status, '200 OK')
 
         # PKI cert & mod_wsgi testing...
-        response = service.APPLICATION.request("/", method = "POST", headers = self.heads_apache)
+        response = app.request("/", method = "POST", headers = self.heads_apache)
         self.assertEquals(response.status, '200 OK')
         url = response.headers['Location']
-        response = service.APPLICATION.request(url, method = "GET", headers = self.heads_apache)
+        response = app.request(url, method = "GET", headers = self.heads_apache)
         self.assertEquals(response.status, '200 OK')
-        response = service.APPLICATION.request(url, method = "PUT", headers = self.heads_apache)
+        response = app.request(url, method = "PUT", headers = self.heads_apache)
         self.assertEquals(response.status, '200 OK')
-        response = service.APPLICATION.request(url, method = "DELETE", headers = self.heads_apache)
+        response = app.request(url, method = "DELETE", headers = self.heads_apache)
         self.assertEquals(response.status, '200 OK')
 
     # --------
@@ -327,45 +322,45 @@ class SecurityTests(unittest.TestCase):
     def test_authenticate_for_failure(self):
         # auth enabled but no security handler...
         service.SECURITY_HANDLER = None
-        response = service.APPLICATION.request("/", method = "GET", headers = self.heads)
+        response = app.request("/", method = "GET", headers = self.heads)
         self.assertEquals(response.status, '401 Unauthorized')
         service.SECURITY_HANDLER = SimpleSecurityHandler()
 
         # test wrong password
-        response = service.APPLICATION.request("/", method = "GET", headers = self.def_heads)
+        response = app.request("/", method = "GET", headers = self.def_heads)
         self.assertEquals(response.status, '401 Unauthorized')
 
     def test_authorization_for_failure(self):
-        response = service.APPLICATION.request("/", method = "POST", headers = self.heads)
+        response = app.request("/", method = "POST", headers = self.heads)
         self.assertEquals(response.status, '200 OK')
         url = response.headers['Location']
 
-        response = service.APPLICATION.request(url, method = "GET", headers = self.heads)
+        response = app.request(url, method = "GET", headers = self.heads)
         tmp = response.headers['Link'].split(',').pop()
         action_url = tmp[tmp.find('<') + 1:tmp.find('>')]
-        response = service.APPLICATION.request(action_url, method = "POST", headers = self.heads2)
+        response = app.request(action_url, method = "POST", headers = self.heads2)
         self.assertEquals(response.status, '401 Unauthorized')
 
-        response = service.APPLICATION.request(url, method = "GET", headers = self.heads2)
+        response = app.request(url, method = "GET", headers = self.heads2)
         self.assertEquals(response.status, '401 Unauthorized')
-        response = service.APPLICATION.request(url, method = "PUT", headers = self.heads2)
+        response = app.request(url, method = "PUT", headers = self.heads2)
         self.assertEquals(response.status, '401 Unauthorized')
-        response = service.APPLICATION.request(url, method = "DELETE", headers = self.heads2)
+        response = app.request(url, method = "DELETE", headers = self.heads2)
         self.assertEquals(response.status, '401 Unauthorized')
 
         # PKI cert & mod_wsgi testing...
-        response = service.APPLICATION.request("/", method = "POST", headers = self.heads_apache)
+        response = app.request("/", method = "POST", headers = self.heads_apache)
         self.assertEquals(response.status, '200 OK')
         url = response.headers['Location']
-        response = service.APPLICATION.request(url, method = "GET", headers = self.heads_apache2)
+        response = app.request(url, method = "GET", headers = self.heads_apache2)
         self.assertEquals(response.status, '401 Unauthorized')
-        response = service.APPLICATION.request(url, method = "PUT", headers = self.heads_apache2)
+        response = app.request(url, method = "PUT", headers = self.heads_apache2)
         self.assertEquals(response.status, '401 Unauthorized')
-        response = service.APPLICATION.request(url, method = "DELETE", headers = self.heads_apache2)
+        response = app.request(url, method = "DELETE", headers = self.heads_apache2)
         self.assertEquals(response.status, '401 Unauthorized')
 
         # auth enabled but no user info
-        response = service.APPLICATION.request("/", method = "POST", headers = self.def_heads2)
+        response = app.request("/", method = "POST", headers = self.def_heads2)
         self.assertEquals(response.status, '401 Unauthorized')
 
     # --------
@@ -375,17 +370,17 @@ class SecurityTests(unittest.TestCase):
     def test_authenticate_for_sanity(self):
         # test post, get, put and delete authentication for sanity...
         # post
-        response = service.APPLICATION.request("/", method = "POST", headers = self.heads)
+        response = app.request("/", method = "POST", headers = self.heads)
         self.assertEquals(response.status, '200 OK')
         loc = response.headers['Location']
         # get
-        response = service.APPLICATION.request(loc, headers = self.heads)
+        response = app.request(loc, headers = self.heads)
         self.assertEquals(response.status, '200 OK')
         # put
-        response = service.APPLICATION.request(loc, method = "PUT", headers = self.heads, data = "bla")
+        response = app.request(loc, method = "PUT", headers = self.heads, data = "bla")
         self.assertEquals(response.status, '200 OK')
         # delete
-        response = service.APPLICATION.request(loc, method = "DELETE", headers = self.heads)
+        response = app.request(loc, method = "DELETE", headers = self.heads)
         self.assertEquals(response.status, '200 OK')
 
     def test_authorization_for_sanity(self):

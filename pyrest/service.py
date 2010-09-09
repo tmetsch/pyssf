@@ -23,7 +23,7 @@ Created on Jul 2, 2010
 @author: tmetsch
 '''
 
-from pyrest.backends import JobHandler
+from pyrest import backends
 from pyrest.myexceptions import MissingActionException, \
     MissingAttributesException, StateException, MissingCategoriesException, \
     SecurityException
@@ -307,7 +307,6 @@ class ResourceHandler(HTTPHandler):
     """
 
     resources = NonPersistentResourceDictionary()
-    backend = JobHandler()
 
     def create_resource(self, key, data, username):
         """
@@ -319,8 +318,10 @@ class ResourceHandler(HTTPHandler):
         try:
             self.resources[key] = data
             self.resources.get_resource(key).user = username
-            # trigger backend to do his magic
-            self.backend.create(self.resources.get_resource(key))
+            resource = self.resources.get_resource(key)
+            # trigger backend to do some magic
+            backend = backends.find_right_backend(resource.categories)
+            backend.create(resource)
         except (MissingCategoriesException, MissingAttributesException):
             raise
 
@@ -339,7 +340,8 @@ class ResourceHandler(HTTPHandler):
                 # trigger backend to get resource
                 res = self.resources.get_resource(key)
                 SECURITY_HANDLER.authorize(username, res)
-                self.backend.retrieve(res)
+                backend = backends.find_right_backend(res.categories)
+                backend.retrieve(res)
                 res = self.resources[key]
                 return res
             except (KeyError, MissingAttributesException, SecurityException):
@@ -359,7 +361,8 @@ class ResourceHandler(HTTPHandler):
             #self.resources[key] = data
             res = self.resources.get_resource(key)
             SECURITY_HANDLER.authorize(username, res)
-            self.backend.update(res)
+            backend = backends.find_right_backend(res.categories)
+            backend.update(res)
         except (KeyError, MissingAttributesException, SecurityException):
             raise
 
@@ -373,7 +376,8 @@ class ResourceHandler(HTTPHandler):
             # trigger backend to delete
             res = self.resources.get_resource(key)
             SECURITY_HANDLER.authorize(username, res)
-            self.backend.delete(res)
+            backend = backends.find_right_backend(res.categories)
+            backend.delete(res)
             del(self.resources[key])
         except (KeyError, MissingAttributesException, SecurityException):
             raise
@@ -401,7 +405,8 @@ class ResourceHandler(HTTPHandler):
             res = self.resources.get_resource(key)
             SECURITY_HANDLER.authorize(username, res)
             action = RENDERING_PARSER.to_action(data)
-            self.backend.action(res, action)
+            backend = backends.find_right_backend(res.categories)
+            backend.action(res, action)
         except (KeyError, MissingCategoriesException, MissingActionException,
                 StateException, SecurityException):
             raise

@@ -20,8 +20,8 @@ Created on Jul 12, 2010
 
 @author: tmetsch
 '''
-from pyrest.resource_model import Resource, Category, Kind
 from pyrest.backends import JobHandler
+from pyrest.resource_model import Resource, Category, Kind, Action, Link
 import unittest
 
 class BasicTests(unittest.TestCase):
@@ -29,6 +29,13 @@ class BasicTests(unittest.TestCase):
     # --------
     # TEST FOR SUCCESS
     # --------
+
+    def test_init_all(self):
+        kind = Kind()
+        category = Category()
+        resource = Resource()
+        action = Action()
+        link = Link()
 
     def test_get_certain_categories_for_success(self):
         category = Category()
