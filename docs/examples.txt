@@ -35,12 +35,16 @@ The following code demonstrates how to setup pyrest in the easiest possible
 way::
 
     from pyrest import service
+    from pyrest.backends import JobHandler
     from pyrest.service import ResourceHandler
     import web
     
     # setup the service
     urls = ('/(.*)', 'ResourceHandler')
     web.config.debug = False
+    
+    JobHandler()
+    
     application = web.application(urls, globals())
     
     # run...
@@ -53,6 +57,7 @@ The following code can be used to realize a RESTful interface for job
 submission using the pyrest module. It uses the internal CherryPy web server::
 
     from pyrest import service, myexceptions
+    from pyrest.backends import JobHandler
     from pyrest.service import ResourceHandler
     from pyrest.service import SecurityHandler
     import web
@@ -61,6 +66,8 @@ submission using the pyrest module. It uses the internal CherryPy web server::
     urls = ('/(.*)', 'ResourceHandler')
     web.config.debug = False
     application = web.application(urls, globals())
+    
+    JobHandler()    
     
     # enable SSL
     from web.wsgiserver import CherryPyWSGIServer
@@ -77,12 +84,14 @@ submission using the pyrest module. It uses the internal CherryPy web server::
                 raise myexceptions.SecurityException()
     
     # activate authentication
-    service.authentication_enabled = True
-    service.security_handler = SimpleSecurityHandler()
+    service.AUTHENTICATION_ENABLED = True
+    service.SECURITY_HANDLER = SimpleSecurityHandler()
     
     # run...
     if __name__ == "__main__":
         application.run()
+
+
 
 Using pyrest in a PKI secured environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -91,18 +100,26 @@ use pyrest in this setup use the following script (which is configures in your
 Apache site configuration)::
 
     from pyrest import service
+    from pyrest.backends import JobHandler
     from pyrest.service import ResourceHandler
     import web
     
     # setup the service
     urls = ('/(.*)', 'ResourceHandler')
     web.config.debug = False
+    
+    JobHandler()
+    
     application = web.application(urls, globals()).wsgifunc()
 
 .. note::
     See the slightly different application assigment with the wsgifunc() call
     added. Also note that no security feature need to be enabled, since Apache
     handles those.
+
+Using the pyrest module (own backend)
+-------------------------------------
+To be done!
 
 Clients for pyrest (job submission)
 -----------------------------------
