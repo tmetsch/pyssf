@@ -22,6 +22,8 @@ Created on Aug 10, 2010
 
 @author: tmetsch
 '''
+from pyrest import service, rendering_parsers
+from pyrest.backends import JobHandler
 from pyrest.service import ResourceHandler
 import web
 
@@ -32,9 +34,9 @@ import web
 urls = ('/(.*)', 'ResourceHandler')
 
 # 
-# Turns debugging on of off - Default is False (off).
+# Turns debugging on of off - Default is True (on).
 # 
-web.config.debug = False
+#web.config.debug = False
 
 # 
 # When using the build-in webserver of the web.py framework there is no need to
@@ -47,26 +49,29 @@ application = web.application(urls, globals())
 
 # 
 # When using the build-in webserver with SSL enabled uncomment the following
-# lines
+# lines. Default is deactivated.
 # 
 #from web.wsgiserver import CherryPyWSGIServer
 #CherryPyWSGIServer.ssl_certificate = "<path to CA>/newcert.pem"
 #CherryPyWSGIServer.ssl_private_key = "<path to CA>/newkey.pem"
 
-# 
-# Tells the ResourceHandler which Storage, Backend and which Parser it should
-# use.
 #
-#from <module> import <class>
+# Turn on Security - You need to write an own Security handler and activate it
+# here. Default is deactivated.
 #
-# define storage
-#ResourceHandler.resources = MyStorage()
+#service.AUTHENTICATION_ENABLED = True
+#service.SECURITY_HANDLER = ...
+
 #
-# define parser
-#MyStorage.parser = MyParser()
+# Registers backend. You can write you own and initialize and register it here.
 #
-# define a backend
-#ResourceHandler.backend = MyHandler()
+JobHandler()
+
+#
+# Tell pyrest which parser to use (You can write your own and add it here). 
+# Default is the HTTP Header parser.
+#
+#service.RENDERING_PARSER = rendering_parsers.HTTPHeaderParser()
 
 if __name__ == "__main__":
     application.run()
