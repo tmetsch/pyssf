@@ -71,12 +71,17 @@ following Parser is implemented:
 Backends
 ^^^^^^^^
 The backends actually trigger operations and map the HTTP/RESTful resource to
-something else (like Virtual Machines or Jobs in a Cluster). The following
-backend is implemented:
+something else (like Virtual Machines or Jobs in a Cluster). 
+
+Backends register themselves with a set of categories they can handle. The
+pyrest service can handle multiple backends simultaneously and will
+automatically use the right one.
+
+The following backend is implemented:
 
  * Job Handler - This Handler is capable of submitting jobs using the pydrmaa
    package. Creation of the resources should be done with the following
-   category:
+   registered category:
 
     ========  ====================================
       Term      Scheme                               
@@ -95,13 +100,21 @@ backend is implemented:
                                (immutable)                        
     =========================  ======================  ===========
 
-   Also the following links/actions can be used to manipulate the job:
+   Also the following category for actions are registered:
+    
+    =========  ===========================================
+      Term      Scheme                                    
+    =========  ===========================================
+    terminate  "http://schemas.ogf.org/occi/drmaa/action#"
+    =========  ===========================================
 
-    ===================  ===============================
-      Link                 Description                  
-    ===================  ===============================
-    <id>;terminate       Terminate a running job        
-    ===================  ===============================
+  This results in the following action links:
+
+    =====================  ===============================
+      Link                   Description                  
+    =====================  ===============================
+    <id>;action=terminate  Terminate a running job        
+    =====================  ===============================
 
 Writing your own service using pyrest
 --------------------------------------
