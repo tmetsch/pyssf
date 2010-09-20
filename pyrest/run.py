@@ -23,7 +23,7 @@ Created on Aug 10, 2010
 @author: tmetsch
 '''
 from pyrest import service, rendering_parsers
-from pyrest.backends import JobHandler
+from pyrest.examples.restful_job_submission import JobHandler
 from pyrest.service import ResourceHandler
 import web
 

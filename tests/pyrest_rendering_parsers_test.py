@@ -20,13 +20,11 @@ Created on Jul 12, 2010
 
 @author: tmetsch
 '''
-
-from pyrest.backends import JobHandler
 from pyrest.myexceptions import MissingCategoriesException
 from pyrest.rendering_parsers import Parser, HTTPHeaderParser, HTTPData
 from pyrest.resource_model import Action, Category, Resource
+from tests.mocks import DummyBackend
 import unittest
-
 
 class AbstractParserTest(unittest.TestCase):
 
@@ -97,7 +95,7 @@ class HTTPHeaderParserTest(unittest.TestCase):
         self.resource.data = self.body
         self.resource.id = '123'
 
-        self.term_action.categories = [JobHandler.terminate_category]
+        self.term_action.categories = [DummyBackend.action_category]
 
         self.job_resource.categories = [self.category_three]
         self.job_resource.id = '456'
@@ -232,7 +230,7 @@ class HTTPHeaderParserTest(unittest.TestCase):
         # category
         self.assertEquals(res.header['Category'].split(';')[0], 'job')
         # actions
-        self.assertEquals(res.header['Link'].split(';')[1], "action=" + JobHandler.terminate_category.term + ">")
+        self.assertEquals(res.header['Link'].split(';')[1], "action=" + DummyBackend.action_category.term + ">")
 
 if __name__ == "__main__":
     unittest.main()

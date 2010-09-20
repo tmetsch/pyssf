@@ -20,8 +20,8 @@ Created on Jul 12, 2010
 
 @author: tmetsch
 '''
-from pyrest.backends import JobHandler
 from pyrest.resource_model import Resource, Category, Kind, Action, Link
+from tests.mocks import DummyBackend
 import unittest
 
 class BasicTests(unittest.TestCase):
@@ -85,7 +85,7 @@ class BasicTests(unittest.TestCase):
         kind1.categories = [Resource.category]
         kind2 = Kind()
         kind2.title = 'foo'
-        kind2.categories = [JobHandler.category]
+        kind2.categories = [DummyBackend.category]
         self.assertFalse(kind1.__eq__(kind2))
 
     # --------

@@ -90,6 +90,7 @@ class HTTPHeaderParser(Parser):
         except:
             raise MissingCategoriesException('No categories could be found in'
                                            + ' the header!')
+
         categories = header.split(',')
         for entry in categories:
             category = Category()
@@ -120,17 +121,20 @@ class HTTPHeaderParser(Parser):
             else:
                 break
 
+            # TODO: test if category is registered -> if so use it :-)
+
             # add non mandatory fields
             begin = entry.find('title="')
             if begin is not - 1:
                 tmp = entry[begin + 7:]
                 category.title = (tmp[:tmp.find('"')])
 
-            begin = entry.find('rel="')
-            if begin is not - 1:
-                tmp = entry[begin + 7:]
-                rel = (tmp[:tmp.find('"')])
-                category.related = rel.split(',')
+#            begin = entry.find('rel="')
+#            if begin is not - 1:
+#                tmp = entry[begin + 7:]
+#                rel = (tmp[:tmp.find('"')])
+#                category.related = rel.split(',')
+
             result.append(category)
 
         if len(result) == 0:

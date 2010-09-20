@@ -132,17 +132,20 @@ interface you need to do the following steps:
 
 The following code shows this::
 
-    from pyrest import service, backends
+    from pydrmaa.job import JobFactory
+    
+    from pyrest import backends
     from pyrest.backends import Handler
+    from pyrest.myexceptions import MissingAttributesException, StateException, MissingActionException
     from pyrest.resource_model import Category, Resource, Action
     from pyrest.service import ResourceHandler
-    from pydrmaa.job import JobFactory
+    
     import web
-
+    
     # create a backend
     class JobHandler(Handler):
         jobs = {}
-
+    
         category = Category()
         category.attributes = ['occi.drmaa.remote_command', 'occi.drmaa.args',
                                'occi.drmaa.job_id']
@@ -150,44 +153,44 @@ The following code shows this::
         category.scheme = 'http://schemas.ogf.org/occi/drmaa#'
         category.term = 'job'
         category.title = 'A Job Resource'
-
+    
         terminate_category = Category()
         terminate_category.related = [Action.category]
         terminate_category.scheme = 'http://schemas.ogf.org/occi/drmaa/action#'
         terminate_category.term = 'terminate'
         terminate_category.title = 'Terminate a Job'
-
+    
         def __init__(self):
             """
             Registers the categories this backend can handle.
             """
             backends.register([self.category, self.terminate_category], self)
-
+    
         def create(self, resource):
             if self.category in resource.categories:
                 if not 'occi.drmaa.remote_command' in resource.attributes:
                     raise MissingAttributesException('Missing command argument')
-
+    
                 command = resource.attributes['occi.drmaa.remote_command']
                 if 'occi.drmaa.args' in resource.attributes:
                     args = resource.attributes['occi.drmaa.args'].split(' ')
                 else:
                     args = None
                 job = JobFactory().create_job(command, args)
-
+    
                 # update links & attributes
                 action = Action()
                 action.categories = [self.terminate_category]
-
+    
                 # I can append because not action links could be added previously
                 # because parsers take care of that...
                 resource.actions.append(action)
                 resource.attributes['occi.drmaa.job_id'] = job.job_id
-
+    
                 self.jobs[job.job_id] = job
             else:
                 pass
-
+    
         def retrieve(self, resource):
             if self.category in resource.categories:
                 if not 'occi.drmaa.job_id' in resource.attributes:
@@ -206,11 +209,11 @@ The following code shows this::
                     resource.actions = []
             else:
                 pass
-
+    
         def update(self, resource):
             # not allowing the update :-D
             pass
-
+    
         def delete(self, resource):
             if self.category in resource.categories:
                 if not 'occi.drmaa.job_id' in resource.attributes:
@@ -224,7 +227,7 @@ The following code shows this::
                 del self.jobs[resource.attributes['occi.drmaa.job_id']]
             else:
                 pass
-
+    
         def action(self, resource, action):
             if self.category in resource.categories:
                 # update attributes and links if needed and trigger action
@@ -244,15 +247,15 @@ The following code shows this::
                     raise MissingActionException('Non existing action called!')
             else:
                 pass
-
+    
     # setup the service
     urls = ('/(.*)', 'ResourceHandler')
     web.config.debug = False
-
+    
     JobHandler()
-
+    
     application = web.application(urls, globals())
-
+    
     # run...
     if __name__ == "__main__":
         application.run()
