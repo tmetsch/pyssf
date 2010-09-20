@@ -22,18 +22,18 @@ LSF and Sun/Oracle Grid Engine.
 
 It demonstrates the following pyrest features:
 
-* Binding DRMAA to a RESTful OCCI compliant interface
-* RESTifying an existing application
-* Writing a backend for the pyrest service
-* Using the build-in web server to demo the service
+  - Binding DRMAA to a RESTful OCCI compliant interface
+  - RESTifying an existing application
+  - Writing a backend for the pyrest service
+  - Using the build-in web server to demo the service
 
 It does NOT make use of the following features:
 
-* SSL or X509 certificate support
-* deployment with mod_wsgi inside of Apache
-* Security
-* Links
-* Update Verb
+  - SSL or X509 certificate support
+  - deployment with mod_wsgi inside of Apache
+  - Security
+  - Links
+  - Update Verb
 
 Created on Sep 20, 2010
 
