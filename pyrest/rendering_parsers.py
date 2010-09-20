@@ -242,10 +242,18 @@ class HTTPHeaderParser(Parser):
         # add links and categories to header
         res.header['Category'] = self._create_categories_for_header(resource.categories)
         # add attributes
-        res.header['Attribute'] = self._create_attributes_for_header(resource.attributes)
+        attr_tmp = self._create_attributes_for_header(resource.attributes)
+        if attr_tmp is not '':
+            res.header['Attribute'] = attr_tmp
+        else:
+            res.header.pop('Attribute')
         # add links & actions
         # FIXME: add links as well - not just actions
-        res.header['Link'] = self._create_actions_for_header(resource)
+        link_tmp = self._create_actions_for_header(resource)
+        if link_tmp is not '':
+            res.header['Link'] = link_tmp
+        else:
+            res.header.pop('Link')
         # data to body
         res.body = resource.data
         return res

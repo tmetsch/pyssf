@@ -21,14 +21,19 @@ to submit jobs to a cluster using DRMAAv1. It has been tested with Platform
 LSF and Sun/Oracle Grid Engine.
 
 It demonstrates the following pyrest features:
-  * RESTifying an existing application
-  * Writing a backend for the pyrest service
-  * Using the build-in web server to demo the service
+
+* Binding DRMAA to a RESTful OCCI compliant interface
+* RESTifying an existing application
+* Writing a backend for the pyrest service
+* Using the build-in web server to demo the service
 
 It does NOT make use of the following features:
-  * SSL or X509 certificate support
-  * deployment with mod_wsgi inside of Apache
-  * Security
+
+* SSL or X509 certificate support
+* deployment with mod_wsgi inside of Apache
+* Security
+* Links
+* Update Verb
 
 Created on Sep 20, 2010
 

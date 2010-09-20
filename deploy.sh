@@ -47,8 +47,9 @@ case "$1" in
     make clean
     cd ..
     $0 coverage
-    # epydocgui epydoc.prj
-    mkdir docs/_build/html/lint/
+    mkdir docs/_build/html/api/
+	epydocgui epydoc.prj
+	mkdir docs/_build/html/lint/
     pylint -f html pyrest pydrmaa ssf &> docs/_build/html/lint/index.html
     cd docs
     make html
