@@ -246,14 +246,20 @@ class HTTPHeaderParser(Parser):
         if attr_tmp is not '':
             res.header['Attribute'] = attr_tmp
         else:
-            res.header.pop('Attribute')
+            try:
+                res.header.pop('Attribute')
+            except KeyError:
+                pass
         # add links & actions
         # FIXME: add links as well - not just actions
         link_tmp = self._create_actions_for_header(resource)
         if link_tmp is not '':
             res.header['Link'] = link_tmp
         else:
-            res.header.pop('Link')
+            try:
+                res.header.pop('Link')
+            except KeyError:
+                pass
         # data to body
         res.body = resource.data
         return res
