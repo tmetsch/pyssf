@@ -31,6 +31,18 @@ manage the protocol and the resources. Security mechanisms and examples of how
 to use the services are described. All which needs to be done to give your
 Application a RESTful interface is to write a simple backend for your system.
 
+Features:
+  * Easy way of given existing Apps and RESTful interface
+  * Automatic selection of a backend based on a given category
+  * Support for multiple backends simultaneously
+  * Support of SSL and Basic Authentication
+  * Supports PKI (X.509 certificate) secured environments
+  * Service can be deployed in Apache using mod_wsgi
+  * Supports Querying of available backends 
+  * Linking of Resources
+  * Automatic selection of renderings (based on client request)
+  * Easy to extend with own backends and renderings
+
 Structure of the pyrest package
 -------------------------------
 The following sections give an overview of the structure of the pyrest module.
