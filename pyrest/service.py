@@ -193,12 +193,15 @@ class HTTPHandler(object):
         name = str(name)
         if self.resource_exists(name) is True:
             try:
-                name += str(uuid.uuid4())
+                if name.endswith('/') or len(name) == 0:
+                    name += str(uuid.uuid4())
+                else:
+                    name += '/' + str(uuid.uuid4())
                 self.create_resource(str(name), request, username)
                 web.header("Location", "/" + str(name))
                 return 'OK'
             except (MissingCategoriesException,
-                    MissingAttributesException) as ex:
+                    MissingAttributesException, NotImplementedError) as ex:
                 return web.BadRequest(), str(ex)
         else:
             return web.NotFound("Couldn't create sub resource of non-existing"
@@ -362,7 +365,7 @@ class ResourceHandler(HTTPHandler):
             res = self.resources.get_resource(key)
             SECURITY_HANDLER.authorize(username, res)
             backend = backends.find_right_backend(res.categories)
-            backend.update(res)
+            backend.update(res, RENDERING_PARSER.to_resource('tmp', data))
         except (KeyError, MissingAttributesException, SecurityException):
             raise
 

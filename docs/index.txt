@@ -43,11 +43,12 @@ Contents:
    :maxdepth: 2
    :numbered:
    
-   examples.txt
    pydrmaa.txt
    pylsf.txt
    pyrest.txt
    pyssf.txt
+   examples.txt
+   faq.txt
 
 * `Coverage report <cover/index.html>`_
 

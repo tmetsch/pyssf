@@ -23,106 +23,7 @@ or in conjunction. These examples just demonstrate how SSF can be used in
 different setups. The examples are for demonstration purposes only - they do
 not strive to be complete or perfectly pythonic.
 
-Using the pyrest module (job submission)
-----------------------------------------
-The following sections describe some possible use case setups for the pyrest
-module. All use the default ResourceHandler, Storage and Backend and therefore
-feature only job submissions.
-
-Using pyrest without SSL or authentication
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The following code demonstrates how to setup pyrest in the easiest possible
-way::
-
-    from pyrest import service
-    from pyrest.backends import JobHandler
-    from pyrest.service import ResourceHandler
-    import web
-    
-    # setup the service
-    urls = ('/(.*)', 'ResourceHandler')
-    web.config.debug = False
-    
-    JobHandler()
-    
-    application = web.application(urls, globals())
-    
-    # run...
-    if __name__ == "__main__":
-        application.run()
-
-Using pyrest with SSL and basic Authentication
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The following code can be used to realize a RESTful interface for job
-submission using the pyrest module. It uses the internal CherryPy web server::
-
-    from pyrest import service, myexceptions
-    from pyrest.backends import JobHandler
-    from pyrest.service import ResourceHandler
-    from pyrest.service import SecurityHandler
-    import web
-    
-    # setup the service
-    urls = ('/(.*)', 'ResourceHandler')
-    web.config.debug = False
-    application = web.application(urls, globals())
-    
-    JobHandler()    
-    
-    # enable SSL
-    from web.wsgiserver import CherryPyWSGIServer
-    CherryPyWSGIServer.ssl_certificate = "<path to ca>/newcert.pem"
-    CherryPyWSGIServer.ssl_private_key = "<path to ca>/newkey.pem"
-    
-    # create a very simple security handler
-    class SimpleSecurityHandler(SecurityHandler):
-        
-        def authenticate(self, username, password):
-            if username == 'foo' and password == 'bar':
-                pass
-            else:
-                raise myexceptions.SecurityException()
-    
-    # activate authentication
-    service.AUTHENTICATION_ENABLED = True
-    service.SECURITY_HANDLER = SimpleSecurityHandler()
-    
-    # run...
-    if __name__ == "__main__":
-        application.run()
-
-Using pyrest in a PKI secured environment
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-This example assumes that you have deployed pyrest using mod_wsgi on Apache. To
-use pyrest in this setup use the following script (which is configures in your
-Apache site configuration)::
-
-    from pyrest import service
-    from pyrest.backends import JobHandler
-    from pyrest.service import ResourceHandler
-    import web
-    
-    # setup the service
-    urls = ('/(.*)', 'ResourceHandler')
-    web.config.debug = False
-    
-    JobHandler()
-    
-    application = web.application(urls, globals()).wsgifunc()
-
-.. note::
-    See the slightly different application assigment with the wsgifunc() call
-    added. Also note that no security feature need to be enabled, since Apache
-    handles those.
-
-Using the pyrest module (own backend)
--------------------------------------
-The following example show the complete setup of a backend and the service
-using the pyrest module. It describes the job submission handler which is
-already include in the pyrest package - it just shows how to write your own
-backend.
-
-To add your own backend and RESTify you application with an OCCI complient
+To add your own backend and RESTify you application with an OCCI compliant
 interface you need to do the following steps:
 
  * create a backend which is a child of pyrest.backends.Handler
@@ -130,7 +31,154 @@ interface you need to do the following steps:
  * implement the create, retrieve, update, delete and action routines
  * define the application and run it
 
-The following code shows this::
+Using the pyrest module for a Key-Value store
+---------------------------------------------
+This example gives a first very easy overview of how to use the pyrest package
+and write your own backend. The backend will be able to store a Key and a Value
+which are associated to URL. It therefore only supports one category.
+
+The backend will be able to support the following category (which is needed for
+the handling of resources):
+
+    ========  =======================================
+      Term      Scheme                               
+    ========  =======================================
+    keyvalue  "http://schemas.ogf.org/occi/keyvalue#"
+    ========  =======================================
+
+   Currently the following attributes are supported:
+
+    ===================  ===============  ===========
+      Attribute            Description      Example  
+    ===================  ===============  ===========
+    occi.keyvalue.key    The keye         foo        
+    occi.keyvalue.value  The value        bar        
+    ===================  ===============  ===========
+    
+Writting a backend which acts as a Key-Value store
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The following core shows the simple Key-Value store backend::
+
+    from pyrest import backends
+    from pyrest.backends import Handler
+    from pyrest.myexceptions import MissingAttributesException
+    from pyrest.resource_model import Category, Resource
+    from pyrest.service import ResourceHandler
+    
+    import web
+    
+    class KeyValueHandler(Handler):
+    
+        category = Category()
+        category.attributes = ['occi.keyvalue.keq', 'occi.keyvalue.value']
+        category.related = [Resource.category]
+        category.scheme = 'http://schemas.ogf.org/occi/keyvalue#'
+        category.term = 'keyvalue'
+        category.title = 'A key-value Resource'
+    
+        def __init__(self):
+            """
+            Registers the categories this backend can handle.
+            """
+            backends.register([self.category], self)
+    
+        def create(self, resource):
+            if self.category in resource.categories:
+                if not 'occi.keyvalue.keq' in resource.attributes and not 'occi.keyvalue.value' in resource.attributes:
+                    raise MissingAttributesException('Missing key and value attributes')
+            else:
+                pass
+    
+        def retrieve(self, resource):
+            if self.category in resource.categories:
+                pass
+            else:
+                pass
+    
+        def update(self, resource, updated_resource):
+            if self.category in updated_resource.categories:
+                if not 'occi.keyvalue.keq' in updated_resource.attributes and not 'occi.keyvalue.value' in updated_resource.attributes:
+                    raise MissingAttributesException('Missing key and value attributes')
+                resource.attributes['occi.keyvalue.key'] = updated_resource.attributes['occi.keyvalue.key']
+                resource.attributes['occi.keyvalue.value'] = updated_resource.attributes['occi.keyvalue.value']
+            else:
+                pass
+    
+        def delete(self, resource):
+            if self.category in resource.categories:
+                pass
+            else:
+                pass
+    
+        def action(self, resource, action):
+            pass
+    
+    # setup the service
+    urls = ('/(.*)', 'ResourceHandler')
+    web.config.debug = False
+    
+    # register the backend
+    KeyValueHandler()
+    
+    # create the app...
+    application = web.application(urls, globals())
+    
+    # run...
+    if __name__ == "__main__":
+        application.run()
+
+Using the pyrest module for job submission
+------------------------------------------
+The following sections describe how to use the pyrest package for a scenario in
+which jobs are submitted through an RESTful interface.
+
+The example described below will be capabable of handling the following
+information: 
+
+   Creation of the resources should be done with the following registered
+   category:
+
+    ========  ====================================
+      Term      Scheme                            
+    ========  ====================================
+    job       "http://schemas.ogf.org/occi/drmaa#"
+    ========  ====================================
+
+   Currently the following attributes are supported:
+
+    =========================  ======================  ===========
+      Attribute                Description             Example    
+    =========================  ======================  ===========
+    occi.drmaa.remote_command  Path to Job Executable  /bin/sleep 
+    occi.drmaa.args            Arguments               "100"      
+    occi.drmaa.job_id          Id of the job in DRM    123        
+                               (immutable)                        
+    =========================  ======================  ===========
+
+   Also the following category for actions are registered:
+    
+    =========  ===========================================
+      Term      Scheme                                    
+    =========  ===========================================
+    terminate  "http://schemas.ogf.org/occi/drmaa/action#"
+    =========  ===========================================
+
+  This results in the following action links:
+
+    =====================  ===============================
+      Link                   Description                  
+    =====================  ===============================
+    <id>;action=terminate  Terminate a running job        
+    =====================  ===============================
+
+Writing a backend for job submission
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The following example show the complete setup of a backend and the service
+using the pyrest module. It describes the job submission handler- it just shows
+how to write your own backend.
+
+The following code shows this by registering two categories and using the
+pydrmaa package as a backend::
 
     from pydrmaa.job import JobFactory
     
@@ -260,11 +308,94 @@ The following code shows this::
     if __name__ == "__main__":
         application.run()
 
-Clients for pyrest (job submission)
------------------------------------
+Configure service without SSL or authentication
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The following code demonstrates how to setup a service in the easiest possible
+way using the previously described JobHandler::
 
-A simple pyrest client (without SSL or authentication)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    from pyrest import service
+    from pyrest.examples.restful_job_submission import JobHandler
+    from pyrest.service import ResourceHandler
+    import web
+    
+    # setup the service
+    urls = ('/(.*)', 'ResourceHandler')
+    web.config.debug = False
+    
+    JobHandler()
+    
+    application = web.application(urls, globals())
+    
+    # run...
+    if __name__ == "__main__":
+        application.run()
+
+Using pyrest with SSL and basic Authentication
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The following code can be used to realize a RESTful interface for job
+submission using the pyrest module. It uses the internal CherryPy web server::
+
+    from pyrest import service, myexceptions
+    from pyrest.examples.restful_job_submission import JobHandler
+    from pyrest.service import ResourceHandler
+    from pyrest.service import SecurityHandler
+    import web
+    
+    # setup the service
+    urls = ('/(.*)', 'ResourceHandler')
+    web.config.debug = False
+    application = web.application(urls, globals())
+    
+    JobHandler()    
+    
+    # enable SSL
+    from web.wsgiserver import CherryPyWSGIServer
+    CherryPyWSGIServer.ssl_certificate = "<path to ca>/newcert.pem"
+    CherryPyWSGIServer.ssl_private_key = "<path to ca>/newkey.pem"
+    
+    # create a very simple security handler
+    class SimpleSecurityHandler(SecurityHandler):
+        
+        def authenticate(self, username, password):
+            if username == 'foo' and password == 'bar':
+                pass
+            else:
+                raise myexceptions.SecurityException()
+    
+    # activate authentication
+    service.AUTHENTICATION_ENABLED = True
+    service.SECURITY_HANDLER = SimpleSecurityHandler()
+    
+    # run...
+    if __name__ == "__main__":
+        application.run()
+
+Using pyrest in a PKI secured environment
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This example assumes that you have deployed pyrest using mod_wsgi on Apache. To
+use pyrest in this setup use the following script (which is configures in your
+Apache site configuration)::
+
+    from pyrest import service
+    from pyrest.examples.restful_job_submission import JobHandler
+    from pyrest.service import ResourceHandler
+    import web
+    
+    # setup the service
+    urls = ('/(.*)', 'ResourceHandler')
+    web.config.debug = False
+    
+    JobHandler()
+    
+    application = web.application(urls, globals()).wsgifunc()
+
+.. note::
+    See the slightly different application assigment with the wsgifunc() call
+    added. Also note that no security feature need to be enabled, since Apache
+    handles those.
+
+A simple job submission client (without SSL or authentication)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Now you can access the RESTful service from basically everywhere using anything
 . For example you can use your web browser or use the python httplib2 package.
 Other programming languages have similar libraries: libcurl for C,
@@ -297,8 +428,8 @@ A simple python program to submit a job would look like::
     # delete the resource
     print h.request(url,'DELETE')
 
-A pyrest client using SSL and basic authentication
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+A simple job submission client using SSL and basic authentication
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 A simple client which corresponds to the setup described above::
 
     import httplib
@@ -325,8 +456,8 @@ A simple client which corresponds to the setup described above::
     
     conn.close()
 
-A pyrest client which uses X590 certificates
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+A simple job submission client which uses X590 certificates
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This is a simple client using the httplib library::
 
     import httplib
@@ -352,9 +483,11 @@ This is a simple client using the httplib library::
     
     conn.close()
 
-Using the pyrest module (customized backend)
+Using the pyrest module as a Cloud interface
 --------------------------------------------
 The following code examples demonstrates how to configure the ResourceHandler
 to use a different backend. The backend described here will uses VirtualBox. So
 the pyrest module basically becomes a RESTful Cloud Computing interface for
 Virtual Machine management (IaaS).
+
+TBD.

@@ -85,7 +85,7 @@ class AbstractHandlerTest(unittest.TestCase):
     def test_not_implemented_throws_for_failure(self):
         self.assertRaises(NotImplementedError, self.handler.create, self.resource)
         self.assertRaises(NotImplementedError, self.handler.retrieve, self.resource)
-        self.assertRaises(NotImplementedError, self.handler.update, self.resource)
+        self.assertRaises(NotImplementedError, self.handler.update, self.resource, self.resource)
         self.assertRaises(NotImplementedError, self.handler.delete, self.resource)
         self.assertRaises(NotImplementedError, self.handler.action, self.resource, "bla")
 

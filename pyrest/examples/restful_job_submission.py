@@ -117,7 +117,7 @@ class JobHandler(Handler):
         else:
             pass
 
-    def update(self, resource):
+    def update(self, resource, updated_resource):
         # not allowing the update :-D
         pass
 

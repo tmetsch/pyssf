@@ -46,7 +46,7 @@ class JobHandlerTest(unittest.TestCase):
 
     def test_update_for_success(self):
         # doesn't do anything
-        self.backend.update(self.resource)
+        self.backend.update(self.resource, self.resource)
         self.assertTrue(True)
 
     def test_delete_for_success(self):

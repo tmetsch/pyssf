@@ -75,18 +75,19 @@ class Handler(object):
         resource -- the new resource.
         """
         # add links to resource
-        raise NotImplementedError
+        raise NotImplementedError("No backend implemented.")
 
-    def update(self, resource):
+    def update(self, resource, updated_resource):
         """
         An update on the resource has occurred - map it to the backend.
         NOTE: Within this method assure the mutability of links, attributes and
         categories!
         
-        resource -- the updated resource
+        resource -- the original resource
+        updated_resource -- the updated resource
         """
         # update attributes
-        raise NotImplementedError
+        raise NotImplementedError("No backend implemented.")
 
     def retrieve(self, resource):
         """
@@ -95,7 +96,7 @@ class Handler(object):
         resource -- the resource which wants to be updated.
         """
         # return updated attributes & links
-        raise NotImplementedError
+        raise NotImplementedError("No backend implemented.")
 
     def delete(self, resource):
         """
@@ -104,7 +105,7 @@ class Handler(object):
         resource -- the resource which should be deleted.
         """
         # update attributes & cleanup
-        raise NotImplementedError
+        raise NotImplementedError("No backend implemented.")
 
     def action(self, resource, action):
         """
@@ -114,4 +115,4 @@ class Handler(object):
         action -- the desired action.
         """
         # trigger action & update state/attributes
-        raise NotImplementedError
+        raise NotImplementedError("No backend implemented.")

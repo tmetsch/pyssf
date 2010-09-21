@@ -77,45 +77,6 @@ Backends register themselves with a set of categories they can handle. The
 pyrest service can handle multiple backends simultaneously and will
 automatically use the right one.
 
-The following backend is implemented:
-
- * Job Handler - This Handler is capable of submitting jobs using the pydrmaa
-   package. Creation of the resources should be done with the following
-   registered category:
-
-    ========  ====================================
-      Term      Scheme                            
-    ========  ====================================
-    job       "http://schemas.ogf.org/occi/drmaa#"
-    ========  ====================================
-
-   Currently the following attributes are supported:
-
-    =========================  ======================  ===========
-      Attribute                Description             Example    
-    =========================  ======================  ===========
-    occi.drmaa.remote_command  Path to Job Executable  /bin/sleep 
-    occi.drmaa.args            Arguments               "100"      
-    occi.drmaa.job_id          Id of the job in DRM    123        
-                               (immutable)                        
-    =========================  ======================  ===========
-
-   Also the following category for actions are registered:
-    
-    =========  ===========================================
-      Term      Scheme                                    
-    =========  ===========================================
-    terminate  "http://schemas.ogf.org/occi/drmaa/action#"
-    =========  ===========================================
-
-  This results in the following action links:
-
-    =====================  ===============================
-      Link                   Description                  
-    =====================  ===============================
-    <id>;action=terminate  Terminate a running job        
-    =====================  ===============================
-
 Writing your own service using pyrest
 --------------------------------------
 By default the pyrest module supports job submission. But it can easily be

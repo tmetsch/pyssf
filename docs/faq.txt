@@ -1,0 +1,39 @@
+.. 
+   Copyright (C) 2010 Platform Computing
+   
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+   
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+   
+   You should have received a copy of the GNU Lesser General Public
+   License along with this library; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+   
+
+Frequently Asked Questions
+==========================
+
+If I do a POST on an existing URI - what will happen?
+-----------------------------------------------------
+This will create an sub-resource.
+
+If I do a PUT on an existing URI - what will happen?
+----------------------------------------------------
+This will update the resource information.
+
+What will happen when I register a backend which handles a category which is already registered?
+------------------------------------------------------------------------------------------------
+When you try to registed an backend with an category which is already bound to
+another backend the pyrest module will not let you register another backend for
+the same category.
+
+Is the pyrest package able to support multiple backends simultaneously?
+-----------------------------------------------------------------------
+If they are all bound to different categories pyrest will support this setup.
+
