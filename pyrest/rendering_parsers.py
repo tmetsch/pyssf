@@ -188,13 +188,14 @@ class HTTPHeaderParser(Parser):
             attr_list.append(str(item) + '=' + str(attributes[item]))
         return ','.join(attr_list)
 
-    def _create_actions_for_header(self, resource):
+    def _create_links_for_header(self, resource):
         """
         Create a string which can be added to the header - containing all
-        the links to actions.
+        the links & links to actions.
         
-        actions -- list of the actions to add.
+        resource -- the resource wo create all links for.
         """
+        # TODO: add links
         action_list = []
         for item in resource.actions:
             action_list.append("</" + resource.id + ";action="
@@ -237,7 +238,6 @@ class HTTPHeaderParser(Parser):
         return res
 
     def from_resource(self, resource):
-        # FIXME: handle empty cats, attr and links :-)
         res = HTTPData
         # add links and categories to header
         res.header['Category'] = self._create_categories_for_header(resource.categories)
@@ -251,8 +251,7 @@ class HTTPHeaderParser(Parser):
             except KeyError:
                 pass
         # add links & actions
-        # FIXME: add links as well - not just actions
-        link_tmp = self._create_actions_for_header(resource)
+        link_tmp = self._create_links_for_header(resource)
         if link_tmp is not '':
             res.header['Link'] = link_tmp
         else:

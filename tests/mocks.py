@@ -61,7 +61,8 @@ class DummyBackend(Handler):
             pass
 
     def update(self, resource, updated_resource):
-        pass
+        # only updating the data no attr etc.
+        resource.data = updated_resource.data
 
     def retrieve(self, resource):
         pass

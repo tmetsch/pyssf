@@ -128,7 +128,12 @@ class ResourceCreationTests(unittest.TestCase):
         self.assertEquals(response.data, 'some data')
 
         # post to existent url should create sub resource 
-        # TODO: here!
+        response = app.request(loc, method = "POST", headers = dummy.http_category, data = "some data")
+        self.assertEquals(response.status, '200 OK')
+        new_loc = response.headers['Location']
+        # look if a / got added and org loc is in new loc.
+        self.assertTrue(new_loc[1:].find('/') > -1)
+        self.assertTrue(new_loc.find(loc) > -1)
 
     def test_get_for_sanity(self):
         # first create (put) than test get on parent for listing
@@ -146,8 +151,7 @@ class ResourceCreationTests(unittest.TestCase):
         response = app.request(loc, method = "PUT", headers = dummy.http_category, data = "other data")
         self.assertEquals(response.status, '200 OK')
         response = app.request(loc)
-        # FIXME: look into update!
-        #self.assertEquals(response.data, "other data")
+        self.assertEquals(response.data, "other data")
 
         # put on non-existent should create
         response = app.request("/abc", method = "PUT", headers = dummy.http_category, data = "some data")
