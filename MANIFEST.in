@@ -1,5 +1,5 @@
-include run README
-recursive-include pydrmaa/ *
-recursive-include pylsf/ *
-recursive-include pyrest/ *
-recursive-include ssf/ *
+include README
+recursive-include pydrmaa/ *.py
+recursive-include pylsf/ *.py *.i Makefile README
+recursive-include pyrest/ *.py
+recursive-include ssf/ *.py
