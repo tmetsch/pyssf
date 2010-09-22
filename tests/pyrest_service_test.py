@@ -58,7 +58,7 @@ class ResourceCreationTests(unittest.TestCase):
 
     def test_post_for_success(self):
         # simple post on entry point should return 200 OK
-        response = app.request("/", method = "POST", headers = dummy.http_category)
+        response = app.request("/", method = "POST", headers = dummy.http_category_with_attr)
         self.assertEquals(response.status, '200 OK')
 
         #response = app.request("/job/", method = "POST")
@@ -66,7 +66,7 @@ class ResourceCreationTests(unittest.TestCase):
 
     def test_get_for_success(self):
         # simple post and get on the returned location should return 200 OK
-        response = app.request("/", method = "POST", headers = dummy.http_category)
+        response = app.request("/", method = "POST", headers = dummy.http_category_with_attr)
         loc = response.headers['Location']
         response = app.request(loc)
         self.assertEquals(response.status, '200 OK')
@@ -78,16 +78,16 @@ class ResourceCreationTests(unittest.TestCase):
 
     def test_put_for_success(self):
         # Put on specified resource should return 200 OK (non-existent)
-        response = app.request("/123", method = "PUT", headers = dummy.http_category)
+        response = app.request("/123", method = "PUT", headers = dummy.http_category_with_attr)
         self.assertEquals(response.status, '200 OK')
 
         # put on existent should update
-        response = app.request("/123", method = "PUT", headers = dummy.http_category, data = "hello")
+        response = app.request("/123", method = "PUT", headers = dummy.http_category_with_attr, data = "hello")
         self.assertEquals(response.status, '200 OK')
 
     def test_delete_for_success(self):
         # Del on created resource should return 200 OK
-        response = app.request("/", method = "POST", headers = dummy.http_category)
+        response = app.request("/", method = "POST", headers = dummy.http_category_with_attr)
         loc = response.headers['Location']
         response = app.request(loc, method = "DELETE")
         self.assertEquals(response.status, '200 OK')
@@ -98,17 +98,18 @@ class ResourceCreationTests(unittest.TestCase):
 
     def test_post_for_failure(self):
         # post to non-existent resource should return 404
-        response = app.request("/123", method = "POST", headers = dummy.http_category)
+        response = app.request("/123", method = "POST", headers = dummy.http_category_with_attr)
         self.assertEquals(response.status, '404 Not Found')
 
     def test_get_for_failure(self):
         # get on non existent should return 404
-        response = app.request("/123")
+        response = app.request("/bluedidups")
         self.assertEquals(response.status, '404 Not Found')
 
     def test_put_for_failure(self):
-        # maybe test invalid data ?
-        pass
+        # test invalid data - missing attr.
+        response = app.request("/", method = "POST", headers = dummy.http_category)
+        self.assertEquals(response.status, '400 Bad Request')
 
     def test_delete_for_failure(self):
         # delete of non existent should return 404
@@ -121,14 +122,14 @@ class ResourceCreationTests(unittest.TestCase):
 
     def test_post_for_sanity(self):
         # first create (post) then get
-        response = app.request("/", method = "POST", headers = dummy.http_category, data = "some data")
+        response = app.request("/", method = "POST", headers = dummy.http_category_with_attr, data = "some data")
         self.assertEquals(response.status, '200 OK')
         loc = response.headers['Location']
         response = app.request(loc)
         self.assertEquals(response.data, 'some data')
 
         # post to existent url should create sub resource 
-        response = app.request(loc, method = "POST", headers = dummy.http_category, data = "some data")
+        response = app.request(loc, method = "POST", headers = dummy.http_category_with_attr, data = "some data")
         self.assertEquals(response.status, '200 OK')
         new_loc = response.headers['Location']
         # look if a / got added and org loc is in new loc.
@@ -137,31 +138,31 @@ class ResourceCreationTests(unittest.TestCase):
 
     def test_get_for_sanity(self):
         # first create (put) than test get on parent for listing
-        app.request("/job/123", method = "PUT", headers = dummy.http_category, data = "hello")
+        app.request("/job/123", method = "PUT", headers = dummy.http_category_with_attr, data = "hello")
         response = app.request("/job/")
         self.assertEquals(response.data, 'Listing sub resources...')
 
     def test_put_for_sanity(self):
         # put on existent should update
-        response = app.request("/", method = "POST", headers = dummy.http_category, data = "some data")
+        response = app.request("/", method = "POST", headers = dummy.http_category_with_attr, data = "some data")
         self.assertEquals(response.status, '200 OK')
         loc = response.headers['Location']
         response = app.request(loc)
         self.assertEquals(response.data, "some data")
-        response = app.request(loc, method = "PUT", headers = dummy.http_category, data = "other data")
+        response = app.request(loc, method = "PUT", headers = dummy.http_category_with_attr, data = "other data")
         self.assertEquals(response.status, '200 OK')
         response = app.request(loc)
         self.assertEquals(response.data, "other data")
 
         # put on non-existent should create
-        response = app.request("/abc", method = "PUT", headers = dummy.http_category, data = "some data")
+        response = app.request("/abc", method = "PUT", headers = dummy.http_category_with_attr, data = "some data")
         self.assertEquals(response.status, '200 OK')
         response = app.request("/abc")
         self.assertEquals(response.status, '200 OK')
 
     def test_delete_for_sanity(self):
         # create and delete an entry than try get
-        response = app.request("/", method = "POST", headers = dummy.http_category, data = "some data")
+        response = app.request("/", method = "POST", headers = dummy.http_category_with_attr, data = "some data")
         self.assertEquals(response.status, '200 OK')
         loc = response.headers['Location']
         response = app.request(loc, method = "DELETE")
@@ -179,7 +180,7 @@ class CategoriesTests(unittest.TestCase):
 
     def test_categories_for_sanity(self):
         # if a post is done and later a get should return same category
-        response = app.request("/", method = "POST", headers = dummy.http_category)
+        response = app.request("/", method = "POST", headers = dummy.http_category_with_attr)
         url = response.headers['Location']
         response = app.request(url)
         cat = response.headers['Category'].split(';')
@@ -206,7 +207,7 @@ class LinkTests(unittest.TestCase):
 
     def test_links_in_header_for_success(self):
         # test if a terminate link is added
-        response = app.request("/", method = "POST", headers = dummy.http_category)
+        response = app.request("/", method = "POST", headers = dummy.http_category_with_attr)
         url = response.headers['Location']
         response = app.request(url)
         self.assertEquals(response.headers['Link'].split(';')[1], 'action=' + dummy.action_category.term + '>')
@@ -214,7 +215,7 @@ class LinkTests(unittest.TestCase):
 class ActionsTests(unittest.TestCase):
 
     def test_trigger_action_for_success(self):
-        response = app.request("/", method = "POST", headers = dummy.http_category)
+        response = app.request("/", method = "POST", headers = dummy.http_category_with_attr)
         url = response.headers['Location']
         response = app.request(url)
         tmp = response.headers['Link'].split(',').pop()
@@ -224,7 +225,7 @@ class ActionsTests(unittest.TestCase):
 
     def test_trigger_action_for_failure(self):
         # only post allowed!
-        response = app.request("/", method = "POST", headers = dummy.http_category)
+        response = app.request("/", method = "POST", headers = dummy.http_category_with_attr)
         url = response.headers['Location']
         response = app.request(url)
         tmp = response.headers['Link'].split(',').pop()
@@ -233,7 +234,7 @@ class ActionsTests(unittest.TestCase):
         self.assertEquals('400 Bad Request', str(response.status))
 
         # trigger not existing action!
-        response = app.request("/", method = "POST", headers = dummy.http_category)
+        response = app.request("/", method = "POST", headers = dummy.http_category_with_attr)
         url = response.headers['Location']
         response = app.request(url)
         tmp = response.headers['Link'].split(',').pop()
@@ -247,7 +248,7 @@ class ActionsTests(unittest.TestCase):
 
     def test_trigger_action_for_sanity(self):
         # check if result is okay :-)
-        response = app.request("/", method = "POST", headers = dummy.http_category)
+        response = app.request("/", method = "POST", headers = dummy.http_category_with_attr)
         url = response.headers['Location']
         response = app.request(url)
         tmp = response.headers['Link'].split(',').pop()
@@ -261,9 +262,9 @@ class QueryTests(unittest.TestCase):
 
 class SecurityTests(unittest.TestCase):
 
-    heads = dummy.http_category.copy()
+    heads = dummy.http_category_with_attr.copy()
     heads['Authorization'] = 'Basic ' + string.strip(base64.encodestring('foo' + ':' + 'ssf'))
-    heads2 = dummy.http_category.copy()
+    heads2 = dummy.http_category_with_attr.copy()
     heads2['Authorization'] = 'Basic ' + string.strip(base64.encodestring('bar' + ':' + 'ssf'))
 
     action_heads = dummy.http_action_category.copy()
@@ -276,7 +277,7 @@ class SecurityTests(unittest.TestCase):
     heads_apache2['SSL_CLIENT_CERT_DN'] = '/C=DE/L=Munich/O=Sun/OU=Staff/CN=Bar'
 
     def_heads = {'Authorization': 'Basic ' + string.strip(base64.encodestring('foo' + ':' + 'asd'))}
-    def_heads2 = dummy.http_category
+    def_heads2 = dummy.http_category_with_attr
 
     def setUp(self):
         service.AUTHENTICATION_ENABLED = True

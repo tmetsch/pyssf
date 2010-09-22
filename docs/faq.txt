@@ -27,9 +27,13 @@ If I do a PUT on an existing URI - what will happen?
 ----------------------------------------------------
 This will update the resource information.
 
+If I do a PUT on an non-existing URI - what will happen?
+--------------------------------------------------------
+This will create an resource on the location specified by you.
+
 What will happen when I register a backend which handles a category which is already registered?
 ------------------------------------------------------------------------------------------------
-When you try to registed an backend with an category which is already bound to
+When you try to register an backend with an category which is already bound to
 another backend the pyrest module will not let you register another backend for
 the same category.
 
@@ -37,3 +41,6 @@ Is the pyrest package able to support multiple backends simultaneously?
 -----------------------------------------------------------------------
 If they are all bound to different categories pyrest will support this setup.
 
+When is an Category considered equal?
+-------------------------------------
+If both term and scheme match.

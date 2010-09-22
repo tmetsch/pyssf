@@ -21,7 +21,8 @@ Created on Jul 20, 2010
 @author: tmetsch
 '''
 from pyrest.backends import Handler
-from pyrest.myexceptions import MissingActionException, SecurityException
+from pyrest.myexceptions import MissingActionException, SecurityException, \
+    MissingAttributesException
 from pyrest.resource_model import Category, Action
 from pyrest.service import SecurityHandler
 from pyrest import backends
@@ -53,6 +54,8 @@ class DummyBackend(Handler):
             print "Warning: Backend already registered! - currently registered backends:" + str(backends.registered_backends)
 
     def create(self, resource):
+        if not 'occi.pyssf.test' in resource.attributes:
+            raise MissingAttributesException("Missing attributes...")
         if self.category in resource.categories:
             action = Action()
             action.categories = [self.action_category]
