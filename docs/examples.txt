@@ -51,7 +51,7 @@ the handling of resources):
     ===================  ===============  ===========
       Attribute            Description      Example  
     ===================  ===============  ===========
-    occi.keyvalue.key    The keye         foo        
+    occi.keyvalue.key    The key          foo        
     occi.keyvalue.value  The value        bar        
     ===================  ===============  ===========
     
