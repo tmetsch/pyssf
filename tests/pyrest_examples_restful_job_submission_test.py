@@ -13,7 +13,7 @@ import unittest
 
 class JobHandlerTest(unittest.TestCase):
 
-    backends.registered_backends = {}
+    backends.REGISTERED_BACKENDS = {}
     backend = JobHandler()
     resource = Resource()
     action = Action()
