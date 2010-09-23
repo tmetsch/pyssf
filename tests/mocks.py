@@ -51,7 +51,7 @@ class DummyBackend(Handler):
         try:
             backends.register([self.category, self.action_category], self)
         except AttributeError:
-            print "Warning: Backend already registered! - currently registered backends:" + str(backends.registered_backends)
+            print "Warning: Backend already registered! - currently registered backends:" + str(backends.REGISTERED_BACKENDS)
 
     def create(self, resource):
         if not 'occi.pyssf.test' in resource.attributes:

@@ -31,7 +31,7 @@ class BackendTest(unittest.TestCase):
     dummy = mocks.DummyBackend()
 
     def setUp(self):
-        backends.registered_backends = {}
+        backends.REGISTERED_BACKENDS = {}
 
     # --------
     # TEST FOR SUCCESS
@@ -39,7 +39,7 @@ class BackendTest(unittest.TestCase):
 
     def test_register_for_success(self):
         backends.register([self.dummy.category], self.dummy)
-        self.assertTrue(len(backends.registered_backends) > 0)
+        self.assertTrue(len(backends.REGISTERED_BACKENDS) > 0)
 
     def test_find_handler_for_success(self):
         backends.register([self.dummy.category], self.dummy)

@@ -22,7 +22,6 @@ Created on Aug 10, 2010
 
 @author: tmetsch
 '''
-from pyrest import service, rendering_parsers
 from pyrest.examples.restful_job_submission import JobHandler
 from pyrest.service import ResourceHandler
 import web
@@ -31,7 +30,7 @@ import web
 # Configures web.py and tells him which handlers should listen to which 
 # entry-point.
 # 
-urls = ('/(.*)', 'ResourceHandler')
+URLS = ('/(.*)', 'ResourceHandler')
 
 # 
 # Turns debugging on of off - Default is True (on).
@@ -44,7 +43,7 @@ urls = ('/(.*)', 'ResourceHandler')
 # mod_wsgi use the second line. Do not change the name of the attribute. Apache
 # mod_wsgi will assume it is named application (lowercase).
 # 
-application = web.application(urls, globals())
+APPLICATION = web.application(URLS, globals())
 #application = web.application(urls, globals()).wsgifunc()
 
 # 
@@ -65,7 +64,7 @@ application = web.application(urls, globals())
 #
 # Registers backend. You can write you own and initialize and register it here.
 #
-JobHandler()
+#JobHandler()
 
 #
 # Tell pyrest which parser to use (You can write your own and add it here). 
@@ -74,4 +73,4 @@ JobHandler()
 #service.RENDERING_PARSER = rendering_parsers.HTTPHeaderParser()
 
 if __name__ == "__main__":
-    application.run()
+    APPLICATION.run()
