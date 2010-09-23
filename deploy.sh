@@ -56,6 +56,12 @@ case "$1" in
     cd ..
     ;;
 
+  big-doc)
+    $0 doc
+    mkdir docs/_build/html/api/
+    epydocgui epydoc.prj
+    ;;
+
   test)
     $0 clean
     $0 build
