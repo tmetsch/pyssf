@@ -28,10 +28,10 @@ class Kind(object):
     A OCCI Kind.
     """
     def __init__(self):
+        #: Denotes the display name of an instance. 0,1
         self.title = ''
-        """ Denotes the display name of an instance. 0,1 """
+        #: Comprises the categories associated to this instance. 1...*
         self.categories = []
-        """ Comprises the categories associated to this instance. 1...* """
 
     def __eq__(self, instance):
         if self.categories == instance.categories:
@@ -44,18 +44,16 @@ class Category(object):
     A category.
     """
     def __init__(self):
+        #: Definition of the term(Multiplicity 1)
         self.term = ''
-        """ Target definition within the scheme (Multiplicity 1) """
+        #: Defines scheme (Multiplicity 1)
         self.scheme = ''
-        """ A resource that defines the model of the referred term 
-        (Multiplicity 1)"""
+        #: Title of the category
         self.title = ''
-        """ Assigned links/actions (Multiplicity 0,1) """
+        #: Attributes which are available
         self.attributes = []
-        """ Comprise the resource attributes defined by the Category. 
-        (Multiplicity 0..n) """
+        #: A set of related categories
         self.related = []
-        """ A set of related categories (Multiplicity 0..n) """
 
     def __eq__(self, instance):
         if self.term == instance.term and self.scheme == instance.scheme:
@@ -77,25 +75,22 @@ class Resource(Kind):
 
     def __init__(self):
         super(Resource, self).__init__()
+        #: Immutable, unique identifier of the instance (Multiplicity 1)
         self.id = ''
-        """Immutable, unique identifier of the instance (Multiplicity 1)"""
+        #: Holds a summarizing description of the Resource instance.
         self.summary = ''
-        """Holds a summarizing description of the Resource instance. 
-        (Multiplicity 0,1)"""
+        #: This is a set of associated Links with resource 
         self.links = []
-        """This is a set of associated Links with resource 
-        (Multiplicity 0..n)"""
+        #: List of actions associated with this resource
         self.actions = []
-        """List of actions associated with this resource
-        (Multiplicity 0..n)"""
 
         # following are not in the spec - but needed.
+        #: Data which was initially provided by the client in the body.
         self.data = ''
-        """Data which was initially provided by the client in the body."""
+        #: The owner of this resource
         self.user = 'default'
-        """The owner of this resource"""
+        #: Dictionary containing the attributes for this resource.
         self.attributes = {}
-        """Dictionary containing the attributes for this resource."""
 
     def get_certain_categories(self, name):
         """
@@ -131,8 +126,8 @@ class Link(Kind):
 
     def __init__(self):
         super(Link, self).__init__()
+        #: The Resource to which the Link points to (Multiplicity 1)
         self.target = ''
-        """The Resource to which the Link points to (Multiplicity 1)"""
 
 class Action(Kind):
     """
