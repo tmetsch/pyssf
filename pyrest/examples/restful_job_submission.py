@@ -43,7 +43,8 @@ from pydrmaa.job import JobFactory
 
 from pyrest import backends
 from pyrest.backends import Handler
-from pyrest.myexceptions import MissingAttributesException, StateException, MissingActionException
+from pyrest.myexceptions import MissingAttributesException, StateException, \
+    MissingActionException
 from pyrest.resource_model import Category, Resource, Action
 from pyrest.service import ResourceHandler
 

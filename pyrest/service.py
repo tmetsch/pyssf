@@ -145,12 +145,12 @@ def validate_key(name):
     """
     Decorator to validate the given keys!
     """
-    VALID_KEY = re.compile('[a-z0-9-/]*')
+    valid_key = re.compile('[a-z0-9-/]*')
     def new(*args, **kwargs):
         """
         Checks the arguments.
         """
-        if VALID_KEY.match(args[1]) is None:
+        if valid_key.match(args[1]) is None:
             web.BadRequest(), 'Invalid key provided!'
         return name(*args, **kwargs)
     return new
