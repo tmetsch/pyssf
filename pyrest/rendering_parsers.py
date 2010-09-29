@@ -54,11 +54,11 @@ class Parser(object):
         """
         raise NotImplementedError
 
-    def from_category(self, category):
+    def from_categories(self, categories):
         """
-        Parse a given category and return proper HTTP data.
+        Parse given categories and return proper HTTP data.
         
-        category -- the Category you wanna parse
+        categories -- the list of categories you want to parse
         """
         raise NotImplementedError
 
@@ -85,6 +85,8 @@ class HTTPHeaderParser(Parser):
     content-type and accept header 'text/plain' and */*
     """
     # FIXME: handle multiple headers properly instead of using ,
+
+    content_type = '*/*'
 
     def _get_categories_from_header(self, heads):
         """
@@ -223,8 +225,20 @@ class HTTPHeaderParser(Parser):
         action = Action()
         action.categories = categories
 
+        # TODO: handle attributes of actions!
+
         # dropping data in the body :-)
         return action
+
+    def from_categories(self, categories):
+        if categories is None:
+            raise AttributeError("Categories cannot be empty!")
+        heads = {}
+        cats = []
+        for category in categories:
+            cats.append(category.split('#')[1] + ';scheme=' + category.split('#')[0] + '#')
+        heads['Category'] = ','.join(cats)
+        return HTTPData(heads, None)
 
     def to_resource(self, key, http_data):
         if key is None or http_data is None:
@@ -247,39 +261,67 @@ class HTTPHeaderParser(Parser):
         return res
 
     def from_resource(self, resource):
-        res = HTTPData
+        heads = {}
         # add links and categories to header
-        res.header['Category'] = self._create_categories_for_header(resource.categories)
+        heads['Category'] = self._create_categories_for_header(resource.categories)
         # add attributes
         attr_tmp = self._create_attributes_for_header(resource.attributes)
         if attr_tmp is not '':
-            res.header['Attribute'] = attr_tmp
+            heads['Attribute'] = attr_tmp
         else:
             try:
-                res.header.pop('Attribute')
+                heads.pop('Attribute')
             except KeyError:
                 pass
         # add links & actions
         link_tmp = self._create_links_for_header(resource)
         if link_tmp is not '':
-            res.header['Link'] = link_tmp
+            heads['Link'] = link_tmp
         else:
             try:
-                res.header.pop('Link')
+                heads.pop('Link')
             except KeyError:
                 pass
         # data to body
-        res.body = resource.data
-        return res
+        body = resource.data
+        return HTTPData(heads, body)
+
+class HTTPTextParser(HTTPHeaderParser):
+
+    content_type = "text/plain"
+
+    def from_categories(self, categories):
+        if categories is None:
+            raise AttributeError("Categories cannot be empty!")
+        heads = {}
+        heads['Content-type'] = self.content_type
+        body = []
+        for category in categories:
+            body.append(category.split('#')[1] + ';scheme=' + category.split('#')[0] + '#')
+        return HTTPData(heads, '\n'.join(body))
+
+    # TODO: add to and from resource and test it...
 
 class HTTPListParser(Parser):
     """
-    Very simple parser which handles 'test/uri-list' request. can only do
-    get_categories()
+    Very simple parser which handles 'text/uri-list' request. can only do
+    get(s) aka from(s)
     """
 
-class RDFParser(Parser):
-    """
-    A to be done parser for RDF/RDFa documents.
-    """
-    pass
+    content_type = 'text/uri-list'
+
+    def from_categories(self, categories):
+        if categories is None:
+            raise AttributeError("Categories cannot be empty!")
+        heads = {}
+        heads['Content-type'] = self.content_type
+        body = []
+        for category in categories:
+            body.append(category)
+        return HTTPData(heads, '\n'.join(body))
+
+#class RDFParser(Parser):
+#    """
+#    A to be done parser for RDF/RDFa documents.
+#    """
+#    pass

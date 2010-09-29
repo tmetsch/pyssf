@@ -175,10 +175,9 @@ class ResourceCreationTests(unittest.TestCase):
 class HTTPHeaderTests(unittest.TestCase):
 
     # TODO: test if occi-version is in headers...
-    # TODO: test if service reacts differently on different Accept headers
-    # text-uri
-    # */*
-    # and to full header (maybe move to parser test)
+    # TODO: to full header should result in data being in body... (maybe move to parser test)
+    # TODO: test what happens if wrong accept got added...
+    # TODO: test what happens then requesting uri-list while getting resource
 
     def setUp(self):
         web.ctx.env = {}
@@ -364,11 +363,11 @@ class QueryTests(unittest.TestCase):
     # TODO: test get category descriptio
     # TODO: test get collections/listing of sub-res
 
-    heads = {'Accept':'text/uri-list', 'Content-type':'bla'}
+    heads = {'Accept':'text/uri-list'}
 
-    def test_get_on_query_for_succes(self):
+    def test_get_query_for_succes(self):
         response = app.request("/-/", headers = self.heads)
-        print response
+        # print response
 
     def test_faulty_request(self):
         response = app.request("/-/", method = "POST")
@@ -377,6 +376,16 @@ class QueryTests(unittest.TestCase):
         self.assertEquals(response.status, '405 Method Not Allowed')
         response = app.request("/-/", method = "DELETE")
         self.assertEquals(response.status, '405 Method Not Allowed')
+
+    def test_get_query_for_sanity(self):
+        response = app.request("/-/", headers = {'Accept':'text/uri-list'})
+        self.assertEquals(response.headers['Content-type'], 'text/uri-list')
+        print response
+        response = app.request("/-/", headers = {'Accept':'text/plain'})
+        self.assertEquals(response.headers['Content-type'], 'text/plain')
+        print response
+        response = app.request("/-/", headers = {'Accept':'*/*'})
+        print response
 
 class SecurityTests(unittest.TestCase):
 

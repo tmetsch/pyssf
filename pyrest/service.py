@@ -27,13 +27,14 @@ from pyrest import backends
 from pyrest.myexceptions import MissingActionException, \
     MissingAttributesException, StateException, MissingCategoriesException, \
     SecurityException
-from pyrest.rendering_parsers import HTTPHeaderParser, HTTPListParser, HTTPData
+from pyrest.rendering_parsers import HTTPHeaderParser, HTTPTextParser, \
+    HTTPListParser, HTTPData
 import re
 import uuid
 import web
 
 DEFAULT_RENDERING_PARSER = HTTPHeaderParser()
-RENDERING_PARSERS = {'text/plain': HTTPHeaderParser(), 'text/uri-list': HTTPListParser()}
+RENDERING_PARSERS = {'text/plain': HTTPTextParser(), '*/*': HTTPHeaderParser(), 'text/uri-list': HTTPListParser()}
 AUTHENTICATION_ENABLED = False
 
 # some helper routines.
@@ -367,7 +368,7 @@ class ResourceHandler(HTTPHandler):
         key -- the unique id.
         data -- the data.
         """
-        # TODO: mime types, Accept headers and listings
+        # TODO: listings
         try:
             # trigger backend to get resource
             res = self.resources.get_resource(key)
@@ -446,5 +447,11 @@ class ResourceHandler(HTTPHandler):
 class QueryHandler(object):
 
     def GET(self, name):
-        find_parser()
-        return 'Hello, ' + name + '!'
+        if len(name) == 0:
+            parser = find_parser()
+            http_data = parser.from_categories(backends.REGISTERED_BACKENDS.keys())
+            for item in http_data.header.keys():
+                web.header(item, http_data.header[item])
+            return http_data.body
+        else:
+            return ''

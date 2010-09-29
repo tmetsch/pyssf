@@ -21,7 +21,8 @@ Created on Jul 12, 2010
 @author: tmetsch
 '''
 from pyrest.myexceptions import MissingCategoriesException
-from pyrest.rendering_parsers import Parser, HTTPHeaderParser, HTTPData
+from pyrest.rendering_parsers import Parser, HTTPHeaderParser, HTTPListParser, \
+    HTTPData
 from pyrest.resource_model import Action, Category, Resource
 from tests.mocks import DummyBackend
 import unittest
@@ -38,6 +39,7 @@ class AbstractParserTest(unittest.TestCase):
         self.assertRaises(NotImplementedError, self.parser.to_resource, "111", None)
         self.assertRaises(NotImplementedError, self.parser.from_resource, None)
         self.assertRaises(NotImplementedError, self.parser.to_action, None)
+        self.assertRaises(NotImplementedError, self.parser.from_category, None)
 
 class HTTPHeaderParserTest(unittest.TestCase):
 
@@ -111,6 +113,10 @@ class HTTPHeaderParserTest(unittest.TestCase):
         action = self.parser.to_action(self.correct_action_http_data)
         self.assertTrue(action.categories[0].__eq__(self.action_category))
 
+    def test_from_category_for_succes(self):
+        http_data = self.parser.from_category(self.category_one)
+        self.assertEquals(http_data.header['Category'], self.category_one.term + ';scheme=' + self.category_one.scheme)
+
     def test_to_resource_for_success(self):
         # create a basic resource
         res = self.parser.to_resource("123", self.http_data)
@@ -144,6 +150,9 @@ class HTTPHeaderParserTest(unittest.TestCase):
     def test_to_action_for_failure(self):
         self.assertRaises(MissingCategoriesException, self.parser.to_action, HTTPData({}, None))
         self.assertRaises(MissingCategoriesException, self.parser.to_action, None)
+
+    def test_from_category_for_failure(self):
+        self.assertRaises(AttributeError, self.parser.from_category, None)
 
     def test_to_resource_for_failure(self):
         # missing categories -> fail big time!
@@ -198,6 +207,12 @@ class HTTPHeaderParserTest(unittest.TestCase):
         action = self.parser.to_action(self.correct_action_http_data)
         self.assertEquals(action.categories[0], self.action_category)
 
+    def test_from_category_for_sanity(self):
+        http_data = self.parser.from_category(self.category_one)
+        self.assertEquals(http_data.header['Content-type'], 'text/plain')
+        self.assertEquals(http_data.header['Category'], self.category_one.term + ';scheme=' + self.category_one.scheme)
+        # TODO: add checks for rel!
+
     def test_to_resource_for_sanity(self):
         # check if given categories are in the resource
         res = self.parser.to_resource("123", self.http_data)
@@ -223,6 +238,8 @@ class HTTPHeaderParserTest(unittest.TestCase):
     def test_from_resource_for_sanity(self):
         # check if given data, categories & links are in the response
         res = self.parser.from_resource(self.job_resource)
+        # content-type
+        self.assertEquals(res.header['Content-type'], 'text/plain')
         # body
         self.assertEquals(res.body, self.body)
         # attributes
@@ -231,6 +248,22 @@ class HTTPHeaderParserTest(unittest.TestCase):
         self.assertEquals(res.header['Category'].split(';')[0], 'job')
         # actions
         self.assertEquals(res.header['Link'].split(';')[1], "action=" + DummyBackend.action_category.term + ">")
+
+class HTTPListParserTest(unittest.TestCase):
+
+    list_parser = HTTPListParser()
+
+    def test_from_category_for_success(self):
+        data = self.list_parser.from_category(HTTPHeaderParserTest.category_one)
+        self.assertEquals(data.body, HTTPHeaderParserTest.category_one.scheme + HTTPHeaderParserTest.category_one.term)
+
+    def test_from_category_for_failure(self):
+        self.assertRaises(AttributeError, self.list_parser.from_category, None)
+
+    def test_from_category_for_sanity(self):
+        data = self.list_parser.from_category(HTTPHeaderParserTest.category_one)
+        self.assertEquals(data.header['Content-type'], 'text/uri-list')
+        self.assertTrue(data.body is not None)
 
 if __name__ == "__main__":
     unittest.main()
