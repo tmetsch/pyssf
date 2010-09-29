@@ -54,6 +54,14 @@ class Parser(object):
         """
         raise NotImplementedError
 
+    def from_category(self, category):
+        """
+        Parse a given category and return proper HTTP data.
+        
+        category -- the Category you wanna parse
+        """
+        raise NotImplementedError
+
     def to_resource(self, key, http_data):
         """
         Parse the incoming data and return a Resource.
@@ -73,7 +81,8 @@ class Parser(object):
 
 class HTTPHeaderParser(Parser):
     """
-    Very simple parser which gets/puts links, categories and attributes.
+    Very simple parser which gets/puts links, categories and attributes. Handles
+    content-type and accept header 'text/plain' and */*
     """
     # FIXME: handle multiple headers properly instead of using ,
 
@@ -262,6 +271,12 @@ class HTTPHeaderParser(Parser):
         # data to body
         res.body = resource.data
         return res
+
+class HTTPListParser(Parser):
+    """
+    Very simple parser which handles 'test/uri-list' request. can only do
+    get_categories()
+    """
 
 class RDFParser(Parser):
     """

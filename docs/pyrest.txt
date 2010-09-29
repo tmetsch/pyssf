@@ -38,10 +38,11 @@ Features:
   * Support of SSL and Basic Authentication
   * Supports PKI (X.509 certificate) secured environments
   * Service can be deployed in Apache using mod_wsgi
-  * Supports Querying of available backends 
+  * Supports Querying of available backends
   * Linking of Resources
   * Automatic selection of renderings (based on client request/Accept headers)
   * Easy to extend with own backends and renderings
+  * Handler all HTTP/REST stuff for you (HTTP-Headers, CRUD operations etc)
 
 Structure of the pyrest package
 -------------------------------

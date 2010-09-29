@@ -67,10 +67,10 @@ APPLICATION = web.application(URLS, globals())
 #JobHandler()
 
 #
-# Tell pyrest which parser to use (You can write your own and add it here). 
-# Default is the HTTP Header parser.
+# Tell pyrest which parser to use as fail-over option (You can write your own
+# and add it here). Default is the HTTP Header parser.
 #
-#service.RENDERING_PARSER = rendering_parsers.HTTPHeaderParser()
+#service.DEFAULT_RENDERING_PARSER = rendering_parsers.HTTPHeaderParser()
 
 if __name__ == "__main__":
     APPLICATION.run()

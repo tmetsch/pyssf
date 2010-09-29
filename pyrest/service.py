@@ -27,86 +27,43 @@ from pyrest import backends
 from pyrest.myexceptions import MissingActionException, \
     MissingAttributesException, StateException, MissingCategoriesException, \
     SecurityException
-from pyrest.rendering_parsers import HTTPHeaderParser, HTTPData
+from pyrest.rendering_parsers import HTTPHeaderParser, HTTPListParser, HTTPData
 import re
 import uuid
 import web
 
-RENDERING_PARSER = HTTPHeaderParser()
+DEFAULT_RENDERING_PARSER = HTTPHeaderParser()
+RENDERING_PARSERS = {'text/plain': HTTPHeaderParser(), 'text/uri-list': HTTPListParser()}
 AUTHENTICATION_ENABLED = False
 
-# The following stuff is here for Storage of the Resources.
+# some helper routines.
 
-class NonPersistentResourceDictionary(dict):
+def find_parser():
     """
-    Overrides a dictionary - Since the resource model and rendering parsers are
-    generic this is the most interesting part.
+    In case of requests: Tries to resolve the right parser based on the Accept
+    Header the client sends - If non can be found or no header is defined the
+    default header is returned.
     
-    Whenever a item is added, update or removed, a parser will be called to 
-    update the resource description.
-    
-    This one now uses HTTPHeaderParser
+    In case of posts: Tries to resolve based upon the specified content-type
+    header. If non is specified it will return the default.
     """
-
-    def __init__(self):
-        dict.__init__(self)
-
-    def __getitem__(self, key):
+    # post & put
+    if 'REQUEST_METHOD' in web.ctx.env:
+        if web.ctx.env['REQUEST_METHOD'] == 'PUT' or web.ctx.env['REQUEST_METHOD'] == 'POST':
+            # put or post so -> check content type
+            if 'HTTP_CONTENT_TYPE' in web.ctx.env:
+                # select parser based on content_type
+                try:
+                    return RENDERING_PARSERS[web.ctx.env['HTTP_CONTENT_TYPE']]
+                except KeyError:
+                    return DEFAULT_RENDERING_PARSER
+    if 'HTTP_ACCEPT' in web.ctx.env:
         try:
-            item = dict.__getitem__(self, key)
+            return RENDERING_PARSERS[web.ctx.env['HTTP_ACCEPT']]
         except KeyError:
-            raise
-        return RENDERING_PARSER.from_resource(item)
-
-    def __setitem__(self, key, value):
-        try:
-            item = RENDERING_PARSER.to_resource(key, value)
-        except MissingCategoriesException:
-            raise
-        return dict.__setitem__(self, key, item)
-
-    def __delitem__(self, key):
-        return dict.__delitem__(self, key)
-
-    def get_resource(self, key):
-        """
-        Returns the resource without parsing it back to HTTP data.
-        """
-        try:
-            return dict.__getitem__(self, key)
-        except KeyError:
-            raise
-
-class PersistentResourceDictionary(dict):
-    """
-    Persistently stores the dictionary to a database to be failsafe.
-    
-    http://docs.python.org/library/shelve.html
-    """
-    pass
-
-# The following part is here for basic HTTP handling.
-
-class SecurityHandler(object):
-    """
-    A security handler.
-    """
-
-    def authenticate(self, username, password):
-        """
-        Authenticate a user with it's password.
-        """
-        raise SecurityException("Could not authenticate user.")
-
-    def authorize(self, username, resource):
-        """
-        Very basic authorization which only assures that users do not
-        interfere with each other.
-        """
-        if not username == resource.user:
-            raise SecurityException("Not authorized.")
-
-SECURITY_HANDLER = SecurityHandler()
+            return DEFAULT_RENDERING_PARSER
+    #return default
+    return DEFAULT_RENDERING_PARSER
 
 def authenticate(target):
     """
@@ -154,6 +111,78 @@ def validate_key(name):
             web.BadRequest(), 'Invalid key provided!'
         return name(*args, **kwargs)
     return new
+
+# The following stuff is here for Storage of the Resources.
+
+class NonPersistentResourceDictionary(dict):
+    """
+    Overrides a dictionary - Since the resource model and rendering parsers are
+    generic this is the most interesting part.
+    
+    Whenever a item is added or removed, a parser will be called to update the
+    resource description.
+    """
+
+    def __init__(self):
+        dict.__init__(self)
+
+    def __getitem__(self, key):
+        try:
+            item = dict.__getitem__(self, key)
+        except KeyError:
+            raise
+        return find_parser().from_resource(item)
+
+    def __setitem__(self, key, value):
+        try:
+            item = find_parser().to_resource(key, value)
+        except MissingCategoriesException:
+            raise
+
+        return dict.__setitem__(self, key, item)
+
+    def __delitem__(self, key):
+        return dict.__delitem__(self, key)
+
+    def get_resource(self, key):
+        """
+        Returns the resource without parsing it back to HTTP data.
+        """
+        try:
+            return dict.__getitem__(self, key)
+        except KeyError:
+            raise
+
+class PersistentResourceDictionary(dict):
+    """
+    Persistently stores the dictionary to a database to be failsafe.
+    
+    http://docs.python.org/library/shelve.html
+    """
+    pass
+
+# The following part is here for basic HTTP handling.
+
+class SecurityHandler(object):
+    """
+    A security handler.
+    """
+
+    def authenticate(self, username, password):
+        """
+        Authenticate a user with it's password.
+        """
+        raise SecurityException("Could not authenticate user.")
+
+    def authorize(self, username, resource):
+        """
+        Very basic authorization which only assures that users do not
+        interfere with each other.
+        """
+        if not username == resource.user:
+            raise SecurityException("Not authorized.")
+
+SECURITY_HANDLER = SecurityHandler()
 
 class HTTPHandler(object):
     """
@@ -365,7 +394,7 @@ class ResourceHandler(HTTPHandler):
             res = self.resources.get_resource(key)
             SECURITY_HANDLER.authorize(username, res)
             backend = backends.find_right_backend(res.categories)
-            backend.update(res, RENDERING_PARSER.to_resource('tmp', data))
+            backend.update(res, DEFAULT_RENDERING_PARSER.to_resource('tmp', data))
         except (KeyError, MissingAttributesException, SecurityException):
             raise
 
@@ -407,7 +436,7 @@ class ResourceHandler(HTTPHandler):
         try:
             res = self.resources.get_resource(key)
             SECURITY_HANDLER.authorize(username, res)
-            action = RENDERING_PARSER.to_action(data)
+            action = DEFAULT_RENDERING_PARSER.to_action(data)
             backend = backends.find_right_backend(res.categories)
             backend.action(res, action)
         except (KeyError, MissingCategoriesException, MissingActionException,
@@ -417,6 +446,5 @@ class ResourceHandler(HTTPHandler):
 class QueryHandler(object):
 
     def GET(self, name):
-        print web.ctx
-        print web.ctx.env
+        find_parser()
         return 'Hello, ' + name + '!'

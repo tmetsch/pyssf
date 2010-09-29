@@ -23,6 +23,7 @@ import pyrest.service as service
 import string
 import unittest
 import web
+from pyrest.rendering_parsers import HTTPHeaderParser, HTTPListParser
 '''
 Created on Jul 5, 2010
 
@@ -178,7 +179,79 @@ class HTTPHeaderTests(unittest.TestCase):
     # text-uri
     # */*
     # and to full header (maybe move to parser test)
-    pass
+
+    def setUp(self):
+        web.ctx.env = {}
+
+    def test_find_headers_for_success(self):
+        # should return default when no content-type or accept is available.
+        web.ctx.env = {}
+        self.assertTrue(isinstance(service.find_parser(), HTTPHeaderParser))
+
+    def test_find_headers_for_failure(self):
+        # do a put/post with non existing content-type
+        web.ctx.env = {'REQUEST_METHOD':'PUT', 'HTTP_CONTENT_TYPE':'blablub'}
+        self.assertTrue(isinstance(service.find_parser(), HTTPHeaderParser))
+        # do a get with non existing accept-type
+        web.ctx.env = {'REQUEST_METHOD':'GET', 'HTTP_ACCEPT':'blablub'}
+        self.assertTrue(isinstance(service.find_parser(), HTTPHeaderParser))
+
+    def test_find_headers_for_sanity(self):
+        # do a put with content type -> find one
+        web.ctx.env = {'REQUEST_METHOD':'PUT', 'HTTP_CONTENT_TYPE':'text/uri-list'}
+        self.assertTrue(isinstance(service.find_parser(), HTTPListParser))
+        # do a put w/o content-type -> default
+        web.ctx.env = {'REQUEST_METHOD':'PUT'}
+        self.assertTrue(isinstance(service.find_parser(), HTTPHeaderParser))
+        # do a put with accept -> find one
+        web.ctx.env = {'REQUEST_METHOD':'PUT', 'HTTP_ACCEPT':'text/uri-list'}
+        self.assertTrue(isinstance(service.find_parser(), HTTPListParser))
+        # do a put with */* as accept -> default
+        web.ctx.env = {'REQUEST_METHOD':'PUT', 'HTTP_ACCEPT':'*/*'}
+        self.assertTrue(isinstance(service.find_parser(), HTTPHeaderParser))
+        # do a put w/o accept -> default
+        web.ctx.env = {'REQUEST_METHOD':'PUT'}
+        self.assertTrue(isinstance(service.find_parser(), HTTPHeaderParser))
+        # do a put with accept and content-type specified -> find one
+
+        # do a post with content type -> find one
+        web.ctx.env = {'REQUEST_METHOD':'POST', 'HTTP_CONTENT_TYPE':'text/uri-list'}
+        self.assertTrue(isinstance(service.find_parser(), HTTPListParser))
+        # do a post w/o content-type -> default
+        web.ctx.env = {'REQUEST_METHOD':'POST'}
+        self.assertTrue(isinstance(service.find_parser(), HTTPHeaderParser))
+        # do a post with accept -> find one
+        web.ctx.env = {'REQUEST_METHOD':'POST', 'HTTP_ACCEPT':'text/uri-list'}
+        self.assertTrue(isinstance(service.find_parser(), HTTPListParser))
+        # do a post with */* as accept -> default
+        web.ctx.env = {'REQUEST_METHOD':'POST', 'HTTP_ACCEPT':'*/*'}
+        self.assertTrue(isinstance(service.find_parser(), HTTPHeaderParser))
+        # do a post w/o accept -> default
+        web.ctx.env = {'REQUEST_METHOD':'POST'}
+        self.assertTrue(isinstance(service.find_parser(), HTTPHeaderParser))
+        # do a post with accept and content-type specified -> find one
+
+        # with get content-type is ignored
+        # do a get with accept -> find one
+        web.ctx.env = {'REQUEST_METHOD':'GET', 'HTTP_ACCEPT':'text/uri-list'}
+        self.assertTrue(isinstance(service.find_parser(), HTTPListParser))
+        # do a get with */* as accept -> default
+        web.ctx.env = {'REQUEST_METHOD':'GET', 'HTTP_ACCEPT':'*/*'}
+        self.assertTrue(isinstance(service.find_parser(), HTTPHeaderParser))
+        # do a get w/o accept -> default
+        web.ctx.env = {'REQUEST_METHOD':'GET'}
+        self.assertTrue(isinstance(service.find_parser(), HTTPHeaderParser))
+
+        # with del content-type is ignored
+        # do a del with accept -> find one
+        web.ctx.env = {'REQUEST_METHOD':'DELETE', 'HTTP_ACCEPT':'text/uri-list'}
+        self.assertTrue(isinstance(service.find_parser(), HTTPListParser))
+        # do a del with */* as accept -> default
+        web.ctx.env = {'REQUEST_METHOD':'DELETE', 'HTTP_ACCEPT':'*/*'}
+        self.assertTrue(isinstance(service.find_parser(), HTTPHeaderParser))
+        # do a del w/p accept -> default
+        web.ctx.env = {'REQUEST_METHOD':'DELETE', 'HTTP_ACCEPT':'*/*'}
+        self.assertTrue(isinstance(service.find_parser(), HTTPHeaderParser))
 
 class CategoriesTests(unittest.TestCase):
 
@@ -291,7 +364,7 @@ class QueryTests(unittest.TestCase):
     # TODO: test get category descriptio
     # TODO: test get collections/listing of sub-res
 
-    heads = {'Accept':'text/uri-list'}
+    heads = {'Accept':'text/uri-list', 'Content-type':'bla'}
 
     def test_get_on_query_for_succes(self):
         response = app.request("/-/", headers = self.heads)
