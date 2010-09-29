@@ -145,7 +145,7 @@ def validate_key(name):
     """
     Decorator to validate the given keys!
     """
-    valid_key = re.compile('[a-z0-9-/]*')
+    valid_key = re.compile('[a-zA-Z0-9-]*')
     def new(*args, **kwargs):
         """
         Checks the arguments.
@@ -158,7 +158,9 @@ def validate_key(name):
 class HTTPHandler(object):
     """
     Handles the very basic HTTP operations. The logic when a resource is
-    created, updated or delete is handle in here.
+    created, updated or delete is handle in here. It makes later replacements
+    of the protocol easier. Do not mixup protocol and rendering. XML can be
+    rendered over HTTP for example.
     """
 
     @authenticate
@@ -306,7 +308,8 @@ class HTTPHandler(object):
 
 class ResourceHandler(HTTPHandler):
     """
-    Manages the resources and stores them. Also triggers backend operations.
+    Manages the resources and stores them. Also triggers backend operations. It
+    is protocol and rendering free.
     """
 
     resources = NonPersistentResourceDictionary()
@@ -336,19 +339,16 @@ class ResourceHandler(HTTPHandler):
         data -- the data.
         """
         # TODO: mime types, Accept headers and listings
-        if key is '' or key[-1:] is '/':
-            return 'Listing sub resources...'
-        else:
-            try:
-                # trigger backend to get resource
-                res = self.resources.get_resource(key)
-                SECURITY_HANDLER.authorize(username, res)
-                backend = backends.find_right_backend(res.categories)
-                backend.retrieve(res)
-                res = self.resources[key]
-                return res
-            except (KeyError, MissingAttributesException, SecurityException):
-                raise
+        try:
+            # trigger backend to get resource
+            res = self.resources.get_resource(key)
+            SECURITY_HANDLER.authorize(username, res)
+            backend = backends.find_right_backend(res.categories)
+            backend.retrieve(res)
+            res = self.resources[key]
+            return res
+        except (KeyError, MissingAttributesException, SecurityException):
+            raise
 
     def update_resource(self, key, data, username):
         """
@@ -413,3 +413,10 @@ class ResourceHandler(HTTPHandler):
         except (KeyError, MissingCategoriesException, MissingActionException,
                 StateException, SecurityException):
             raise
+
+class QueryHandler(object):
+
+    def GET(self, name):
+        print web.ctx
+        print web.ctx.env
+        return 'Hello, ' + name + '!'

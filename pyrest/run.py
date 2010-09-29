@@ -23,14 +23,14 @@ Created on Aug 10, 2010
 @author: tmetsch
 '''
 from pyrest.examples.restful_job_submission import JobHandler
-from pyrest.service import ResourceHandler
+from pyrest.service import ResourceHandler, QueryHandler
 import web
 
 # 
 # Configures web.py and tells him which handlers should listen to which 
 # entry-point.
 # 
-URLS = ('/(.*)', 'ResourceHandler')
+URLS = ('/([a-zA-Z0-9-;=_]*)', 'ResourceHandler', '/-/(.*)', 'QueryHandler')
 
 # 
 # Turns debugging on of off - Default is True (on).

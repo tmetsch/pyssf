@@ -28,10 +28,20 @@ class Kind(object):
     A OCCI Kind.
     """
     def __init__(self):
+        #: Immutable, unique identifier of the instance (Multiplicity 1)
+        self.id = ''
         #: Denotes the display name of an instance. 0,1
         self.title = ''
         #: Comprises the categories associated to this instance. 1...*
         self.categories = []
+
+        # following are not in the spec - but needed.
+        #: Data which was initially provided by the client in the body.
+        self.data = ''
+        #: The owner of this resource
+        self.user = 'default'
+        #: Dictionary containing the attributes for this resource.
+        self.attributes = {}
 
     def __eq__(self, instance):
         if self.categories == instance.categories:
@@ -75,22 +85,12 @@ class Resource(Kind):
 
     def __init__(self):
         super(Resource, self).__init__()
-        #: Immutable, unique identifier of the instance (Multiplicity 1)
-        self.id = ''
         #: Holds a summarizing description of the Resource instance.
         self.summary = ''
         #: This is a set of associated Links with resource 
         self.links = []
         #: List of actions associated with this resource
         self.actions = []
-
-        # following are not in the spec - but needed.
-        #: Data which was initially provided by the client in the body.
-        self.data = ''
-        #: The owner of this resource
-        self.user = 'default'
-        #: Dictionary containing the attributes for this resource.
-        self.attributes = {}
 
     def get_certain_categories(self, name):
         """

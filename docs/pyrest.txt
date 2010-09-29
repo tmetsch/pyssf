@@ -40,7 +40,7 @@ Features:
   * Service can be deployed in Apache using mod_wsgi
   * Supports Querying of available backends 
   * Linking of Resources
-  * Automatic selection of renderings (based on client request)
+  * Automatic selection of renderings (based on client request/Accept headers)
   * Easy to extend with own backends and renderings
 
 Structure of the pyrest package

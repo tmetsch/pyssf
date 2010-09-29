@@ -62,8 +62,7 @@ class KeyValueHandler(Handler):
 
     def create(self, resource):
         if self.category in resource.categories:
-            if not 'occi.keyvalue.keq' in resource.attributes and not
-            'occi.keyvalue.value' in resource.attributes:
+            if not 'occi.keyvalue.keq' in resource.attributes and not 'occi.keyvalue.value' in resource.attributes:
                 raise MissingAttributesException('Missing key and value'
                                                  + 'attributes')
         else:
@@ -77,14 +76,11 @@ class KeyValueHandler(Handler):
 
     def update(self, resource, updated_resource):
         if self.category in updated_resource.categories:
-            if not 'occi.keyvalue.keq' in updated_resource.attributes and not
-            'occi.keyvalue.value' in updated_resource.attributes:
+            if not 'occi.keyvalue.keq' in updated_resource.attributes and not 'occi.keyvalue.value' in updated_resource.attributes:
                 raise MissingAttributesException('Missing key and value'
                                                  + 'attributes')
-            resource.attributes['occi.keyvalue.key'] =
-            updated_resource.attributes['occi.keyvalue.key']
-            resource.attributes['occi.keyvalue.value'] =
-            updated_resource.attributes['occi.keyvalue.value']
+            resource.attributes['occi.keyvalue.key'] = updated_resource.attributes['occi.keyvalue.key']
+            resource.attributes['occi.keyvalue.value'] = updated_resource.attributes['occi.keyvalue.value']
         else:
             pass
 
