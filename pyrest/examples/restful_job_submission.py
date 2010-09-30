@@ -46,7 +46,7 @@ from pyrest.backends import Handler
 from pyrest.myexceptions import MissingAttributesException, StateException, \
     MissingActionException
 from pyrest.resource_model import Category, Resource, Action
-from pyrest.service import ResourceHandler
+from pyrest.service import ResourceHandler, QueryHandler
 
 import web
 
@@ -157,14 +157,14 @@ class JobHandler(Handler):
             pass
 
 # setup the service
-urls = ('/(.*)', 'ResourceHandler')
+URLS = ('/([a-zA-Z0-9-;=_]*)', 'ResourceHandler', '/-/(.*)', 'QueryHandler')
 web.config.debug = False
 
 # register the backend
 JobHandler()
 
 # create the app...
-application = web.application(urls, globals())
+application = web.application(URLS, globals())
 
 # run...
 if __name__ == "__main__":

@@ -41,7 +41,7 @@ from pyrest import backends
 from pyrest.backends import Handler
 from pyrest.myexceptions import MissingAttributesException
 from pyrest.resource_model import Category, Resource
-from pyrest.service import ResourceHandler
+from pyrest.service import ResourceHandler, QueryHandler
 
 import web
 
@@ -94,7 +94,7 @@ class KeyValueHandler(Handler):
         pass
 
 # setup the service
-URLS = ('/(.*)', 'ResourceHandler')
+URLS = ('/([a-zA-Z0-9-;=_]*)', 'ResourceHandler', '/-/(.*)', 'QueryHandler')
 web.config.debug = False
 
 # register the backend
