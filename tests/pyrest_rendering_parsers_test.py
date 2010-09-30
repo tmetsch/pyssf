@@ -22,7 +22,7 @@ Created on Jul 12, 2010
 '''
 from pyrest.myexceptions import MissingCategoriesException
 from pyrest.rendering_parsers import Parser, HTTPHeaderParser, HTTPListParser, \
-    HTTPData
+    HTTPData, HTTPTextParser
 from pyrest.resource_model import Action, Category, Resource
 from tests.mocks import DummyBackend
 import unittest
@@ -39,7 +39,7 @@ class AbstractParserTest(unittest.TestCase):
         self.assertRaises(NotImplementedError, self.parser.to_resource, "111", None)
         self.assertRaises(NotImplementedError, self.parser.from_resource, None)
         self.assertRaises(NotImplementedError, self.parser.to_action, None)
-        self.assertRaises(NotImplementedError, self.parser.from_category, None)
+        self.assertRaises(NotImplementedError, self.parser.from_categories, None)
 
 class HTTPHeaderParserTest(unittest.TestCase):
 
@@ -68,6 +68,9 @@ class HTTPHeaderParserTest(unittest.TestCase):
     category_one = Category()
     category_two = Category()
     category_three = Category()
+
+    category_keys_list = []
+
     resource = Resource()
     term_action = Action()
     job_resource = Resource()
@@ -105,6 +108,10 @@ class HTTPHeaderParserTest(unittest.TestCase):
         self.job_resource.actions = [self.term_action]
         self.job_resource.data = self.body
 
+        self.category_keys_list = []
+        for item in [self.category_one, self.category_two, self.category_three]:
+            self.category_keys_list.append(str(item.scheme + item.term))
+
     # --------
     # TEST FOR SUCCESS
     # --------
@@ -113,9 +120,9 @@ class HTTPHeaderParserTest(unittest.TestCase):
         action = self.parser.to_action(self.correct_action_http_data)
         self.assertTrue(action.categories[0].__eq__(self.action_category))
 
-    def test_from_category_for_succes(self):
-        http_data = self.parser.from_category(self.category_one)
-        self.assertEquals(http_data.header['Category'], self.category_one.term + ';scheme=' + self.category_one.scheme)
+    def test_from_categories_for_succes(self):
+        http_data = self.parser.from_categories(self.category_keys_list)
+        self.assertEquals(len(http_data.header['Category'].split(',')), 3)
 
     def test_to_resource_for_success(self):
         # create a basic resource
@@ -151,8 +158,8 @@ class HTTPHeaderParserTest(unittest.TestCase):
         self.assertRaises(MissingCategoriesException, self.parser.to_action, HTTPData({}, None))
         self.assertRaises(MissingCategoriesException, self.parser.to_action, None)
 
-    def test_from_category_for_failure(self):
-        self.assertRaises(AttributeError, self.parser.from_category, None)
+    def test_from_categories_for_failure(self):
+        self.assertRaises(AttributeError, self.parser.from_categories, None)
 
     def test_to_resource_for_failure(self):
         # missing categories -> fail big time!
@@ -207,9 +214,9 @@ class HTTPHeaderParserTest(unittest.TestCase):
         action = self.parser.to_action(self.correct_action_http_data)
         self.assertEquals(action.categories[0], self.action_category)
 
-    def test_from_category_for_sanity(self):
-        http_data = self.parser.from_category(self.category_one)
-        self.assertEquals(http_data.header['Content-type'], 'text/plain')
+    def test_from_categories_for_sanity(self):
+        # check that no , are added when only one cate needs to be parsed...
+        http_data = self.parser.from_categories([self.category_one.scheme + self.category_one.term])
         self.assertEquals(http_data.header['Category'], self.category_one.term + ';scheme=' + self.category_one.scheme)
         # TODO: add checks for rel!
 
@@ -238,8 +245,6 @@ class HTTPHeaderParserTest(unittest.TestCase):
     def test_from_resource_for_sanity(self):
         # check if given data, categories & links are in the response
         res = self.parser.from_resource(self.job_resource)
-        # content-type
-        self.assertEquals(res.header['Content-type'], 'text/plain')
         # body
         self.assertEquals(res.body, self.body)
         # attributes
@@ -253,17 +258,50 @@ class HTTPListParserTest(unittest.TestCase):
 
     list_parser = HTTPListParser()
 
-    def test_from_category_for_success(self):
-        data = self.list_parser.from_category(HTTPHeaderParserTest.category_one)
-        self.assertEquals(data.body, HTTPHeaderParserTest.category_one.scheme + HTTPHeaderParserTest.category_one.term)
+    category_keys_list = []
 
-    def test_from_category_for_failure(self):
-        self.assertRaises(AttributeError, self.list_parser.from_category, None)
+    def setUp(self):
+        self.category_keys_list = []
+        for item in [HTTPHeaderParserTest.category_one, HTTPHeaderParserTest.category_two, HTTPHeaderParserTest.category_three]:
+            self.category_keys_list.append(str(item.scheme + item.term))
 
-    def test_from_category_for_sanity(self):
-        data = self.list_parser.from_category(HTTPHeaderParserTest.category_one)
+    def test_from_categories_for_success(self):
+        data = self.list_parser.from_categories(self.category_keys_list)
+        self.assertEquals(data.body, '\n'.join(self.category_keys_list))
+
+    def test_from_categories_for_failure(self):
+        self.assertRaises(AttributeError, self.list_parser.from_categories, None)
+
+    def test_from_categories_for_sanity(self):
+        data = self.list_parser.from_categories([HTTPHeaderParserTest.category_one.scheme + HTTPHeaderParserTest.category_one.term])
         self.assertEquals(data.header['Content-type'], 'text/uri-list')
+        self.assertEquals(data.body, self.category_keys_list[0])
+        self.assertTrue(data.body is not None)
+
+class HTTPTextParserTest(HTTPListParserTest):
+
+    parser = HTTPTextParser()
+
+    category_keys_list = []
+
+    def setUp(self):
+        self.category_keys_list = []
+        for item in [HTTPHeaderParserTest.category_one, HTTPHeaderParserTest.category_two, HTTPHeaderParserTest.category_three]:
+            self.category_keys_list.append(str(item.scheme + item.term))
+
+    def test_from_categories_for_success(self):
+        data = self.parser.from_categories(self.category_keys_list)
+        self.assertTrue(data.body is not None)
+
+    def test_from_categories_for_failure(self):
+        self.assertRaises(AttributeError, self.parser.from_categories, None)
+
+    def test_from_categories_for_sanity(self):
+        data = self.parser.from_categories([HTTPHeaderParserTest.category_one.scheme + HTTPHeaderParserTest.category_one.term])
+        self.assertEquals(data.header['Content-type'], 'text/plain')
+        self.assertEquals(data.body, HTTPHeaderParserTest.category_one.term + ';scheme=' + HTTPHeaderParserTest.category_one.scheme)
         self.assertTrue(data.body is not None)
 
 if __name__ == "__main__":
     unittest.main()
+
