@@ -28,13 +28,13 @@ from pyrest.myexceptions import MissingActionException, \
     MissingAttributesException, StateException, MissingCategoriesException, \
     SecurityException
 from pyrest.rendering_parsers import HTTPHeaderParser, HTTPTextParser, \
-    HTTPListParser, HTTPData
+    HTTPListParser, HTTPData, HTTPHTMLParser
 import re
 import uuid
 import web
 
 DEFAULT_RENDERING_PARSER = HTTPHeaderParser()
-RENDERING_PARSERS = {'text/plain': HTTPTextParser(), '*/*': HTTPHeaderParser(), 'text/uri-list': HTTPListParser()}
+RENDERING_PARSERS = {'text/plain': HTTPTextParser(), '*/*': HTTPHeaderParser(), 'text/uri-list': HTTPListParser(), 'text/html': HTTPHTMLParser(), 'text/html;q=0.9':HTTPHTMLParser()}
 AUTHENTICATION_ENABLED = False
 
 # some helper routines.
@@ -60,7 +60,11 @@ def find_parser():
                     return DEFAULT_RENDERING_PARSER
     if 'HTTP_ACCEPT' in web.ctx.env:
         try:
-            return RENDERING_PARSERS[web.ctx.env['HTTP_ACCEPT']]
+            print web.ctx.env['HTTP_ACCEPT'].split(',')
+            for key in RENDERING_PARSERS.keys():
+                print key
+                if key in web.ctx.env['HTTP_ACCEPT'].split(','):
+                    return RENDERING_PARSERS[key]
         except KeyError:
             return DEFAULT_RENDERING_PARSER
     #return default
@@ -154,13 +158,13 @@ class NonPersistentResourceDictionary(dict):
         except KeyError:
             raise
 
-class PersistentResourceDictionary(dict):
-    """
-    Persistently stores the dictionary to a database to be failsafe.
-    
-    http://docs.python.org/library/shelve.html
-    """
-    pass
+#class PersistentResourceDictionary(dict):
+#    """
+#    Persistently stores the dictionary to a database to be failsafe.
+#    
+#    http://docs.python.org/library/shelve.html
+#    """
+#    pass
 
 # The following part is here for basic HTTP handling.
 
@@ -448,6 +452,7 @@ class QueryHandler(object):
 
     def GET(self, name):
         if len(name) == 0:
+            print web.ctx.env
             parser = find_parser()
             http_data = parser.from_categories(backends.REGISTERED_BACKENDS.keys())
             for item in http_data.header.keys():

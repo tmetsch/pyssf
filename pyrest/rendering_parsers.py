@@ -320,6 +320,53 @@ class HTTPListParser(Parser):
             body.append(category)
         return HTTPData(heads, '\n'.join(body))
 
+class HTTPHTMLParser(Parser):
+    """
+    Simple parser which displays categories and resource in a format which a
+    browser can understand.
+    """
+
+    css_string = "body {font-family: 'Ubuntu Beta', 'Bitstream Vera Sans', 'DejaVu Sans', Tahoma, sans-serif; font-size: 0.7em;color: black} table, td, th{border:0px solid white;padding: 5px}th {background-color:#73c167;color:white;}td {background-color:#eee;color:black;}"
+    content_type = 'text/html'
+
+    def from_categories(self, categories):
+        heads = {}
+        heads['Content-type'] = self.content_type
+        body = "<html><head><style type=\"text/css\">" + self.css_string + "</style></head><body>"
+        body += "<h1>Registered Categories:</h1>"
+        body += "<table><tr><th>Term</th><th>Scheme</th></tr>"
+        for category in categories:
+            body += ("<tr><td>" + category.split('#')[1] + "</td><td><a href=\"" + category.split('#')[0] + "\">" + category.split('#')[0] + "</a></td></tr>")
+        body += "</table>"
+        body += "</body></html>"
+        return HTTPData(heads, body)
+
+    def from_resource(self, resource):
+        heads = {}
+        heads['Content-type'] = self.content_type
+
+
+        body = "<html><head><style type=\"text/css\">" + self.css_string + "</style></head><body>"
+        body += "<h1>Resource description:</h1>"
+
+        body += "Id: <strong>" + resource.id + "</strong>"
+
+        body += "<h2>Assigned Categories:</h2>"
+        body += "<table><tr><th>Term</th><th>Scheme</th></tr>"
+        for category in resource.categories:
+            body += ("<tr><td>" + category.term + "</td><td><a href=\"" + category.scheme + "\">" + category.scheme + "</a></td></tr>")
+        body += "</table>"
+
+        body += "<h2>Assigned Attributes:</h2>"
+        body += "<table><tr><th>Key</th><th>Value</th></tr>"
+        for item in resource.attributes.keys():
+            body += ("<tr><td>" + item + "</td><td>" + resource.attributes[item] + "</td></tr>")
+        body += "</table>"
+
+        body += "</body></html>"
+
+        return HTTPData(heads, body)
+
 #class RDFParser(Parser):
 #    """
 #    A to be done parser for RDF/RDFa documents.
