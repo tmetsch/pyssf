@@ -84,7 +84,7 @@ class HTTPHeaderParser(Parser):
     Very simple parser which gets/puts links, categories and attributes. Handles
     content-type and accept header 'text/plain' and */*
     """
-    # FIXME: handle multiple headers properly instead of using ,
+    # Note: handle multiple headers properly instead of using ,
 
     content_type = '*/*'
 
