@@ -249,14 +249,14 @@ class HTTPHandler(object):
         *data -- if available (this it the body of the HTTP message).
         """
         # return resource representation (and act based on mime-types)
-        try:
-            request = HTTPData(web.ctx.env, web.data())
-        except:
-            request = HTTPData(web.ctx.env, None)
+#        if web.data():
+#            request = HTTPData(web.ctx.env, web.data())
+#        else:
+#            request = HTTPData(web.ctx.env, None)
         name = str(name)
 
         try:
-            tmp = self.return_resource(name, request, username)
+            tmp = self.return_resource(name, username)
         except KeyError:
             return web.NotFound()
         except MissingAttributesException as mae:
@@ -361,7 +361,7 @@ class ResourceHandler(HTTPHandler):
         except (MissingCategoriesException, MissingAttributesException):
             raise
 
-    def return_resource(self, key, data, username):
+    def return_resource(self, key, username):
         """
         Returns a resource.
         
