@@ -42,6 +42,8 @@ Features:
   * Linking of Resources
   * Automatic selection of renderings (based on client request/Accept headers)
   * Easy to extend with own backends and renderings
+  * Acts based upon Accept and Content-headers (Can handle requests for HTML,
+    Header Rendering or uri-lists)
   * Handler all HTTP/REST stuff for you (HTTP-Headers, CRUD operations etc)
 
 Structure of the pyrest package
