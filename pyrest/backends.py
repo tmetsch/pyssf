@@ -41,11 +41,11 @@ def register(categories, handler):
                            + " class.")
     else:
         for category in categories:
-            if REGISTERED_BACKENDS.has_key(category.scheme + category.term):
+            if REGISTERED_BACKENDS.has_key(category):
                 raise AttributeError("A handler for this category is already"
                                    + "registered.")
             else:
-                REGISTERED_BACKENDS[category.scheme + category.term] = handler
+                REGISTERED_BACKENDS[category] = handler
 
 def find_right_backend(categories):
     """
@@ -53,10 +53,10 @@ def find_right_backend(categories):
     
     categories -- The category a backend is needed for.
     """
-    for category in categories:
-        cat_id = category.scheme + category.term
-        if cat_id in REGISTERED_BACKENDS.keys():
-            return REGISTERED_BACKENDS[cat_id]
+    for re_cat in REGISTERED_BACKENDS.keys():
+        for category in categories:
+            if category == re_cat:
+                return REGISTERED_BACKENDS[re_cat]
     return Handler()
 
 class Handler(object):

@@ -69,7 +69,7 @@ class HTTPHeaderParserTest(unittest.TestCase):
     category_two = Category()
     category_three = Category()
 
-    category_keys_list = []
+    category_keys_list = [category_one, category_two, category_three]
 
     resource = Resource()
     term_action = Action()
@@ -107,10 +107,6 @@ class HTTPHeaderParserTest(unittest.TestCase):
         self.job_resource.attributes = {'occi.drmaa.remote_command': '/bin/sleep'}
         self.job_resource.actions = [self.term_action]
         self.job_resource.data = self.body
-
-        self.category_keys_list = []
-        for item in [self.category_one, self.category_two, self.category_three]:
-            self.category_keys_list.append(str(item.scheme + item.term))
 
     # --------
     # TEST FOR SUCCESS
@@ -223,9 +219,8 @@ class HTTPHeaderParserTest(unittest.TestCase):
 
     def test_from_categories_for_sanity(self):
         # check that no , are added when only one cate needs to be parsed...
-        http_data = self.parser.from_categories([self.category_one.scheme + self.category_one.term])
-        self.assertEquals(http_data.header['Category'], self.category_one.term + ';scheme=' + self.category_one.scheme)
-        # TODO: add checks for rel!
+        http_data = self.parser.from_categories([self.category_one])
+        self.assertTrue(http_data.header['Category'].find(self.category_one.term + ';scheme=' + self.category_one.scheme) > -1)
 
     def test_to_resource_for_sanity(self):
         # check if given categories are in the resource
@@ -268,14 +263,11 @@ class HTTPHeaderParserTest(unittest.TestCase):
 class HTTPListParserTest(unittest.TestCase):
     list_parser = HTTPListParser()
 
-    category_keys_list = []
+    category_keys_list = [HTTPHeaderParserTest.category_one, HTTPHeaderParserTest.category_two, HTTPHeaderParserTest.category_three]
     resource = Resource()
     job_resource = Resource()
 
     def setUp(self):
-        self.category_keys_list = []
-        for item in [HTTPHeaderParserTest.category_one, HTTPHeaderParserTest.category_two, HTTPHeaderParserTest.category_three]:
-            self.category_keys_list.append(str(item.scheme + item.term))
 
         self.resource.categories = []
         self.resource.id = '123'
@@ -290,7 +282,6 @@ class HTTPListParserTest(unittest.TestCase):
     def test_from_categories_for_success(self):
         data = self.list_parser.from_categories(self.category_keys_list)
         self.assertEquals(data.header['Content-type'], 'text/uri-list')
-        self.assertEquals(data.body, '\n'.join(self.category_keys_list))
 
     def test_from_resources_for_success(self):
         result = self.list_parser.from_resources([self.resource, self.job_resource])
@@ -311,9 +302,9 @@ class HTTPListParserTest(unittest.TestCase):
     # --------
 
     def test_from_categories_for_sanity(self):
-        data = self.list_parser.from_categories([HTTPHeaderParserTest.category_one.scheme + HTTPHeaderParserTest.category_one.term])
+        data = self.list_parser.from_categories([HTTPHeaderParserTest.category_one])
         self.assertEquals(data.header['Content-type'], 'text/uri-list')
-        self.assertEquals(data.body, self.category_keys_list[0])
+        self.assertEquals(data.body, self.category_keys_list[0].scheme + self.category_keys_list[0].term)
         self.assertTrue(data.body is not None)
 
     def test_from_resources_for_sanity(self):
@@ -325,14 +316,12 @@ class HTTPTextParserTest(unittest.TestCase):
 
     parser = HTTPTextParser()
 
-    category_keys_list = []
+    category_keys_list = [HTTPHeaderParserTest.category_one, HTTPHeaderParserTest.category_two, HTTPHeaderParserTest.category_three]
     resource = Resource()
     job_resource = Resource()
 
     def setUp(self):
         self.category_keys_list = []
-        for item in [HTTPHeaderParserTest.category_one, HTTPHeaderParserTest.category_two, HTTPHeaderParserTest.category_three]:
-            self.category_keys_list.append(str(item.scheme + item.term))
 
         self.resource.categories = []
         self.resource.id = '123'
@@ -362,9 +351,9 @@ class HTTPTextParserTest(unittest.TestCase):
     # --------
 
     def test_from_categories_for_sanity(self):
-        data = self.parser.from_categories([HTTPHeaderParserTest.category_one.scheme + HTTPHeaderParserTest.category_one.term])
+        data = self.parser.from_categories([HTTPHeaderParserTest.category_one])
         self.assertEquals(data.header['Content-type'], 'text/plain')
-        self.assertEquals(data.body, 'Category:' + HTTPHeaderParserTest.category_one.term + ';scheme=' + HTTPHeaderParserTest.category_one.scheme)
+        self.assertEquals(data.body, 'Category:' + HTTPHeaderParserTest.category_one.term + ';scheme=' + HTTPHeaderParserTest.category_one.scheme + ';title=' + HTTPHeaderParserTest.category_one.title + '\n')
         self.assertTrue(data.body is not None)
 
     def test_from_resources_for_sanity(self):
@@ -377,9 +366,9 @@ class HTTPHTMLParserTest(unittest.TestCase):
     # Note: only testing for sanity and looking for text/html content type.
 
     parser = HTTPHTMLParser()
-    category_keys_list = []
     category_one = Category()
     category_two = Category()
+    category_keys_list = [category_one, category_two]
     resource = Resource()
 
     def setUp(self):
@@ -398,8 +387,6 @@ class HTTPHTMLParserTest(unittest.TestCase):
         self.resource.id = '123'
 
         self.category_keys_list = []
-        for item in [self.category_one, self.category_two]:
-            self.category_keys_list.append(str(item.scheme + item.term))
 
     # --------
     # TEST FOR SANITY

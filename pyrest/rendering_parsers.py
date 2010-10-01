@@ -251,10 +251,9 @@ class HTTPHeaderParser(Parser):
         if categories is None:
             raise AttributeError("Categories cannot be empty!")
         heads = {}
-        cats = []
-        for category in categories:
-            cats.append(category.split('#')[1] + ';scheme=' + category.split('#')[0] + '#')
-        heads['Category'] = ','.join(cats)
+        res = self._create_categories_for_header(categories)
+        if len(res) > 0:
+            heads['Category'] = res
         return HTTPData(heads, None)
 
     def to_resource(self, key, http_data):
@@ -322,12 +321,12 @@ class HTTPTextParser(HTTPHeaderParser):
             raise AttributeError("Categories cannot be empty!")
         heads = {}
         heads['Content-type'] = self.content_type
-        res = []
-        for category in categories:
-            res.append('Category:' + category.split('#')[1] + ';scheme=' + category.split('#')[0] + '#')
-        if len(res) > 0:
-            body = '\n'.join(res)
+        res = self._create_categories_for_header(categories).split(',')
+        body = ''
+        for item in res:
+            body += 'Category:' + item + '\n'
         return HTTPData(heads, body)
+
     def from_resources(self, resources):
         heads = {}
         heads['Content-type'] = self.content_type
@@ -353,7 +352,7 @@ class HTTPListParser(Parser):
         heads['Content-type'] = self.content_type
         body = []
         for category in categories:
-            body.append(category)
+            body.append(category.scheme + category.term)
         return HTTPData(heads, '\n'.join(body))
 
     def from_resources(self, resources):
@@ -373,7 +372,7 @@ class HTTPHTMLParser(Parser):
     browser can understand.
     """
 
-    css_string = "body {font-family: 'Ubuntu Beta', 'Bitstream Vera Sans', 'DejaVu Sans', Tahoma, sans-serif; font-size: 0.6em; color: black; max-width: 360px; border: 1px solid #888; padding:10px;} table {font-size: 1.1em;border:0px solid white; width: 100%;} th {background-color:#73c167;color:white;padding: 5px;} td {background-color:#eee;color:black;padding: 5px;}"
+    css_string = "body {font-family: 'Ubuntu Beta', 'Bitstream Vera Sans', 'DejaVu Sans', Tahoma, sans-serif; font-size: 0.6em; color: black; max-width: 500px; border: 1px solid #888; padding:10px;} table {font-size: 1.1em;border:0px solid white; width: 100%;} th {background-color:#73c167;color:white;padding: 5px;} td {background-color:#eee;color:black;padding: 5px;}"
     content_type = 'text/html'
 
     def from_categories(self, categories):
@@ -382,9 +381,9 @@ class HTTPHTMLParser(Parser):
         body = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head><style type=\"text/css\">" + self.css_string + "</style><title>Registered Categories</title></head><body>"
         body += "<p><em><a href=\"/\">Home</a></em></p>"
         body += "<h1>Registered Categories:</h1>"
-        body += "<table><tr><th>Term</th><th>Scheme</th></tr>"
+        body += "<table><tr><th>Term</th><th>Scheme</th><th>Title</th><th>Attributes</th><th>Related</th></tr>"
         for category in categories:
-            body += ("<tr><td>" + category.split('#')[1] + "</td><td><a href=\"" + category.split('#')[0] + "\">" + category.split('#')[0] + "</a></td></tr>")
+            body += ("<tr><td>" + category.term + "</td><td><a href=\"" + category.scheme + "\">" + category.scheme + "</a></td><td>" + category.title + "</td><td>" + str(category.attributes) + "</td><td>" + str(category.related) + "</td></tr>")
         body += "</table>"
         body += "</body></html>"
         return HTTPData(heads, body)
