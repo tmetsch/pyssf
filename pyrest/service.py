@@ -34,7 +34,10 @@ import uuid
 import web
 
 DEFAULT_RENDERING_PARSER = HTTPHeaderParser()
-RENDERING_PARSERS = {'text/plain': HTTPTextParser(), '*/*': HTTPHeaderParser(), 'text/uri-list': HTTPListParser(), 'text/html': HTTPHTMLParser(), 'text/html;q=0.9':HTTPHTMLParser()}
+RENDERING_PARSERS = {'text/plain': HTTPTextParser(), '*/*': HTTPHeaderParser(),
+                     'text/uri-list': HTTPListParser(),
+                     'text/html': HTTPHTMLParser(),
+                     'text/html;q=0.9':HTTPHTMLParser()}
 AUTHENTICATION_ENABLED = False
 
 # some helper routines.
@@ -60,9 +63,7 @@ def find_parser():
                     return DEFAULT_RENDERING_PARSER
     if 'HTTP_ACCEPT' in web.ctx.env:
         try:
-            print web.ctx.env['HTTP_ACCEPT'].split(',')
             for key in RENDERING_PARSERS.keys():
-                print key
                 if key in web.ctx.env['HTTP_ACCEPT'].split(','):
                     return RENDERING_PARSERS[key]
         except KeyError:
@@ -449,6 +450,9 @@ class ResourceHandler(HTTPHandler):
             raise
 
 class QueryHandler(object):
+    """
+    Represents the Query interface.
+    """
 
     def GET(self, name):
         if len(name) == 0:
