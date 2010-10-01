@@ -159,7 +159,7 @@ class JobHandler(Handler):
             pass
 
 # setup the service
-URLS = ('/([a-zA-Z0-9-;=_]*)', 'ResourceHandler', '/-/(.*)', 'QueryHandler')
+URLS = ('/-/(.*)', 'QueryHandler', '/(.*)', 'ResourceHandler',)
 web.config.debug = False
 
 # register the backend

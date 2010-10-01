@@ -253,34 +253,26 @@ class HTTPHandler(object):
         name -- the id of the resource.
         *data -- if available (this it the body of the HTTP message).
         """
-        # return resource representation (and act based on mime-types)
-#        if web.data():
-#            request = HTTPData(web.ctx.env, web.data())
-#        else:
-#            request = HTTPData(web.ctx.env, None)
         name = str(name)
-
+        tmp = None
         try:
             tmp = self.return_resource(name, username)
         except KeyError:
-            return web.NotFound()
+            tmp = self.list_resources(name, username)
         except MissingAttributesException as mae:
             return web.BadRequest(), str(mae)
         except SecurityException as se:
             return web.Unauthorized(), str(se)
-        else:
-            # following is uncool!
-            if isinstance(tmp, str):
-                return tmp
-            if tmp is not None:
-                for item in tmp.header.keys():
-                    web.header(item, tmp.header[item])
-                if tmp.body is None:
-                    return 'All data is in the headers...'
-                else:
-                    return tmp.body
+
+        if tmp is not None:
+            for item in tmp.header.keys():
+                web.header(item, tmp.header[item])
+            if tmp.body is None:
+                return 'All data is in the headers...'
             else:
-                return web.NotFound()
+                return tmp.body
+        else:
+            return web.NotFound()
 
     @authenticate
     @validate_key
@@ -400,7 +392,7 @@ class ResourceHandler(HTTPHandler):
             res = self.resources.get_resource(key)
             SECURITY_HANDLER.authorize(username, res)
             backend = backends.find_right_backend(res.categories)
-            backend.update(res, DEFAULT_RENDERING_PARSER.to_resource('tmp', data))
+            backend.update(res, find_parser().to_resource('tmp', data))
         except (KeyError, MissingAttributesException, SecurityException):
             raise
 
@@ -420,17 +412,6 @@ class ResourceHandler(HTTPHandler):
         except (KeyError, MissingAttributesException, SecurityException):
             raise
 
-    def resource_exists(self, key):
-        """
-        Tests if an resource exists.
-        
-        key -- the id to look for...
-        """
-        if self.resources.has_key(key) or key is '':
-            return True
-        else:
-            return False
-
     def trigger_action(self, key, data, username):
         """
         Trigger an action in the backend system. Backend should update state
@@ -442,12 +423,41 @@ class ResourceHandler(HTTPHandler):
         try:
             res = self.resources.get_resource(key)
             SECURITY_HANDLER.authorize(username, res)
-            action = DEFAULT_RENDERING_PARSER.to_action(data)
+            action = find_parser().to_action(data)
             backend = backends.find_right_backend(res.categories)
             backend.action(res, action)
         except (KeyError, MissingCategoriesException, MissingActionException,
                 StateException, SecurityException):
             raise
+
+    def list_resources(self, key, username):
+        resources = []
+        for name in self.resources.keys():
+            res = self.resources.get_resource(name)
+            if res.user == username and name.find(key) > -1:
+                resources.append(res)
+            # TODO: check for category as well...
+        if len(resources) > 0:
+            # we found some resources
+            data = find_parser().from_resources(resources)
+            return data
+        elif key == "":
+            # client requested root
+            return find_parser().from_resources([])
+        else:
+            # no result...
+            return None
+
+    def resource_exists(self, key):
+        """
+        Tests if an resource exists.
+        
+        key -- the id to look for...
+        """
+        if self.resources.has_key(key) or key is '':
+            return True
+        else:
+            return False
 
 class QueryHandler(object):
     """

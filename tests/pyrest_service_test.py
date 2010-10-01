@@ -499,6 +499,9 @@ class SecurityTests(unittest.TestCase):
     # TEST FOR SANITY
     # --------
 
+
+    # FIXME: listing of sub res. of two users...
+
     def test_authenticate_for_sanity(self):
         # test post, get, put and delete authentication for sanity...
         # post

@@ -50,6 +50,8 @@ class Parser(object):
         """
         Parse an action request and return a Action.
         
+        Needed for actions.
+        
         http_data -- the incoming data.
         """
         raise NotImplementedError
@@ -58,6 +60,8 @@ class Parser(object):
         """
         Parse given categories and return proper HTTP data.
         
+        Needed for query interface.
+        
         categories -- the list of categories you want to parse
         """
         raise NotImplementedError
@@ -65,6 +69,8 @@ class Parser(object):
     def to_resource(self, key, http_data):
         """
         Parse the incoming data and return a Resource.
+        
+        Needed for creation of resources.
         
         key -- a unique identifier.
         http_data -- the incoming data.
@@ -75,9 +81,20 @@ class Parser(object):
         """
         Parse the resource and return the data in the right rendering.
         
+        Needed for retrieval of resources.
+        
         resource -- the Resource to get the data from.
         """
         raise NotImplementedError
+
+    def from_resources(self, resources):
+        """
+        Parse a list of resources and return the data in the right rendering.
+        
+        Needed for listing of resources.
+        
+        resources -- list of resources.
+        """
 
 class HTTPHeaderParser(Parser):
     """
@@ -326,13 +343,14 @@ class HTTPHTMLParser(Parser):
     browser can understand.
     """
 
-    css_string = "body {font-family: 'Ubuntu Beta', 'Bitstream Vera Sans', 'DejaVu Sans', Tahoma, sans-serif; font-size: 0.7em; color: black; max-width: 360px;} table {font-size: 1.1em;border:0px solid white; width: 100%;} th {background-color:#73c167;color:white;padding: 5px;} td {background-color:#eee;color:black;padding: 5px;}"
+    css_string = "body {font-family: 'Ubuntu Beta', 'Bitstream Vera Sans', 'DejaVu Sans', Tahoma, sans-serif; font-size: 0.6em; color: black; max-width: 360px; border: 1px solid #888; padding:10px;} table {font-size: 1.1em;border:0px solid white; width: 100%;} th {background-color:#73c167;color:white;padding: 5px;} td {background-color:#eee;color:black;padding: 5px;}"
     content_type = 'text/html'
 
     def from_categories(self, categories):
         heads = {}
         heads['Content-type'] = self.content_type
-        body = "<html><head><style type=\"text/css\">" + self.css_string + "</style></head><body>"
+        body = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head><style type=\"text/css\">" + self.css_string + "</style><title>Registered Categories</title></head><body>"
+        body += "<p><em><a href=\"/\">Home</a></em></p>"
         body += "<h1>Registered Categories:</h1>"
         body += "<table><tr><th>Term</th><th>Scheme</th></tr>"
         for category in categories:
@@ -345,10 +363,13 @@ class HTTPHTMLParser(Parser):
         heads = {}
         heads['Content-type'] = self.content_type
 
-        body = "<html><head><style type=\"text/css\">" + self.css_string + "</style></head><body>"
+        body = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head><style type=\"text/css\">" + self.css_string + "</style><title>HTML Rendering of OCCI Resource: " + resource.id + "</title></head><body>"
+
+        body += "<p><em><a href=\"/\">Home</a></em></p>"
+
         body += "<h1>Resource description:</h1>"
 
-        body += "Id: <strong>" + resource.id + "</strong>"
+        body += "<p>Id: <strong>" + resource.id + "</strong></p>"
 
         body += "<h2>Assigned Categories:</h2>"
         body += "<table><tr><th>Term</th><th>Scheme</th></tr>"
@@ -365,6 +386,31 @@ class HTTPHTMLParser(Parser):
         body += "</body></html>"
 
         return HTTPData(heads, body)
+
+    def from_resources(self, resources):
+        heads = {}
+        heads['Content-type'] = self.content_type
+
+        body = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head><style type=\"text/css\">" + self.css_string + "</style><title>HTML Rendering of OCCI Resources</title></head><body>"
+
+        body += "<p><em><a href=\"/\">Home</a></em></p>"
+
+        body += "<h1>pyREST OCCI Implementation</h1>"
+
+        body += "<h2>Query Interface</h2>"
+        body += "<p><a href=\"/-/\">Check Query Interface</a></p>"
+
+        body += "<h2>Your Resources</h2>"
+        body += "<table><tr><th>Link</th><th>Term</th></tr>"
+        for res in resources:
+            categories = []
+            for cat in res.categories:
+                categories.append(cat.term)
+            body += "<tr><td><a href=\"/" + res.id + "\">" + res.id + "</a></td><td>" + ','.join(categories) + "</td></tr>"
+        body += "</table>"
+        body += "</body></html>"
+        return HTTPData(heads, body)
+
 
 #class RDFParser(Parser):
 #    """
