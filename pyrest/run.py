@@ -28,9 +28,9 @@ import web
 
 # 
 # Configures web.py and tells him which handlers should listen to which 
-# entry-point.
+# entry-point. Note that order is important - Add Query interface first!
 # 
-URLS = ('/([a-zA-Z0-9-;=_]*)', 'ResourceHandler', '/-/(.*)', 'QueryHandler')
+URLS = ('/-/(.*)', 'QueryHandler', '/(.*)', 'ResourceHandler')
 
 # 
 # Turns debugging on of off - Default is True (on).

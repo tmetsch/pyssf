@@ -303,6 +303,16 @@ class HTTPHeaderParser(Parser):
         body = resource.data
         return HTTPData(heads, body)
 
+    def from_resources(self, resources):
+        heads = {}
+        res = []
+        for resource in resources:
+            res.append('/' + resource.id)
+        if len(res) > 0:
+            heads['Location'] = ','.join(res)
+        body = ''
+        return HTTPData(heads, body)
+
 class HTTPTextParser(HTTPHeaderParser):
 
     content_type = "text/plain"
@@ -312,10 +322,19 @@ class HTTPTextParser(HTTPHeaderParser):
             raise AttributeError("Categories cannot be empty!")
         heads = {}
         heads['Content-type'] = self.content_type
-        body = []
+        res = []
         for category in categories:
-            body.append(category.split('#')[1] + ';scheme=' + category.split('#')[0] + '#')
-        return HTTPData(heads, '\n'.join(body))
+            res.append('Category:' + category.split('#')[1] + ';scheme=' + category.split('#')[0] + '#')
+        if len(res) > 0:
+            body = '\n'.join(res)
+        return HTTPData(heads, body)
+    def from_resources(self, resources):
+        heads = {}
+        heads['Content-type'] = self.content_type
+        res = []
+        for resource in resources:
+            res.append('Location:/' + resource.id)
+        return HTTPData(heads, '\n'.join(res))
 
     # TODO: add to and from resource and test it...
 
@@ -336,6 +355,17 @@ class HTTPListParser(Parser):
         for category in categories:
             body.append(category)
         return HTTPData(heads, '\n'.join(body))
+
+    def from_resources(self, resources):
+        heads = {}
+        heads['Content-type'] = self.content_type
+        res = []
+        body = ''
+        for resource in resources:
+            res.append('/' + resource.id)
+        if len(res) > 0:
+            body = '\n'.join(res)
+        return HTTPData(heads, body)
 
 class HTTPHTMLParser(Parser):
     """

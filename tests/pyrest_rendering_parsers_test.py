@@ -150,6 +150,10 @@ class HTTPHeaderParserTest(unittest.TestCase):
         result = self.parser.from_resource(self.resource)
         self.assertNotEqual(-1, result.header['Category'].find('job'))
 
+    def test_from_resources_for_success(self):
+        result = self.parser.from_resources([self.resource, self.job_resource])
+        self.assertEquals(result.header['Location'], '/' + self.resource.id + ',/' + self.job_resource.id)
+
     # --------
     # TEST FOR FAILURE
     # --------
@@ -206,6 +210,9 @@ class HTTPHeaderParserTest(unittest.TestCase):
         # ??? this should never happen
         pass
 
+    def test_from_resources_for_failure(self):
+        pass
+
     # --------
     # TEST FOR SANITY
     # --------
@@ -254,22 +261,54 @@ class HTTPHeaderParserTest(unittest.TestCase):
         # actions
         self.assertEquals(res.header['Link'].split(';')[1], "action=" + DummyBackend.action_category.term + ">")
 
+    def test_from_resources_for_sanity(self):
+        result = self.parser.from_resources([self.resource, self.job_resource])
+        self.assertEquals(result.header['Location'], '/' + self.resource.id + ',/' + self.job_resource.id)
+
 class HTTPListParserTest(unittest.TestCase):
     list_parser = HTTPListParser()
 
     category_keys_list = []
+    resource = Resource()
+    job_resource = Resource()
 
     def setUp(self):
         self.category_keys_list = []
         for item in [HTTPHeaderParserTest.category_one, HTTPHeaderParserTest.category_two, HTTPHeaderParserTest.category_three]:
             self.category_keys_list.append(str(item.scheme + item.term))
 
+        self.resource.categories = []
+        self.resource.id = '123'
+
+        self.job_resource.categories = [HTTPHeaderParserTest.category_three]
+        self.job_resource.id = '456'
+
+    # --------
+    # TEST FOR SUCCESS
+    # --------
+
     def test_from_categories_for_success(self):
         data = self.list_parser.from_categories(self.category_keys_list)
+        self.assertEquals(data.header['Content-type'], 'text/uri-list')
         self.assertEquals(data.body, '\n'.join(self.category_keys_list))
+
+    def test_from_resources_for_success(self):
+        result = self.list_parser.from_resources([self.resource, self.job_resource])
+        self.assertEquals(result.body, '/' + self.resource.id + '\n/' + self.job_resource.id)
+
+    # --------
+    # TEST FOR FAILURE
+    # --------
 
     def test_from_categories_for_failure(self):
         self.assertRaises(AttributeError, self.list_parser.from_categories, None)
+
+    def test_from_resources_for_failure(self):
+        pass
+
+    # --------
+    # TEST FOR SANITY
+    # --------
 
     def test_from_categories_for_sanity(self):
         data = self.list_parser.from_categories([HTTPHeaderParserTest.category_one.scheme + HTTPHeaderParserTest.category_one.term])
@@ -277,29 +316,61 @@ class HTTPListParserTest(unittest.TestCase):
         self.assertEquals(data.body, self.category_keys_list[0])
         self.assertTrue(data.body is not None)
 
+    def test_from_resources_for_sanity(self):
+        result = self.list_parser.from_resources([self.resource, self.job_resource])
+        self.assertEquals(result.header['Content-type'], 'text/uri-list')
+        self.assertEquals(result.body, '/' + self.resource.id + '\n/' + self.job_resource.id)
+
 class HTTPTextParserTest(unittest.TestCase):
 
     parser = HTTPTextParser()
 
     category_keys_list = []
+    resource = Resource()
+    job_resource = Resource()
 
     def setUp(self):
         self.category_keys_list = []
         for item in [HTTPHeaderParserTest.category_one, HTTPHeaderParserTest.category_two, HTTPHeaderParserTest.category_three]:
             self.category_keys_list.append(str(item.scheme + item.term))
 
+        self.resource.categories = []
+        self.resource.id = '123'
+
+        self.job_resource.categories = [HTTPHeaderParserTest.category_three]
+        self.job_resource.id = '456'
+    # --------
+    # TEST FOR SUCCESS
+    # --------
+
     def test_from_categories_for_success(self):
         data = self.parser.from_categories(self.category_keys_list)
         self.assertTrue(data.body is not None)
 
+    def test_from_resources_for_success(self):
+        result = self.parser.from_resources([self.resource, self.job_resource])
+        self.assertEquals(result.body, 'Location:/' + self.resource.id + '\nLocation:/' + self.job_resource.id)
+    # --------
+    # TEST FOR FAILURE
+    # --------
+
     def test_from_categories_for_failure(self):
         self.assertRaises(AttributeError, self.parser.from_categories, None)
+
+    # --------
+    # TEST FOR SANITY
+    # --------
 
     def test_from_categories_for_sanity(self):
         data = self.parser.from_categories([HTTPHeaderParserTest.category_one.scheme + HTTPHeaderParserTest.category_one.term])
         self.assertEquals(data.header['Content-type'], 'text/plain')
-        self.assertEquals(data.body, HTTPHeaderParserTest.category_one.term + ';scheme=' + HTTPHeaderParserTest.category_one.scheme)
+        self.assertEquals(data.body, 'Category:' + HTTPHeaderParserTest.category_one.term + ';scheme=' + HTTPHeaderParserTest.category_one.scheme)
         self.assertTrue(data.body is not None)
+
+    def test_from_resources_for_sanity(self):
+        result = self.parser.from_resources([self.resource, self.job_resource])
+        self.assertEquals(result.header['Content-type'], 'text/plain')
+        self.assertEquals(result.body, 'Location:/' + self.resource.id + '\nLocation:/' + self.job_resource.id)
 
 class HTTPHTMLParserTest(unittest.TestCase):
 
@@ -330,12 +401,22 @@ class HTTPHTMLParserTest(unittest.TestCase):
         for item in [self.category_one, self.category_two]:
             self.category_keys_list.append(str(item.scheme + item.term))
 
+    # --------
+    # TEST FOR SANITY
+    # --------
+
     def test_from_categories_for_sanity(self):
-        print self.category_keys_list
-        self.parser.from_categories(self.category_keys_list)
+        http_data = self.parser.from_categories(self.category_keys_list)
+        self.assertEquals(http_data.header['Content-type'], "text/html")
+        self.assertTrue(http_data.body is not None)
 
     def test_from_resource_for_sanity(self):
         http_data = self.parser.from_resource(self.resource)
+        self.assertEquals(http_data.header['Content-type'], "text/html")
+        self.assertTrue(http_data.body is not None)
+
+    def test_from_resources_for_sanity(self):
+        http_data = self.parser.from_resources([self.resource])
         self.assertEquals(http_data.header['Content-type'], "text/html")
         self.assertTrue(http_data.body is not None)
 

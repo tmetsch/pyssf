@@ -30,7 +30,7 @@ Created on Jul 5, 2010
 @author: tmetsch
 '''
 
-app = web.application(('/([a-zA-Z0-9-;=_]*)', 'ResourceHandler', '/-/(.*)', 'QueryHandler'), globals())
+app = web.application(('/-/(.*)', 'QueryHandler', '/([a-zA-Z0-9-;=_/]*)', 'ResourceHandler'), globals())
 dummy = DummyBackend()
 
 class AbstractClassTests(unittest.TestCase):
@@ -74,9 +74,8 @@ class ResourceCreationTests(unittest.TestCase):
 
         # get on */ should return listing
         response = app.request("/")
-        # FIXME: listing of sub res.
-#        self.assertEquals(response.status, '200 OK')
-#        self.assertEquals(response.data, 'Listing sub resources...')
+        self.assertEquals(response.status, '200 OK')
+        self.assertTrue(response.headers['Location'].split(',') > 2)
 
     def test_put_for_success(self):
         # Put on specified resource should return 200 OK (non-existent)
@@ -142,8 +141,23 @@ class ResourceCreationTests(unittest.TestCase):
         # first create (put) than test get on parent for listing
         app.request("/job/123", method = "PUT", headers = dummy.http_category_with_attr, data = "hello")
         response = app.request("/job/")
-        # FIXME: check listing...
-        #self.assertEquals(response.data, 'Listing sub resources...')
+        self.assertEquals(response.headers['Location'], '/job/123')
+        response = app.request("/")
+        self.assertTrue(response.headers['Location'].find('/job/123') > -1)
+
+        # Special case - no resource exists - still the HTML renderer should
+        # return a website and not 404...
+
+        for item in ResourceHandler.resources.keys():
+            ResourceHandler.resources.pop(item)
+
+        response = app.request("/")
+        # TODO: Check if this 200 is okay - shoudldn't it be 404?
+        self.assertEquals(response.status, '200 OK')
+        response = app.request("/", headers = {'Accept':'text/html'})
+        self.assertEquals(response.headers['Content-type'], 'text/html')
+
+        # TODO: add categories to request when listing resources...
 
     def test_put_for_sanity(self):
         # put on existent should update
@@ -358,15 +372,11 @@ class ActionsTests(unittest.TestCase):
 
 class QueryTests(unittest.TestCase):
 
-    # TODO: test getting uri-list
-    # TODO: test getting plain text
-    # TODO: test get category descriptio
-    # TODO: test get collections/listing of sub-res
-
     heads = {'Accept':'text/uri-list'}
 
     def test_get_query_for_succes(self):
         response = app.request("/-/", headers = self.heads)
+        self.assertEquals(response.status, '200 OK')
         # print response
 
     def test_faulty_request(self):
@@ -376,16 +386,18 @@ class QueryTests(unittest.TestCase):
         self.assertEquals(response.status, '405 Method Not Allowed')
         response = app.request("/-/", method = "DELETE")
         self.assertEquals(response.status, '405 Method Not Allowed')
+        response = app.request("/-/saafsafd", headers = self.heads)
+        self.assertEquals(response.status, '400 Bad Request')
 
     def test_get_query_for_sanity(self):
         response = app.request("/-/", headers = {'Accept':'text/uri-list'})
         self.assertEquals(response.headers['Content-type'], 'text/uri-list')
-        print response
         response = app.request("/-/", headers = {'Accept':'text/plain'})
         self.assertEquals(response.headers['Content-type'], 'text/plain')
-        print response
+        response = app.request("/-/", headers = {'Accept':'text/html'})
+        self.assertEquals(response.headers['Content-type'], 'text/html')
         response = app.request("/-/", headers = {'Accept':'*/*'})
-        print response
+        self.assertTrue('Category' in response.headers)
 
 class SecurityTests(unittest.TestCase):
 
@@ -499,8 +511,24 @@ class SecurityTests(unittest.TestCase):
     # TEST FOR SANITY
     # --------
 
+    def test_listing_for_sanity(self):
+        response = app.request("/", method = "POST", headers = self.heads)
+        url_user_1 = response.headers['Location']
+        response = app.request("/", method = "POST", headers = self.heads2)
+        url_user_2 = response.headers['Location']
 
-    # FIXME: listing of sub res. of two users...
+        # without auth - not able to see anything...
+        response = app.request("/")
+        self.assertTrue('Location' not in response.headers)
+
+        # see own but no others...
+        response = app.request("/", headers = self.heads)
+        self.assertTrue(response.headers['Location'].find(url_user_1) > -1)
+        self.assertTrue(response.headers['Location'].find(url_user_2) == -1)
+
+        response = app.request("/", headers = self.heads2)
+        self.assertTrue(response.headers['Location'].find(url_user_2) > -1)
+        self.assertTrue(response.headers['Location'].find(url_user_1) == -1)
 
     def test_authenticate_for_sanity(self):
         # test post, get, put and delete authentication for sanity...

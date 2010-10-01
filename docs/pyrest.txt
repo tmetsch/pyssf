@@ -45,6 +45,9 @@ Features:
   * Acts based upon Accept and Content-headers (Can handle requests for HTML,
     Header Rendering or uri-lists)
   * Handler all HTTP/REST stuff for you (HTTP-Headers, CRUD operations etc)
+  * Nice HTML interface to use for browsers
+  * Authentication and Authorization which can be easily integrated with
+    existing AD systems
 
 Structure of the pyrest package
 -------------------------------
@@ -100,16 +103,15 @@ extended to offer any kind of service.
 The following code demonstrates howto write your own backend and use the
 RESTful interface provided by pyrest::
 
-    from pyrest import service, rendering_parsers
-    from pyrest.backends import JobHandler
-    from pyrest.service import ResourceHandler
+    from pyrest.examples.restful_job_submission import JobHandler
+    from pyrest.service import ResourceHandler, QueryHandler
     import web
     
     # 
     # Configures web.py and tells him which handlers should listen to which 
-    # entry-point.
+    # entry-point. Note that order is important - Add Query interface first!
     # 
-    urls = ('/(.*)', 'ResourceHandler')
+    URLS = ('/-/(.*)', 'QueryHandler', '/(.*)', 'ResourceHandler')
     
     # 
     # Turns debugging on of off - Default is True (on).
@@ -122,7 +124,7 @@ RESTful interface provided by pyrest::
     # mod_wsgi use the second line. Do not change the name of the attribute. Apache
     # mod_wsgi will assume it is named application (lowercase).
     # 
-    application = web.application(urls, globals())
+    APPLICATION = web.application(URLS, globals())
     #application = web.application(urls, globals()).wsgifunc()
     
     # 
@@ -143,16 +145,16 @@ RESTful interface provided by pyrest::
     #
     # Registers backend. You can write you own and initialize and register it here.
     #
-    JobHandler()
+    #JobHandler()
     
     #
-    # Tell pyrest which parser to use (You can write your own and add it here). 
-    # Default is the HTTP Header parser.
+    # Tell pyrest which parser to use as fail-over option (You can write your own
+    # and add it here). Default is the HTTP Header parser.
     #
-    #service.RENDERING_PARSER = rendering_parsers.HTTPHeaderParser()
+    #service.DEFAULT_RENDERING_PARSER = rendering_parsers.HTTPHeaderParser()
     
     if __name__ == "__main__":
-        application.run()
+        APPLICATION.run()
 
 This code demonstrates how flexible the environment is. You can easily use the
 pyrest package to create a service which provides a IaaS, a PaaS or a SaaS. You

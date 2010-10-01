@@ -158,17 +158,17 @@ class JobHandler(Handler):
         else:
             pass
 
-# setup the service
-URLS = ('/-/(.*)', 'QueryHandler', '/(.*)', 'ResourceHandler',)
+# setup the service - Order is important! Add Query int - first!
+URLS = ('/-/(.*)', 'QueryHandler', '/(.*)', 'ResourceHandler')
 web.config.debug = False
 
 # register the backend
 JobHandler()
 
 # create the app...
-application = web.application(URLS, globals())
+APPLICATION = web.application(URLS, globals())
 
 # run...
 if __name__ == "__main__":
-    application.run()
+    APPLICATION.run()
 

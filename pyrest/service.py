@@ -34,7 +34,8 @@ import uuid
 import web
 
 DEFAULT_RENDERING_PARSER = HTTPHeaderParser()
-RENDERING_PARSERS = {'text/plain': HTTPTextParser(), '*/*': HTTPHeaderParser(),
+RENDERING_PARSERS = {'text/plain': HTTPTextParser(),
+                     '*/*': HTTPHeaderParser(),
                      'text/uri-list': HTTPListParser(),
                      'text/html': HTTPHTMLParser(),
                      'text/html;q=0.9':HTTPHTMLParser()}
@@ -365,7 +366,6 @@ class ResourceHandler(HTTPHandler):
         key -- the unique id.
         data -- the data.
         """
-        # TODO: listings
         try:
             # trigger backend to get resource
             res = self.resources.get_resource(key)
@@ -434,7 +434,11 @@ class ResourceHandler(HTTPHandler):
         resources = []
         for name in self.resources.keys():
             res = self.resources.get_resource(name)
-            if res.user == username and name.find(key) > -1:
+            if res.user == username and name == key:
+                resources.append(res)
+            elif res.user == username and key == '':
+                resources.append(res)
+            elif res.user == username and name.find(key) > -1 and key.endswith('/'):
                 resources.append(res)
             # TODO: check for category as well...
         if len(resources) > 0:
@@ -472,4 +476,4 @@ class QueryHandler(object):
                 web.header(item, http_data.header[item])
             return http_data.body
         else:
-            return ''
+            return web.BadRequest()
