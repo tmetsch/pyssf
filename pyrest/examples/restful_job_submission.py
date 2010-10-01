@@ -48,6 +48,8 @@ from pyrest.myexceptions import MissingAttributesException, StateException, \
 from pyrest.resource_model import Category, Resource, Action
 from pyrest.service import ResourceHandler, QueryHandler
 
+from pyrest.examples.restful_key_value_store import KeyValueHandler
+
 import web
 
 # create a backend

@@ -456,7 +456,6 @@ class QueryHandler(object):
 
     def GET(self, name):
         if len(name) == 0:
-            print web.ctx.env
             parser = find_parser()
             http_data = parser.from_categories(backends.REGISTERED_BACKENDS.keys())
             for item in http_data.header.keys():

@@ -326,7 +326,7 @@ class HTTPHTMLParser(Parser):
     browser can understand.
     """
 
-    css_string = "body {font-family: 'Ubuntu Beta', 'Bitstream Vera Sans', 'DejaVu Sans', Tahoma, sans-serif; font-size: 0.7em; color: black; max-width: 320px;} table {font-size: 1.1em;border:0px solid white; width: 100%;} th {background-color:#73c167;color:white;padding: 5px;} td {background-color:#eee;color:black;padding: 5px;}"
+    css_string = "body {font-family: 'Ubuntu Beta', 'Bitstream Vera Sans', 'DejaVu Sans', Tahoma, sans-serif; font-size: 0.7em; color: black; max-width: 360px;} table {font-size: 1.1em;border:0px solid white; width: 100%;} th {background-color:#73c167;color:white;padding: 5px;} td {background-color:#eee;color:black;padding: 5px;}"
     content_type = 'text/html'
 
     def from_categories(self, categories):
@@ -336,7 +336,6 @@ class HTTPHTMLParser(Parser):
         body += "<h1>Registered Categories:</h1>"
         body += "<table><tr><th>Term</th><th>Scheme</th></tr>"
         for category in categories:
-            print category
             body += ("<tr><td>" + category.split('#')[1] + "</td><td><a href=\"" + category.split('#')[0] + "\">" + category.split('#')[0] + "</a></td></tr>")
         body += "</table>"
         body += "</body></html>"
