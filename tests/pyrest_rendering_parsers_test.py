@@ -22,7 +22,7 @@ Created on Jul 12, 2010
 '''
 from pyrest.myexceptions import MissingCategoriesException
 from pyrest.rendering_parsers import Parser, HTTPHeaderParser, HTTPListParser, \
-    HTTPData, HTTPTextParser
+    HTTPData, HTTPTextParser, HTTPHTMLParser
 from pyrest.resource_model import Action, Category, Resource
 from tests.mocks import DummyBackend
 import unittest
@@ -255,7 +255,6 @@ class HTTPHeaderParserTest(unittest.TestCase):
         self.assertEquals(res.header['Link'].split(';')[1], "action=" + DummyBackend.action_category.term + ">")
 
 class HTTPListParserTest(unittest.TestCase):
-
     list_parser = HTTPListParser()
 
     category_keys_list = []
@@ -278,7 +277,7 @@ class HTTPListParserTest(unittest.TestCase):
         self.assertEquals(data.body, self.category_keys_list[0])
         self.assertTrue(data.body is not None)
 
-class HTTPTextParserTest(HTTPListParserTest):
+class HTTPTextParserTest(unittest.TestCase):
 
     parser = HTTPTextParser()
 
@@ -301,6 +300,44 @@ class HTTPTextParserTest(HTTPListParserTest):
         self.assertEquals(data.header['Content-type'], 'text/plain')
         self.assertEquals(data.body, HTTPHeaderParserTest.category_one.term + ';scheme=' + HTTPHeaderParserTest.category_one.scheme)
         self.assertTrue(data.body is not None)
+
+class HTTPHTMLParserTest(unittest.TestCase):
+
+    # Note: only testing for sanity and looking for text/html content type.
+
+    parser = HTTPHTMLParser()
+    category_keys_list = []
+    category_one = Category()
+    category_two = Category()
+    resource = Resource()
+
+    def setUp(self):
+        self.category_one.related = ''
+        self.category_one.scheme = 'http://schemas.ogf.org/occi/resource#'
+        self.category_one.term = 'compute'
+        self.category_one.title = 'Compute Resource'
+
+        self.category_two.related = ''
+        self.category_two.scheme = 'http://example.com/user/categories/templates#'
+        self.category_two.term = 'myimage'
+        self.category_two.title = ''
+
+        self.resource.categories = [self.category_one, self.category_two]
+        self.resource.attributes = {'foo':'bar'}
+        self.resource.id = '123'
+
+        self.category_keys_list = []
+        for item in [self.category_one, self.category_two]:
+            self.category_keys_list.append(str(item.scheme + item.term))
+
+    def test_from_categories_for_sanity(self):
+        print self.category_keys_list
+        self.parser.from_categories(self.category_keys_list)
+
+    def test_from_resource_for_sanity(self):
+        http_data = self.parser.from_resource(self.resource)
+        self.assertEquals(http_data.header['Content-type'], "text/html")
+        self.assertTrue(http_data.body is not None)
 
 if __name__ == "__main__":
     unittest.main()
