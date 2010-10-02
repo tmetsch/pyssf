@@ -356,7 +356,10 @@ class ResourceHandler(HTTPHandler):
             # trigger backend to do some magic
             backend = backends.find_right_backend(resource.categories)
             backend.create(resource)
-        except (MissingCategoriesException, MissingAttributesException):
+        except MissingCategoriesException:
+            raise
+        except MissingAttributesException:
+            self.resources.pop(key)
             raise
 
     def return_resource(self, key, username):

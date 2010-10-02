@@ -180,10 +180,13 @@ class HTTPHeaderParser(Parser):
         result = {}
         if 'HTTP_ATTRIBUTE' in heads.keys():
             for item in heads['HTTP_ATTRIBUTE'].split(','):
-                tmp = item.split("=")
-                if len(tmp[0].strip()) > 0 and len(tmp[1].strip()) > 0:
-                    result[tmp[0].strip()] = tmp[1].strip()
-                else:
+                try:
+                    tmp = item.split("=")
+                    if len(tmp[0].strip()) > 0 and len(tmp[1].strip()) > 0:
+                        result[tmp[0].strip()] = tmp[1].strip()
+                    else:
+                        break
+                except IndexError:
                     break
         return result
 
@@ -197,8 +200,9 @@ class HTTPHeaderParser(Parser):
         category_string = []
         for item in categories:
             text = item.term + ";scheme=" + item.scheme
-            if len(item.related) > 0:
-                text += ";rel" + str(item.related)
+            # TODO: fix this.
+            #if len(item.related) > 0:
+            #    text += ";rel" + str(item.related)
             if item.title is not '':
                 text += ";title=" + item.title
             category_string.append(text)
@@ -438,8 +442,8 @@ class HTTPHTMLParser(Parser):
             body += "<tr><td><a href=\"/" + res.id + "\">" + res.id + "</a></td><td>" + ','.join(categories) + "</td></tr>"
         body += "</table>"
         body += "</body></html>"
-        return HTTPData(heads, body)
 
+        return HTTPData(heads, body)
 
 #class RDFParser(Parser):
 #    """

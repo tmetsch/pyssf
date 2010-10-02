@@ -202,6 +202,11 @@ class HTTPHeaderParserTest(unittest.TestCase):
         tmp = self.parser.to_resource("123", request)
         self.assertFalse('occi.drmaa.remote_command' in tmp.attributes)
 
+        header = {'HTTP_CATEGORY': 'job;scheme="http://schemas.ogf.org/occi/resource#"', 'HTTP_ATTRIBUTE': ' occi.drmaa.remote_command, occi.drmaa.args = 10'}
+        request = HTTPData(header, None)
+        tmp = self.parser.to_resource("123", request)
+        self.assertFalse('occi.drmaa.remote_command' in tmp.attributes)
+
     def test_from_resource_for_failure(self):
         # ??? this should never happen
         pass

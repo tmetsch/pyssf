@@ -1,4 +1,4 @@
-#/bin/zsh
+#/bin/bash
 
 # 
 # Copyright (C) 2010 Platform Computing
