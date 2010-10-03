@@ -387,7 +387,11 @@ class HTTPHTMLParser(Parser):
         body += "<h1>Registered Categories:</h1>"
         body += "<table><tr><th>Term</th><th>Scheme</th><th>Title</th><th>Attributes</th><th>Related</th></tr>"
         for category in categories:
-            body += ("<tr><td>" + category.term + "</td><td><a href=\"" + category.scheme + "\">" + category.scheme + "</a></td><td>" + category.title + "</td><td>" + str(category.attributes) + "</td><td>" + str(category.related) + "</td></tr>")
+            body += ("<tr><td>" + category.term + "</td><td><a href=\""
+                     + category.scheme + "\">" + category.scheme
+                     + "</a></td><td>" + category.title + "</td><td>"
+                     + str(category.attributes) + "</td><td>"
+                     + str(category.related) + "</td></tr>")
         body += "</table>"
         body += "</body></html>"
         return HTTPData(heads, body)
@@ -407,13 +411,16 @@ class HTTPHTMLParser(Parser):
         body += "<h2>Assigned Categories:</h2>"
         body += "<table><tr><th>Term</th><th>Scheme</th></tr>"
         for category in resource.categories:
-            body += ("<tr><td>" + category.term + "</td><td><a href=\"" + category.scheme + "\">" + category.scheme + "</a></td></tr>")
+            body += ("<tr><td>" + category.term + "</td><td><a href=\""
+                     + category.scheme + "\">" + category.scheme
+                     + "</a></td></tr>")
         body += "</table>"
 
         body += "<h2>Assigned Attributes:</h2>"
         body += "<table><tr><th>Key</th><th>Value</th></tr>"
         for item in resource.attributes.keys():
-            body += ("<tr><td>" + item + "</td><td>" + resource.attributes[item] + "</td></tr>")
+            body += ("<tr><td>" + item + "</td><td>"
+                     + resource.attributes[item] + "</td></tr>")
         body += "</table>"
 
         body += "</body></html>"

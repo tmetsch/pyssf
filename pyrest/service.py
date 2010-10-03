@@ -358,7 +358,7 @@ class ResourceHandler(HTTPHandler):
             backend.create(resource)
         except MissingCategoriesException:
             raise
-        except MissingAttributesException:
+        except (MissingAttributesException, NotImplementedError):
             self.resources.pop(key)
             raise
 
