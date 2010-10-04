@@ -23,7 +23,7 @@ Created on Jul 12, 2010
 from pyrest.myexceptions import MissingCategoriesException
 from pyrest.rendering_parsers import Parser, HTTPHeaderParser, HTTPListParser, \
     HTTPData, HTTPTextParser, HTTPHTMLParser
-from pyrest.resource_model import Action, Category, Resource
+from pyrest.resource_model import Action, Category, Resource, Link
 from tests.mocks import DummyBackend
 import unittest
 
@@ -393,8 +393,16 @@ class HTTPHTMLParserTest(unittest.TestCase):
         self.category_two.term = 'myimage'
         self.category_two.title = ''
 
+        link = Link()
+        link.target = "/foo"
+
+        action = Action()
+        action.categories = [self.category_two]
+
         self.resource.categories = [self.category_one, self.category_two]
         self.resource.attributes = {'foo':'bar'}
+        self.resource.links = [link]
+        self.resource.actions = [action]
         self.resource.id = '123'
 
         self.category_keys_list = []
