@@ -22,6 +22,8 @@ class JobHandlerTest(unittest.TestCase):
         try:
             self.backend.delete(self.resource)
         except:
+            # cleanup so no need to check ex.
+            # pylint: disable=W0702
             pass
         self.resource.id = '123'
         self.resource.attributes = {}

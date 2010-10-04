@@ -15,8 +15,16 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 # 
+'''
+Created on Jul 5, 2010
+
+@author: tmetsch
+'''
+
 from mocks import DummyBackend, SecurityHandler, SimpleSecurityHandler
 from pyrest.myexceptions import SecurityException
+# need to import...
+# pyling: disable:W0611
 from pyrest.service import ResourceHandler, QueryHandler
 import base64
 import pyrest.service as service
@@ -24,11 +32,6 @@ import string
 import unittest
 import web
 from pyrest.rendering_parsers import HTTPHeaderParser, HTTPListParser
-'''
-Created on Jul 5, 2010
-
-@author: tmetsch
-'''
 
 app = web.application(('/-/(.*)', 'QueryHandler', '/([a-zA-Z0-9-;=_/]*)', 'ResourceHandler'), globals())
 dummy = DummyBackend()
