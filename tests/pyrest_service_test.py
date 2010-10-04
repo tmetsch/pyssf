@@ -24,7 +24,7 @@ Created on Jul 5, 2010
 from mocks import DummyBackend, SecurityHandler, SimpleSecurityHandler
 from pyrest.myexceptions import SecurityException
 # need to import...
-# pylint: disable:W0611
+# pylint: disable=W0611
 from pyrest.service import ResourceHandler, QueryHandler
 import base64
 import pyrest.service as service
