@@ -41,6 +41,9 @@ from pyrest import backends
 from pyrest.backends import Handler
 from pyrest.myexceptions import MissingAttributesException
 from pyrest.resource_model import Category, Resource
+
+# need to import those - not directly called...
+# pylint: disable=W0611
 from pyrest.service import ResourceHandler, QueryHandler
 
 import web
@@ -58,6 +61,8 @@ class KeyValueHandler(Handler):
         """
         Registers the categories this backend can handle.
         """
+        # not calling super - would register twice than...
+        # pylint: disable=W0231
         backends.register([self.category], self)
 
     def create(self, resource):

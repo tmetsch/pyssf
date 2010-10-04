@@ -96,6 +96,137 @@ class Parser(object):
         resources -- list of resources.
         """
 
+def _get_categories_from_header(heads):
+    """
+    Returns the all categories which could be found in the header.
+    Otherwise return an empty list.
+    
+    heads -- the HTTP header dictionary.
+    """
+    result = []
+    try:
+        header = heads['HTTP_CATEGORY']
+    except:
+        raise MissingCategoriesException('No categories could be found in'
+                                       + ' the header!')
+
+    categories = header.split(',')
+    for entry in categories:
+        category = Category()
+        # next two are mandatory and should be there!
+        # do regex on url and term to check if ok 
+        # find term
+        try:
+            tmp = entry.split(';')
+            term = tmp[0].strip(' ')
+            if re.match("^[\w\d_-]*$", term) and term is not '':
+                category.term = term
+            else:
+                raise MissingCategoriesException('No valid term for given'
+                                               + 'category could be'
+                                               + 'found.')
+        except:
+            # todo log her... an exception here means - could not parse
+            # no need to catch explicit exception...
+            # pylint: disable=W0702
+            break
+        # find scheme
+        begin = entry.find('scheme="')
+        if begin is not - 1:
+            tmp = entry[begin + 8:]
+            scheme = (tmp[:tmp.find('"')])
+            if scheme.find('http') is not - 1:
+                category.scheme = scheme
+            else:
+                break
+        else:
+            break
+
+        # TODO: test if category is registered -> if so use it :-)
+
+        # add non mandatory fields
+        begin = entry.find('title="')
+        if begin is not - 1:
+            tmp = entry[begin + 7:]
+            category.title = (tmp[:tmp.find('"')])
+
+#            begin = entry.find('rel="')
+#            if begin is not - 1:
+#                tmp = entry[begin + 7:]
+#                rel = (tmp[:tmp.find('"')])
+#                category.related = rel.split(',')
+
+        result.append(category)
+
+    if len(result) == 0:
+        raise MissingCategoriesException('No valid categories could be'
+        + 'found.')
+    return result
+
+def _get_attributes_from_header(heads):
+    """
+    Returns a list of attributes found in the header. Otherwise returns an
+    empty dictionary.
+    
+    heads -- headers to parse the attributes from.
+    """
+    result = {}
+    if 'HTTP_ATTRIBUTE' in heads.keys():
+        for item in heads['HTTP_ATTRIBUTE'].split(','):
+            try:
+                tmp = item.split("=")
+                if len(tmp[0].strip()) > 0 and len(tmp[1].strip()) > 0:
+                    result[tmp[0].strip()] = tmp[1].strip()
+                else:
+                    break
+            except IndexError:
+                break
+    return result
+
+def _create_categories_for_header(categories):
+    """
+    Creates a string which can be added to the header - containing all
+    categories.
+    
+    categories -- list of categories (Category).
+    """
+    category_string = []
+    for item in categories:
+        text = item.term + ";scheme=" + item.scheme
+        # TODO: fix this.
+        #if len(item.related) > 0:
+        #    text += ";rel" + str(item.related)
+        if item.title is not '':
+            text += ";title=" + item.title
+        category_string.append(text)
+    return ','.join(category_string)
+
+def _create_attributes_for_header(attributes):
+    """
+    Create a string which can be added to the header - containing all
+    attributes.
+    
+    attributes -- list of the attributes to add.
+    """
+    attr_list = []
+    for item in attributes.keys():
+        attr_list.append(str(item) + '=' + str(attributes[item]))
+    return ','.join(attr_list)
+
+def _create_links_for_header(resource):
+    """
+    Create a string which can be added to the header - containing all
+    the links & links to actions.
+    
+    resource -- the resource wo create all links for.
+    """
+    # TODO: add links
+    action_list = []
+    for item in resource.actions:
+        action_list.append("</" + resource.id + ";action="
+                           + item.categories[0].term + ">")
+    return ','.join(action_list)
+
 class HTTPHeaderParser(Parser):
     """
     Very simple parser which gets/puts links, categories and attributes. Handles
@@ -105,141 +236,12 @@ class HTTPHeaderParser(Parser):
 
     content_type = '*/*'
 
-    def _get_categories_from_header(self, heads):
-        """
-        Returns the all categories which could be found in the header.
-        Otherwise return an empty list.
-        
-        heads -- the HTTP header dictionary.
-        """
-        result = []
-        try:
-            header = heads['HTTP_CATEGORY']
-        except:
-            raise MissingCategoriesException('No categories could be found in'
-                                           + ' the header!')
-
-        categories = header.split(',')
-        for entry in categories:
-            category = Category()
-            # next two are mandatory and should be there!
-            # do regex on url and term to check if ok 
-            # find term
-            try:
-                tmp = entry.split(';')
-                term = tmp[0].strip(' ')
-                if re.match("^[\w\d_-]*$", term) and term is not '':
-                    category.term = term
-                else:
-                    raise MissingCategoriesException('No valid term for given'
-                                                   + 'category could be'
-                                                   + 'found.')
-            except:
-                # todo log her...
-                break
-            # find scheme
-            begin = entry.find('scheme="')
-            if begin is not - 1:
-                tmp = entry[begin + 8:]
-                scheme = (tmp[:tmp.find('"')])
-                if scheme.find('http') is not - 1:
-                    category.scheme = scheme
-                else:
-                    break
-            else:
-                break
-
-            # TODO: test if category is registered -> if so use it :-)
-
-            # add non mandatory fields
-            begin = entry.find('title="')
-            if begin is not - 1:
-                tmp = entry[begin + 7:]
-                category.title = (tmp[:tmp.find('"')])
-
-#            begin = entry.find('rel="')
-#            if begin is not - 1:
-#                tmp = entry[begin + 7:]
-#                rel = (tmp[:tmp.find('"')])
-#                category.related = rel.split(',')
-
-            result.append(category)
-
-        if len(result) == 0:
-            raise MissingCategoriesException('No valid categories could be'
-            + 'found.')
-        return result
-
-    def _get_attributes_from_header(self, heads):
-        """
-        Returns a list of attributes found in the header. Otherwise returns an
-        empty dictionary.
-        
-        heads -- headers to parse the attributes from.
-        """
-        result = {}
-        if 'HTTP_ATTRIBUTE' in heads.keys():
-            for item in heads['HTTP_ATTRIBUTE'].split(','):
-                try:
-                    tmp = item.split("=")
-                    if len(tmp[0].strip()) > 0 and len(tmp[1].strip()) > 0:
-                        result[tmp[0].strip()] = tmp[1].strip()
-                    else:
-                        break
-                except IndexError:
-                    break
-        return result
-
-    def _create_categories_for_header(self, categories):
-        """
-        Creates a string which can be added to the header - containing all
-        categories.
-        
-        categories -- list of categories (Category).
-        """
-        category_string = []
-        for item in categories:
-            text = item.term + ";scheme=" + item.scheme
-            # TODO: fix this.
-            #if len(item.related) > 0:
-            #    text += ";rel" + str(item.related)
-            if item.title is not '':
-                text += ";title=" + item.title
-            category_string.append(text)
-        return ','.join(category_string)
-
-    def _create_attributes_for_header(self, attributes):
-        """
-        Create a string which can be added to the header - containing all
-        attributes.
-        
-        attributes -- list of the attributes to add.
-        """
-        attr_list = []
-        for item in attributes.keys():
-            attr_list.append(str(item) + '=' + str(attributes[item]))
-        return ','.join(attr_list)
-
-    def _create_links_for_header(self, resource):
-        """
-        Create a string which can be added to the header - containing all
-        the links & links to actions.
-        
-        resource -- the resource wo create all links for.
-        """
-        # TODO: add links
-        action_list = []
-        for item in resource.actions:
-            action_list.append("</" + resource.id + ";action="
-                               + item.categories[0].term + ">")
-        return ','.join(action_list)
-
     def to_action(self, http_data):
         if http_data is None:
             raise MissingCategoriesException("Header cannot be None!")
 
         try:
-            categories = self._get_categories_from_header(http_data.header)
+            categories = _get_categories_from_header(http_data.header)
         except MissingCategoriesException:
             raise
 
@@ -255,7 +257,7 @@ class HTTPHeaderParser(Parser):
         if categories is None:
             raise AttributeError("Categories cannot be empty!")
         heads = {}
-        res = self._create_categories_for_header(categories)
+        res = _create_categories_for_header(categories)
         if len(res) > 0:
             heads['Category'] = res
         return HTTPData(heads, None)
@@ -266,14 +268,14 @@ class HTTPHeaderParser(Parser):
 
         # parse categories
         try:
-            categories = self._get_categories_from_header(http_data.header)
+            categories = _get_categories_from_header(http_data.header)
         except MissingCategoriesException:
             raise
 
         res = Resource()
         res.id = key
         res.categories = categories
-        res.attributes = self._get_attributes_from_header(http_data.header)
+        res.attributes = _get_attributes_from_header(http_data.header)
 
         # append data from body - might be needed for OVF files etc.
         if http_data.body is not '':
@@ -283,9 +285,9 @@ class HTTPHeaderParser(Parser):
     def from_resource(self, resource):
         heads = {}
         # add links and categories to header
-        heads['Category'] = self._create_categories_for_header(resource.categories)
+        heads['Category'] = _create_categories_for_header(resource.categories)
         # add attributes
-        attr_tmp = self._create_attributes_for_header(resource.attributes)
+        attr_tmp = _create_attributes_for_header(resource.attributes)
         if attr_tmp is not '':
             heads['Attribute'] = attr_tmp
         else:
@@ -294,7 +296,7 @@ class HTTPHeaderParser(Parser):
             except KeyError:
                 pass
         # add links & actions
-        link_tmp = self._create_links_for_header(resource)
+        link_tmp = _create_links_for_header(resource)
         if link_tmp is not '':
             heads['Link'] = link_tmp
         else:
@@ -325,7 +327,7 @@ class HTTPTextParser(HTTPHeaderParser):
             raise AttributeError("Categories cannot be empty!")
         heads = {}
         heads['Content-type'] = self.content_type
-        res = self._create_categories_for_header(categories).split(',')
+        res = _create_categories_for_header(categories).split(',')
         body = ''
         for item in res:
             body += 'Category:' + item + '\n'
@@ -348,6 +350,18 @@ class HTTPListParser(Parser):
     """
 
     content_type = 'text/uri-list'
+
+    def to_action(self, http_data):
+        raise NotImplementedError("This rendering cannot handle "
+                                  + "POST/PUT requests.")
+
+    def to_resource(self, key, http_data):
+        raise NotImplementedError("This rendering cannot handle "
+                                  + "POST/PUT requests.")
+
+    def from_resource(self, resource):
+        raise NotImplementedError("This rendering cannot handle "
+                                  + "a GET on a single resource.")
 
     def from_categories(self, categories):
         if categories is None:
@@ -378,6 +392,14 @@ class HTTPHTMLParser(Parser):
 
     css_string = "body {font-family: 'Ubuntu Beta', 'Bitstream Vera Sans', 'DejaVu Sans', Tahoma, sans-serif; font-size: 0.6em; color: black; max-width: 500px; border: 1px solid #888; padding:10px;} table {font-size: 1.1em;border:0px solid white; width: 100%;} th {background-color:#73c167;color:white;padding: 5px;} td {background-color:#eee;color:black;padding: 5px;}"
     content_type = 'text/html'
+
+    def to_action(self, http_data):
+        raise NotImplementedError("This rendering cannot handle "
+                                  + "POST/PUT requests.")
+
+    def to_resource(self, key, http_data):
+        raise NotImplementedError("This rendering cannot handle "
+                                  + "POST/PUT requests.")
 
     def from_categories(self, categories):
         heads = {}

@@ -22,6 +22,9 @@ Created on Aug 10, 2010
 
 @author: tmetsch
 '''
+
+# need to import those - not directly called...
+# pylint: disable=W0611
 from pyrest.examples.restful_job_submission import JobHandler
 from pyrest.service import ResourceHandler, QueryHandler
 import web

@@ -10,7 +10,6 @@ dist/*
 web*
 pylsf/lsf.py
 pylsf/lsf_wrap.c
-pyrest/runner.py
 *.pyc
 *~
 

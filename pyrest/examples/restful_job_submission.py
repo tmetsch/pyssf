@@ -47,6 +47,9 @@ from pyrest.backends import Handler
 from pyrest.myexceptions import MissingAttributesException, StateException, \
     MissingActionException
 from pyrest.resource_model import Category, Resource, Action
+
+# need to import those - not directly called...
+# pylint: disable=W0611
 from pyrest.service import ResourceHandler, QueryHandler
 
 # from pyrest.examples.restful_key_value_store import KeyValueHandler
@@ -75,6 +78,8 @@ class JobHandler(Handler):
         """
         Registers the categories this backend can handle.
         """
+        # not calling super - would register twice than...
+        # pylint: disable=W0231
         backends.register([self.category, self.terminate_category], self)
 
     def create(self, resource):
@@ -120,7 +125,7 @@ class JobHandler(Handler):
                 if state == 'done' or state == 'failed':
                     resource.actions = []
             except InvalidJobException:
-                    resource.actions = []
+                resource.actions = []
         else:
             pass
 

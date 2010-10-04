@@ -302,6 +302,12 @@ class HTTPListParserTest(unittest.TestCase):
     def test_from_resources_for_failure(self):
         pass
 
+    def test_if_to_any_raises(self):
+        # parser can only do lists, so no parsing of repr of resources...
+        self.assertRaises(NotImplementedError, self.list_parser.to_action, None)
+        self.assertRaises(NotImplementedError, self.list_parser.to_resource, 123, None)
+        self.assertRaises(NotImplementedError, self.list_parser.from_resource, None)
+
     # --------
     # TEST FOR SANITY
     # --------
@@ -396,6 +402,11 @@ class HTTPHTMLParserTest(unittest.TestCase):
     # --------
     # TEST FOR SANITY
     # --------
+
+    def test_if_to_any_raises(self):
+        # parser can not parse html only create HTMl representations
+        self.assertRaises(NotImplementedError, self.parser.to_action, None)
+        self.assertRaises(NotImplementedError, self.parser.to_resource, 123, None)
 
     def test_from_categories_for_sanity(self):
         http_data = self.parser.from_categories(self.category_keys_list)

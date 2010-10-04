@@ -174,6 +174,8 @@ class SecurityHandler(object):
     """
     A security handler.
     """
+    # nothing doen with user and password - so skipping warning
+    # pylint: disable=W0613
 
     def authenticate(self, username, password):
         """
@@ -198,6 +200,8 @@ class HTTPHandler(object):
     of the protocol easier. Do not mixup protocol and rendering. XML can be
     rendered over HTTP for example.
     """
+    # Uppercase names are given by web.py :-/ 
+    # pylint: disable=E1101,C0103
 
     @authenticate
     @validate_key
@@ -470,6 +474,8 @@ class QueryHandler(object):
     """
     Represents the Query interface.
     """
+    # Uppercase names are given by web.py :-/ 
+    # pylint: disable=C0103
 
     def GET(self, name):
         if len(name) == 0:
