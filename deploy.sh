@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # 
 # Copyright (C) 2010 Platform Computing
@@ -79,7 +79,7 @@ case "$1" in
     ;;
 
   *)
-    echo "Usage: $N {clean|build|coverage|doc|test|deploy}" >&2
+    echo "Usage: $N {clean|build|coverage|doc|test|deploy}"
     exit 1
     ;;
 esac
