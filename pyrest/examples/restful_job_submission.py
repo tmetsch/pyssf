@@ -40,6 +40,7 @@ Created on Sep 20, 2010
 @author: tmetsch
 '''
 from pydrmaa.job import JobFactory
+from drmaa.errors import InvalidJobException
 
 from pyrest import backends
 from pyrest.backends import Handler
@@ -48,7 +49,7 @@ from pyrest.myexceptions import MissingAttributesException, StateException, \
 from pyrest.resource_model import Category, Resource, Action
 from pyrest.service import ResourceHandler, QueryHandler
 
-from pyrest.examples.restful_key_value_store import KeyValueHandler
+# from pyrest.examples.restful_key_value_store import KeyValueHandler
 
 import web
 
@@ -108,15 +109,18 @@ class JobHandler(Handler):
                                                  + ' running job resource'
                                                  + ' should have an id.')
             job = self.jobs[resource.attributes['occi.drmaa.job_id']]
-            state = job.get_state()
-            resource.attributes['occi.drmaa.job_state'] = state
-            if state == 'running':
-                action = Action()
-                action.categories = [self.terminate_category]
-                # drop old links - when running cannot change links!
-                resource.action = [action]
-            if state == 'done' or state == 'failed':
-                resource.actions = []
+            try:
+                state = job.get_state()
+                resource.attributes['occi.drmaa.job_state'] = state
+                if state == 'running':
+                    action = Action()
+                    action.categories = [self.terminate_category]
+                    # drop old links - when running cannot change links!
+                    resource.action = [action]
+                if state == 'done' or state == 'failed':
+                    resource.actions = []
+            except InvalidJobException:
+                    resource.actions = []
         else:
             pass
 

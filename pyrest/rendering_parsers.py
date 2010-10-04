@@ -416,6 +416,16 @@ class HTTPHTMLParser(Parser):
                      + "</a></td></tr>")
         body += "</table>"
 
+        body += "<h2>Assigned Links / Actions:</h2>"
+        body += "<table><tr><th>Type</th><th>URL</th></tr>"
+        for link in resource.links:
+            body += ("<tr><td>Link</td><td><a href=\"" + link.target + "\">"
+                     + link.target + "</a></td></tr>")
+        for action in resource.actions:
+            body += ("<tr><td>Action</td><td>/" + resource.id + ";action="
+                     + action.categories[0].term + "</td></tr>")
+        body += "</table>"
+
         body += "<h2>Assigned Attributes:</h2>"
         body += "<table><tr><th>Key</th><th>Value</th></tr>"
         for item in resource.attributes.keys():
