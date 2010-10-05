@@ -410,7 +410,7 @@ class HTTPHTMLParser(Parser):
 
     def to_resource(self, key, http_data):
         heads = {}
-
+        res = Resource()
         try:
             tmp = http_data.body.replace("%3B", ";").replace("%2F", '/').replace("%3D", "=").replace("%23", "#").replace("%22", "\"").replace("%3A", ":").split("&")[0]
 
@@ -422,15 +422,11 @@ class HTTPHTMLParser(Parser):
 
             cats = _get_categories_from_header(heads)
             attr = _get_attributes_from_header(heads)
-        except IndexError:
+        except (IndexError, MissingCategoriesException):
             raise MissingCategoriesException("Could not parse the body of the document.")
 
-        res = Resource()
         res.id = key
-        if len(cats) > 0:
-            res.categories = cats
-        else:
-            raise MissingCategoriesException("Unable to retrieve any valid Categories.")
+        res.categories = cats
 
         if len(attr) > 0:
             res.attributes = attr

@@ -151,17 +151,18 @@ class JobHandler(Handler):
         if self.category in resource.categories:
             # update attributes and links if needed and trigger action
             # check if action is in current available actions
+            self.retrieve(resource)
             if action in resource.actions:
                 try:
                     job = self.jobs[resource.attributes['occi.drmaa.job_id']]
                 except:
                     raise StateException('Trying to run an action on non'
                                          + 'active resource.')
+                resource.attributes['occi.drmaa.job_state'] = job.get_state()
                 # test which action to trigger and run it...
                 if self.terminate_category in action.categories:
                     job.terminate()
                     resource.actions = []
-                resource.attributes['occi.drmaa.job_state'] = job.get_state()
             else:
                 raise MissingActionException('Non existing action called!')
         else:

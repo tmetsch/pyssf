@@ -415,6 +415,7 @@ class HTTPHTMLParserTest(unittest.TestCase):
         self.assertRaises(MissingCategoriesException, self.parser.to_resource, "123", HTTPData({}, ""))
         self.assertRaises(MissingCategoriesException, self.parser.to_resource, "123", HTTPData({}, "asdfas=sdfasf"))
         self.assertRaises(MissingCategoriesException, self.parser.to_resource, "123", HTTPData({}, "Category:sdfasf"))
+        self.assertRaises(MissingCategoriesException, self.parser.to_resource, "123", HTTPData({}, "Category=tat;scheme=\"http://www.exmaple.com#\""))
 
     # --------
     # TEST FOR SANITY
