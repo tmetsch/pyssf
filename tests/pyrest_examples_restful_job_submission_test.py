@@ -94,7 +94,7 @@ class JobHandlerTest(unittest.TestCase):
 
         # non existent resource
         self.setUp()
-        self.assertRaises(StateException, self.backend.action, self.resource, self.resource.actions[0])
+        self.assertRaises(MissingAttributesException, self.backend.action, self.resource, self.resource.actions[0])
 
     # --------
     # TEST FOR SANITY
