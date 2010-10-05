@@ -405,14 +405,29 @@ class HTTPHTMLParserTest(unittest.TestCase):
         self.resource.actions = [action]
         self.resource.id = '123'
 
+    def test_to_action_for_failure(self):
+        self.assertRaises(MissingCategoriesException, self.parser.to_action , HTTPData({}, ""))
+        self.assertRaises(MissingCategoriesException, self.parser.to_action , HTTPData({}, "asdfas=sdfasf"))
+        self.assertRaises(MissingCategoriesException, self.parser.to_action , HTTPData({}, "Category:sdfasf"))
+
+    def test_to_resource_for_failure(self):
+        #self.assertRaises(MissingCategoriesException, self.parser.to_resource, None, HTTPData({}, 'Category=' + DummyBackend.http_category_with_attr['Category'] + "&Attribute=" + DummyBackend.http_category_with_attr["Attribute"]))
+        self.assertRaises(MissingCategoriesException, self.parser.to_resource, "123", HTTPData({}, ""))
+        self.assertRaises(MissingCategoriesException, self.parser.to_resource, "123", HTTPData({}, "asdfas=sdfasf"))
+        self.assertRaises(MissingCategoriesException, self.parser.to_resource, "123", HTTPData({}, "Category:sdfasf"))
+
     # --------
     # TEST FOR SANITY
     # --------
 
-    def test_if_to_any_raises(self):
-        # parser can not parse html only create HTMl representations
-        self.assertRaises(NotImplementedError, self.parser.to_action, None)
-        self.assertRaises(NotImplementedError, self.parser.to_resource, 123, None)
+    def test_to_action_for_sanity(self):
+        action = self.parser.to_action(HTTPData({}, 'Category=' + DummyBackend.http_action_category['Category']))
+        self.assertEquals(action.categories[0].term, DummyBackend.action_category.term)
+
+    def test_to_resource_for_sanity(self):
+        resource = self.parser.to_resource("213", HTTPData({}, 'Category=' + DummyBackend.http_category_with_attr['Category'] + "&Attribute=" + DummyBackend.http_category_with_attr["Attribute"]))
+        self.assertEquals(resource.attributes.keys(), DummyBackend.category.attributes)
+        self.assertEquals(resource.categories[0], DummyBackend.category)
 
     def test_from_categories_for_sanity(self):
         http_data = self.parser.from_categories(self.category_keys_list)

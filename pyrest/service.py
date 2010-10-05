@@ -233,7 +233,7 @@ class HTTPHandler(object):
         # create a new sub resource
         request = HTTPData(web.ctx.env, web.data())
         name = str(name)
-        if self.resource_exists(name) is True:
+        if self.resource_exists(name) is True or self.resource_exists(name.rstrip("/")) is True:
             try:
                 if name.endswith('/') or len(name) == 0:
                     name += str(uuid.uuid4())

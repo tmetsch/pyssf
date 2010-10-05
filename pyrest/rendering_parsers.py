@@ -25,6 +25,7 @@ Created on Jul 9, 2010
 
 from pyrest.myexceptions import MissingCategoriesException
 from pyrest.resource_model import Resource, Category, Action
+from pyrest import backends
 import re
 
 class HTTPData(object):
@@ -390,21 +391,56 @@ class HTTPHTMLParser(Parser):
     browser can understand.
     """
 
-    css_string = "body {font-family: 'Ubuntu Beta', 'Bitstream Vera Sans', 'DejaVu Sans', Tahoma, sans-serif; font-size: 0.6em; color: black; max-width: 500px; border: 1px solid #888; padding:10px;} table {font-size: 1.1em;border:0px solid white; width: 100%;} th {background-color:#73c167;color:white;padding: 5px;} td {background-color:#eee;color:black;padding: 5px;} strong {color:#73c167;}"
+    css_string = "body {font-family: 'Ubuntu Beta', 'Bitstream Vera Sans', 'DejaVu Sans', Tahoma, sans-serif; font-size: 0.6em; color: black; max-width: 500px; border: 1px solid #888; padding:10px;} table {font-size: 1.1em;border:0px solid white; width: 100%;} th {background-color:#73c167;color:white;padding: 5px;} td {background-color:#eee;color:black;padding: 5px;} strong {color:#73c167;} form {border: 1px solid #73c167;padding: 10px;}"
     content_type = 'text/html'
 
     def to_action(self, http_data):
-        raise NotImplementedError("This rendering cannot handle "
-                                  + "POST/PUT requests.")
+        heads = {}
+
+        tmp = http_data.body.replace("%3B", ";").replace("%2F", '/').replace("%3D", "=").replace("%23", "#").replace("%22", "\"").replace("%3A", ":").split("&")[0]
+
+        heads['HTTP_CATEGORY'] = '='.join(tmp.split('=')[1:])
+
+        cats = _get_categories_from_header(heads)
+
+        action = Action
+        action.categories = cats
+
+        return action
 
     def to_resource(self, key, http_data):
-        raise NotImplementedError("This rendering cannot handle "
-                                  + "POST/PUT requests.")
+        heads = {}
+
+        try:
+            tmp = http_data.body.replace("%3B", ";").replace("%2F", '/').replace("%3D", "=").replace("%23", "#").replace("%22", "\"").replace("%3A", ":").split("&")[0]
+
+            heads['HTTP_CATEGORY'] = '='.join(tmp.split('=')[1:])
+
+            tmp = http_data.body.replace("%3B", ";").replace("%2F", '/').replace("%3D", "=").replace("%23", "#").replace("%22", "\"").replace("%3A", ":").replace("%2C", ",").split("&")[1]
+
+            heads['HTTP_ATTRIBUTE'] = '='.join(tmp.split('=')[1:])
+
+            cats = _get_categories_from_header(heads)
+            attr = _get_attributes_from_header(heads)
+        except IndexError:
+            raise MissingCategoriesException("Could not parse the body of the document.")
+
+        res = Resource()
+        res.id = key
+        if len(cats) > 0:
+            res.categories = cats
+        else:
+            raise MissingCategoriesException("Unable to retrieve any valid Categories.")
+
+        if len(attr) > 0:
+            res.attributes = attr
+
+        return res
 
     def from_categories(self, categories):
         heads = {}
         heads['Content-type'] = self.content_type
-        body = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head><style type=\"text/css\">" + self.css_string + "</style><title>Registered Categories</title></head><body>"
+        body = " <! DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head><style type=\"text/css\">" + self.css_string + "</style><title>Registered Categories</title></head><body>"
         body += "<p><em><a href=\"/\">Home</a></em></p>"
         body += "<h1>Registered Categories:</h1>"
 
@@ -458,13 +494,17 @@ class HTTPHTMLParser(Parser):
         body += "</table>"
 
         body += "<h2>Assigned Links / Actions:</h2>"
-        body += "<table><tr><th>Type</th><th>URL</th></tr>"
+        body += "<table><tr><th>Type</th><th>URL</th><th>...</th></tr>"
         for link in resource.links:
             body += ("<tr><td>Link</td><td><a href=\"" + link.target + "\">"
                      + link.target + "</a></td></tr>")
+
         for action in resource.actions:
-            body += ("<tr><td>Action</td><td>/" + resource.id + ";action="
-                     + action.categories[0].term + "</td></tr>")
+            body += ("<tr><td>Action</td><td><a href=\"/" + resource.id + ";action=" + action.categories[0].term + "\">/" + resource.id + ";action=" + action.categories[0].term + "</a></td>")
+            body += "<td><form method=\"post\" action=/" + resource.id + ";action=" + action.categories[0].term + ">"
+            body += "<input type=\"hidden\" name=\"Category\" value='" + action.categories[0].term + ";scheme=\"" + action.categories[0].scheme + "\"' />"
+            body += "<input type=\"submit\" value=\"Trigger\" /></form></td></tr>"
+
         body += "</table>"
 
         body += "<h2>Assigned Attributes:</h2>"
@@ -473,6 +513,16 @@ class HTTPHTMLParser(Parser):
             body += ("<tr><td>" + item + "</td><td>"
                      + resource.attributes[item] + "</td></tr>")
         body += "</table>"
+
+        if len(backends.REGISTERED_BACKENDS) > 0:
+            body += "<h2>Create Sub-Resource</h2>"
+            body += "<form name=\"input\" action=\"\" method=\"post\">"
+            body += "Category: <select name=\"Category\">"
+            for item in backends.REGISTERED_BACKENDS.keys():
+                body += "<option value='" + item.term + ";scheme=\"" + item.scheme + "\"'>" + item.scheme + item.term + "</option>"
+            body += "</select>"
+            body += "<br />CSV Attribute List: <input type=\"text\" name=\"Attribute\" value=\"\" />"
+            body += "<br /><input type=\"submit\" value=\"Create\" /></form> "
 
         body += "</body></html>"
 
@@ -499,6 +549,17 @@ class HTTPHTMLParser(Parser):
                 categories.append(cat.term)
             body += "<tr><td><a href=\"/" + res.id + "\">" + res.id + "</a></td><td>" + ','.join(categories) + "</td></tr>"
         body += "</table>"
+
+        if len(backends.REGISTERED_BACKENDS) > 0:
+            body += "<h2>Create Sub-Resource</h2>"
+            body += "<form name=\"input\" action=\"\" method=\"post\">"
+            body += "Category: <select name=\"Category\">"
+            for item in backends.REGISTERED_BACKENDS.keys():
+                body += "<option value='" + item.term + ";scheme=\"" + item.scheme + "\"'>" + item.scheme + item.term + "</option>"
+            body += "</select>"
+            body += "<br />CSV Attribute List: <input type=\"text\" name=\"Attribute\" value=\"\" />"
+            body += "<br /><input type=\"submit\" value=\"Create\" /></form> "
+
         body += "</body></html>"
 
         return HTTPData(heads, body)
