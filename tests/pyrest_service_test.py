@@ -191,6 +191,8 @@ class ResourceCreationTests(unittest.TestCase):
 
 class HTTPHeaderTests(unittest.TestCase):
 
+    # Note: testing of functionality is done in the rendering parser test module.
+
     # TODO: test if occi-version is in headers...
     # TODO: to full header should result in data being in body... (maybe move to parser test)
     # TODO: test what happens if wrong accept got added...
@@ -304,6 +306,8 @@ class LinkTests(unittest.TestCase):
 
     def test_creation_of_links_for_success(self):
         # TODO: create two resources and check if they are linked
+
+        # TODO: create two resources and than create a link between them...
         pass
 
     def test_update_of_links(self):

@@ -438,6 +438,12 @@ class ResourceHandler(HTTPHandler):
             raise
 
     def list_resources(self, key, username):
+        """
+        Return multiple resource.
+        
+        key -- if defined - return the 'childs'
+        username -- the user who calls this
+        """
         resources = []
         for name in self.resources.keys():
             res = self.resources.get_resource(name)

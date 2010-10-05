@@ -388,7 +388,7 @@ class HTTPHTMLParserTest(unittest.TestCase):
         self.category_one.term = 'compute'
         self.category_one.title = 'Compute Resource'
 
-        self.category_two.related = ''
+        self.category_two.related = [self.category_one]
         self.category_two.scheme = 'http://example.com/user/categories/templates#'
         self.category_two.term = 'myimage'
         self.category_two.title = ''
@@ -404,8 +404,6 @@ class HTTPHTMLParserTest(unittest.TestCase):
         self.resource.links = [link]
         self.resource.actions = [action]
         self.resource.id = '123'
-
-        self.category_keys_list = []
 
     # --------
     # TEST FOR SANITY

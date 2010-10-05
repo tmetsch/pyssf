@@ -62,7 +62,7 @@ class JobHandler(Handler):
 
     category = Category()
     category.attributes = ['occi.drmaa.remote_command', 'occi.drmaa.args',
-                           'occi.drmaa.job_id']
+                           'occi.drmaa.job_id', 'occi.drmaa.job_state']
     category.related = [Resource.category]
     category.scheme = 'http://schemas.ogf.org/occi/drmaa#'
     category.term = 'job'

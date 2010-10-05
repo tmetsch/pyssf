@@ -390,7 +390,7 @@ class HTTPHTMLParser(Parser):
     browser can understand.
     """
 
-    css_string = "body {font-family: 'Ubuntu Beta', 'Bitstream Vera Sans', 'DejaVu Sans', Tahoma, sans-serif; font-size: 0.6em; color: black; max-width: 500px; border: 1px solid #888; padding:10px;} table {font-size: 1.1em;border:0px solid white; width: 100%;} th {background-color:#73c167;color:white;padding: 5px;} td {background-color:#eee;color:black;padding: 5px;}"
+    css_string = "body {font-family: 'Ubuntu Beta', 'Bitstream Vera Sans', 'DejaVu Sans', Tahoma, sans-serif; font-size: 0.6em; color: black; max-width: 500px; border: 1px solid #888; padding:10px;} table {font-size: 1.1em;border:0px solid white; width: 100%;} th {background-color:#73c167;color:white;padding: 5px;} td {background-color:#eee;color:black;padding: 5px;} strong {color:#73c167;}"
     content_type = 'text/html'
 
     def to_action(self, http_data):
@@ -407,14 +407,33 @@ class HTTPHTMLParser(Parser):
         body = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head><style type=\"text/css\">" + self.css_string + "</style><title>Registered Categories</title></head><body>"
         body += "<p><em><a href=\"/\">Home</a></em></p>"
         body += "<h1>Registered Categories:</h1>"
-        body += "<table><tr><th>Term</th><th>Scheme</th><th>Title</th><th>Attributes</th><th>Related</th></tr>"
-        for category in categories:
-            body += ("<tr><td>" + category.term + "</td><td><a href=\""
-                     + category.scheme + "\">" + category.scheme
-                     + "</a></td><td>" + category.title + "</td><td>"
-                     + str(category.attributes) + "</td><td>"
-                     + str(category.related) + "</td></tr>")
-        body += "</table>"
+
+        for cat in categories:
+            if cat.title is not '':
+                body += "<h2>" + cat.title + "</h2>"
+            else:
+                body += "<h2>" + cat.term + "</h2>"
+            body += "<table>"
+            body += "<tr><th>Term</th><td>" + cat.term + "</td></tr>"
+            body += "<tr><th>Scheme</th><td><a href=\"" + cat.scheme + "\">" + cat.scheme + "</a></td></tr>"
+
+            if cat.title is not '':
+                body += "<tr><th>Title</th><td>" + cat.title + "</td></tr>"
+
+            if len(cat.attributes) > 0:
+                body += "<tr><th>Attributes</th><td>"
+                for item in cat.attributes:
+                    body += item + '<br />'
+                body += "</td></tr>"
+
+            if len(cat.related) > 0:
+                body += "<tr><th>Related</th><td>"
+                for item in cat.related:
+                    body += "<a href=\"" + item.scheme + item.term + "\">" + item.scheme + item.term + "</a><br />"
+                body += "</td></tr>"
+
+            body += "</table>"
+
         body += "</body></html>"
         return HTTPData(heads, body)
 
