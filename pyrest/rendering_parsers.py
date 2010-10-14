@@ -132,14 +132,18 @@ def _get_categories_from_header(heads):
             # pylint: disable=W0702
             break
         # find scheme
-        begin = entry.find('scheme="')
+        begin = entry.find('scheme=')
         if begin is not - 1:
-            tmp = entry[begin + 8:]
-            scheme = (tmp[:tmp.find('"')])
+            tmp = entry[begin + 7:]
+            end = tmp.find(";")
+            if end != -1:
+                tmp = tmp[:end]
+            scheme = tmp.rstrip("\"").lstrip("\"")
             if scheme.find('http') is not - 1:
                 category.scheme = scheme
             else:
                 break
+
         else:
             break
 
