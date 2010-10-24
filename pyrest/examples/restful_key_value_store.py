@@ -51,9 +51,9 @@ import web
 class KeyValueHandler(Handler):
 
     category = Category()
-    category.attributes = ['occi.keyvalue.keq', 'occi.keyvalue.value']
+    category.attributes = ['keq', 'value']
     category.related = [Resource.category]
-    category.scheme = 'http://schemas.ogf.org/occi/keyvalue#'
+    category.scheme = 'http://example.com/occi/keyvalue#'
     category.term = 'keyvalue'
     category.title = 'A key-value Resource'
 
@@ -67,7 +67,7 @@ class KeyValueHandler(Handler):
 
     def create(self, resource):
         if self.category in resource.categories:
-            if not 'occi.keyvalue.keq' in resource.attributes and not 'occi.keyvalue.value' in resource.attributes:
+            if not 'keq' in resource.attributes and not 'value' in resource.attributes:
                 raise MissingAttributesException('Missing key and value'
                                                  + ' attributes')
         else:
@@ -81,11 +81,11 @@ class KeyValueHandler(Handler):
 
     def update(self, resource, updated_resource):
         if self.category in updated_resource.categories:
-            if not 'occi.keyvalue.keq' in updated_resource.attributes and not 'occi.keyvalue.value' in updated_resource.attributes:
+            if not 'keq' in updated_resource.attributes and not 'value' in updated_resource.attributes:
                 raise MissingAttributesException('Missing key and value'
                                                  + ' attributes')
-            resource.attributes['occi.keyvalue.key'] = updated_resource.attributes['occi.keyvalue.key']
-            resource.attributes['occi.keyvalue.value'] = updated_resource.attributes['occi.keyvalue.value']
+            resource.attributes['key'] = updated_resource.attributes['key']
+            resource.attributes['value'] = updated_resource.attributes['value']
         else:
             pass
 
