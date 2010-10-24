@@ -20,7 +20,7 @@
 from distutils.core import setup, Extension
 
 setup(name = 'pyssf',
-      version = '0.1.1',
+      version = '0.1.2',
       description = 'Service Sharing Facility',
       license = 'LGPL',
       keywords = 'REST,RESTful,OCCI,LSF,Platform,Cloud,Grid,Cluster,HPC',
