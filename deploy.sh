@@ -76,8 +76,12 @@ case "$1" in
 	scp -r docs/_build/html/* $USER,pyssf@web.sf.net:/home/groups/p/py/pyssf/htdocs
     ;;
 
+  pypi)
+    python setup.py clean sdist register upload
+	;;
+
   *)
-    echo "Usage: $N {clean|build|coverage|doc|test|deploy}"
+    echo "Usage: $N {clean|build|coverage|doc|test|pypi|deploy}"
     exit 1
     ;;
 esac
