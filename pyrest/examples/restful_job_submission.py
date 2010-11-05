@@ -191,8 +191,8 @@ class SimpleSecurityHandler(SecurityHandler):
 APPLICATION = web.application(URLS, globals())
 
 # activate authentication
-service.AUTHENTICATION_ENABLED = True
-service.SECURITY_HANDLER = SimpleSecurityHandler()
+#service.AUTHENTICATION_ENABLED = True
+#service.SECURITY_HANDLER = SimpleSecurityHandler()
 
 # run...
 if __name__ == "__main__":
