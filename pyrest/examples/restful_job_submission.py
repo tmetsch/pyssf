@@ -175,8 +175,24 @@ web.config.debug = False
 # register the backend
 JobHandler()
 
+# create a very simple security handler
+from pyrest.service import SecurityHandler
+from pyrest import service, myexceptions
+
+class SimpleSecurityHandler(SecurityHandler):
+
+    def authenticate(self, username, password):
+        if username == 'foo' and password == 'bar':
+            pass
+        else:
+            raise myexceptions.SecurityException()
+
 # create the app...
 APPLICATION = web.application(URLS, globals())
+
+# activate authentication
+service.AUTHENTICATION_ENABLED = True
+service.SECURITY_HANDLER = SimpleSecurityHandler()
 
 # run...
 if __name__ == "__main__":

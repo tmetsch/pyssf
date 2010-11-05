@@ -483,6 +483,7 @@ class QueryHandler(object):
     # Uppercase names are given by web.py :-/ 
     # pylint: disable=C0103
 
+    @authenticate
     def GET(self, name):
         if len(name) == 0:
             parser = find_parser()
