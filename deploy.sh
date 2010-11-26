@@ -21,6 +21,7 @@
 case "$1" in
   clean)
     python setup.py clean --all
+    rm -rf docs/_build
     ;;
 
   demo1)
