@@ -23,6 +23,12 @@ case "$1" in
     python setup.py clean --all
     ;;
 
+  prepare)
+	export PYTHONPATH=.
+	export PYREST_STYLE_SHEET=/home/tmetsch/data/workspace/pyssf/misc/style.css
+    python pyrest/examples/restful_job_submission.py
+	;;
+
   build)
     $0 clean
     python setup.py build

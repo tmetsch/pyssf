@@ -18,14 +18,14 @@ Needed to build and install SSF:
   * Platform LSF (>= 7.0.6) (with lsf-drmaa (>=1.0.3 installed)) or 
     Oracle Grid Engine (>= 6.2u5)
   * drmaa-python
-  * web.py
+  * tornado web
 
 For developing with SSF you can use:
 
   * Sphinx for building documents (python-sphinx)
   * python-coverage for creating coverage reports
   * epydoc for generation of API documentation
-  * Eclipse with PyDev for coding
+  * Eclipse with PyDev for coding or Aptana
   * Nosetest for easy unit testing (python-nose)
   * Firefox to view the kanban board (misc/spa_pyssf_kanban.html)
   * make to build standalone documentation and pylsf shared library

@@ -45,11 +45,7 @@ Contents:
    
    pydrmaa.txt
    pylsf.txt
-   pyrest.txt
    pyssf.txt
-   examples.txt
-   user_guide.txt
-   faq.txt
 
 * `Coverage report <cover/index.html>`_
 
