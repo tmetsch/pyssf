@@ -23,11 +23,23 @@ case "$1" in
     python setup.py clean --all
     ;;
 
-  prepare)
-	export PYTHONPATH=.
-	export PYREST_STYLE_SHEET=/home/tmetsch/data/workspace/pyssf/misc/style.css
-    python pyrest/examples/restful_job_submission.py
-	;;
+  demo1)
+    export PYOCCI_STYLE_SHEET=`pwd`/misc/style.css
+    export PYTHONPATH=`pwd`
+    python pyocci/examples/keyvalue_main.py
+    ;;
+
+  demo2)
+    export PYOCCI_STYLE_SHEET=`pwd`/misc/style.css
+    export PYTHONPATH=`pwd`
+    python pyocci/examples/vms_main.py
+    ;;
+
+  demo3)
+    export PYOCCI_STYLE_SHEET=`pwd`/misc/style.css
+    export PYTHONPATH=`pwd`
+    python pyocci/examples/drmaa_main.py
+    ;;
 
   build)
     $0 clean
@@ -39,9 +51,9 @@ case "$1" in
     ;;
 
   coverage)
-    export DRMAA_LIBRARY_PATH=/opt/lsf/7.0/linux2.6-glibc2.3-x86_64/lib/libdrmaa.so
-    export PYTHONPATH=build/lib.linux-x86_64-2.6/pylsf
-    nosetests --with-coverage --cover-html --cover-html-dir=docs/_build/html/cover --cover-erase --cover-package=pydrmaa,pyssf,pyrest
+    nosetests --with-coverage --cover-html --cover-html-dir=docs/_build/html/cover --cover-erase --cover-package=pyocci
+    export PYOCCI_STYLE_SHEET=`pwd`/misc/style.css
+    nosetests --with-coverage --cover-html --cover-html-dir=docs/_build/html/cover --cover-package=pyocci
     rc=$?
     if [[ $rc != 0 ]] ; then
         exit $rc
@@ -53,8 +65,8 @@ case "$1" in
     make clean
     cd ..
     $0 coverage
-	mkdir docs/_build/html/lint/
-    pylint -f html pyrest pydrmaa ssf &> docs/_build/html/lint/index.html
+    mkdir docs/_build/html/lint/
+    pylint -i y -f html pyocci &> docs/_build/html/lint/index.html
     cd docs
     make html
     cd ..
@@ -75,19 +87,19 @@ case "$1" in
   deploy)
     $0 build
     $0 doc
-	hg commit
+    hg commit
     xmessage "Password required"
-	hg push
-	xmessage "Password required"
-	scp -r docs/_build/html/* $USER,pyssf@web.sf.net:/home/groups/p/py/pyssf/htdocs
+    hg push
+    xmessage "Password required"
+    scp -r docs/_build/html/* $USER,pyssf@web.sf.net:/home/groups/p/py/pyssf/htdocs
     ;;
 
   pypi)
     python setup.py clean sdist register upload
-	;;
+    ;;
 
   *)
-    echo "Usage: $N {clean|build|coverage|doc|test|pypi|deploy}"
+    echo "Usage: $N {a command...}"
     exit 1
     ;;
 esac

@@ -18,13 +18,13 @@ sS'help'
 p8
 NsS'modules'
 p9
-(S'pyrest'
+(S'pydrmaa'
 p10
 S'pylsf'
 p11
 S'ssf'
 p12
-S'pydrmaa'
+S'pyocci'
 p13
 tp14
 sS'private'
