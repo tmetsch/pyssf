@@ -88,7 +88,6 @@ case "$1" in
     ;;
 
   deploy)
-	$0 clean
 	$0 build
     $0 doc
     hg commit
