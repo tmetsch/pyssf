@@ -28,6 +28,7 @@ from pyocci.backends import Backend
 from pyocci.core import Mixin
 from pyocci.my_exceptions import NoEntryFoundException, ParsingException
 from tornado.web import HTTPError
+import sys
 import tornado.web
 import uuid
 
@@ -81,11 +82,8 @@ class BaseHandler(tornado.web.RequestHandler):
             raise HTTPError(400, log_message = str(nefe))
 
     def get_error_html(self, code, **kwargs):
-        msg = str(code)
-        try:
-            msg += ' ' + repr(kwargs['exception'].log_message)
-        except KeyError:
-            pass
+        e = sys.exc_info()[1]
+        msg = str(e)
         return msg
 
     def _send_response(self, heads, data):
