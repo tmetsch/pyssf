@@ -641,39 +641,48 @@ class TextHTMLRendering(Rendering):
 
         html += '<h1>Registered Categories</h1>'
 
+        sorted_cats = {}
+
         if len(categories) > 0:
             for cat in categories:
-                html += '<table>'
-                html += '<tr><th>Term'
-                html += '</th><td>'
-                html += cat.term + '</td></tr>'
-                html += '<tr><th>Scheme'
-                html += '</th><td>'
-                html += cat.scheme + '</td></tr>'
+                tmp = '<table>'
+                tmp += '<tr><th>Term'
+                tmp += '</th><td>'
+                tmp += cat.term + '</td></tr>'
+                tmp += '<tr><th>Scheme'
+                tmp += '</th><td>'
+                tmp += cat.scheme + '</td></tr>'
 
                 if hasattr(cat, 'title') and cat.title is not '':
-                    html += '<tr><th>Title'
-                    html += '</th><td>'
-                    html += cat.title + '</td></tr>'
+                    tmp += '<tr><th>Title'
+                    tmp += '</th><td>'
+                    tmp += cat.title + '</td></tr>'
                 if hasattr(cat, 'actions') and len(cat.actions) > 0:
-                    html += '<tr><th>Actions'
-                    html += '</th><td>'
-                    html += repr(cat.actions) + '</td></tr>'
+                    tmp += '<tr><th>Actions'
+                    tmp += '</th><td>'
+                    tmp += repr(cat.actions) + '</td></tr>'
                 if hasattr(cat, 'attributes')and len(cat.attributes) > 0:
-                    html += '<tr><th>Attributes'
-                    html += '</th><td>'
-                    html += ','.join(cat.attributes) + '</td></tr>'
+                    tmp += '<tr><th>Attributes'
+                    tmp += '</th><td>'
+                    tmp += ','.join(cat.attributes) + '</td></tr>'
                 if hasattr(cat, 'location') and cat.location is not '':
-                    html += '<tr><th>Location'
-                    html += '</th><td><a href="'
-                    html += cat.location + '">'
-                    html += cat.location + '</a></td></tr>'
+                    tmp += '<tr><th>Location'
+                    tmp += '</th><td><a href="'
+                    tmp += cat.location + '">'
+                    tmp += cat.location + '</a></td></tr>'
                 if hasattr(cat, 'related')and len(cat.related) > 0:
-                    html += '<tr><th>related'
-                    html += '</th><td>'
-                    html += repr(cat.related) + '</td></tr>'
+                    tmp += '<tr><th>related'
+                    tmp += '</th><td>'
+                    tmp += repr(cat.related) + '</td></tr>'
 
-                html += '</table>'
+                tmp += '</table>'
+                if sorted_cats.has_key(cat.scheme):
+                    sorted_cats[cat.scheme] = sorted_cats[cat.scheme] + tmp
+                else:
+                    sorted_cats[cat.scheme] = tmp
+            for scheme in sorted_cats:
+                html += '<h2>' + scheme + '</h2>'
+                html += sorted_cats[scheme]
         else:
             html += '<p>No categories registered</p>'
 

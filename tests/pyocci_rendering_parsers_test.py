@@ -357,6 +357,7 @@ class TextHTMLRenderingTest(unittest.TestCase):
     def test_from_categories_for_success(self):
         self.parser.from_categories([])
         self.parser.from_categories([ComputeBackend.category])
+        self.parser.from_categories([ComputeBackend.category, NetworkLinkBackend.category])
 
     def test_from_entities_for_success(self):
         self.parser.from_entities([self.entity])

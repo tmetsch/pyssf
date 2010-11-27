@@ -40,8 +40,9 @@ class BaseHandler(tornado.web.RequestHandler):
     convenient routines.
     '''
 
+    # disabling 'Unused argument' pylint check (overwritten methods)
     # disabling 'Too many public methods' pylint check (tornado's fault)
-    # pylint: disable=R0904
+    # pylint: disable=R0904,W0613
 
     version = 'pyocci OCCI/1.1'
 
@@ -82,8 +83,8 @@ class BaseHandler(tornado.web.RequestHandler):
             raise HTTPError(400, log_message = str(nefe))
 
     def get_error_html(self, code, **kwargs):
-        e = sys.exc_info()[1]
-        msg = str(e)
+        exception = sys.exc_info()[1]
+        msg = str(exception)
         return msg
 
     def _send_response(self, heads, data):
