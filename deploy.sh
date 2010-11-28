@@ -21,8 +21,8 @@
 case "$1" in
   clean)
     python setup.py clean --all
-    rm -rf docs/_build
-    ;;
+    rm -rf docs/_build sdist dist
+	;;
 
   demo1)
     export PYOCCI_STYLE_SHEET=`pwd`/misc/style.css

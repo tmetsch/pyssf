@@ -37,7 +37,6 @@ Features:
  * Negotiation and federation of services between Grids/Clouds/Clusters
  * Integration point to integrate your products with Grids/Clouds/Clusters
 
-
 .. note::
     The [OCCI]_ implementation has moved from pyrest to pyocci. We will update
     the documentation soon.
@@ -50,6 +49,7 @@ Contents:
    
    pydrmaa.txt
    pylsf.txt
+   pyocci.txt
    pyssf.txt
 
 * `Coverage report <cover/index.html>`_
