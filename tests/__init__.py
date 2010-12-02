@@ -79,7 +79,7 @@ class NetworkLinkBackend(LinkBackend):
     category.location = '/ip_addr/'
     category.attributes = []
 
-class MixinBackend(Backend):
+class MyMixinBackend(Backend):
 
     category = Mixin()
     category.term = 'my_stuff'
@@ -110,7 +110,7 @@ http_body_with_attr = http_body + '\nX-OCCI-Attribute:foo=bar,summary=bar'
 http_body_only_attr = 'X-OCCI-Attribute:foo=bar'
 http_body_link = 'Category:' + NetworkLinkBackend.category.term + ';scheme=' + NetworkLinkBackend.category.scheme + '\nX-OCCI-Attribute:source=foo,target=bar'
 defunct_http_body = 'Category:' + DefunctBackend.category.term + ';scheme=' + DefunctBackend.category.scheme
-http_body_mul_cats = http_body + ',' + MixinBackend.category.term + ';scheme=' + MixinBackend.category.scheme
+http_body_mul_cats = http_body + ',' + MyMixinBackend.category.term + ';scheme=' + MyMixinBackend.category.scheme
 http_body_add_info = http_body + ';term=foo'
 
 http_body_loc = 'X-OCCI-Location: /foo/bar1'
@@ -118,6 +118,7 @@ http_body_loc = 'X-OCCI-Location: /foo/bar1'
 http_body_action = 'Category: ' + ComputeBackend.start_category.term + ';scheme=' + ComputeBackend.start_category.scheme
 
 http_body_mixin = 'Category: mine;scheme=http://mystuff.com/occi;location=/foo/bar/;'
+http_body_mixin2 = 'Category: mine2;scheme=http://mystuff.com/occi;location=/foo/bar/;'
 
 # text/occi
 
@@ -128,7 +129,7 @@ http_head_link = {'Category': NetworkLinkBackend.category.term + ';scheme=' + Ne
 defunct_http_head = {'Category': DefunctBackend.category.term + ';scheme=' + DefunctBackend.category.scheme}
 
 http_head_mul_cats = http_head.copy()
-http_head_mul_cats['Category'] = http_head['Category'] + ',' + MixinBackend.category.term + ';scheme=' + MixinBackend.category.scheme
+http_head_mul_cats['Category'] = http_head['Category'] + ',' + MyMixinBackend.category.term + ';scheme=' + MyMixinBackend.category.scheme
 
 http_head_add_info = http_head.copy()
 http_head_add_info['Category'] = http_head['Category'] + ';term=foo'
@@ -189,19 +190,3 @@ http_head_faulty_mixin = {}
 # text/html
 html_faulty_create = 'Category=http://jeeha.com/bla#tida&Attribute=key=foo+value=bar+summary=jeeha'
 html_faulty_action = 'Category=' + DefunctBackend.a_category.scheme + '#' + DefunctBackend.a_category.term
-
-try:
-    compute_backend = ComputeBackend()
-    registry.register_backend([ComputeBackend.start_category], compute_backend)
-    registry.register_backend([ComputeBackend.category], compute_backend)
-    registry.register_backend([MixinBackend.category], MixinBackend())
-    defunct = DefunctBackend()
-    registry.register_backend([DefunctBackend.a_category], defunct)
-    registry.register_backend([DefunctBackend.category], defunct)
-    registry.register_backend([NetworkLinkBackend.category], NetworkLinkBackend())
-
-    registry.register_parser(TextPlainRendering.content_type, TextPlainRendering())
-    registry.register_parser(TextHeaderRendering.content_type, TextHeaderRendering())
-    registry.register_parser(TextHTMLRendering.content_type, TextHTMLRendering())
-except:
-    pass

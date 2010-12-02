@@ -65,6 +65,7 @@ class Mixin(Category):
 
         # Following are not defined by the OCCI spec
         self.location = ''
+        self.owner = ''
 
 class Entity(object):
 

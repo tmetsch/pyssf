@@ -25,13 +25,24 @@ Created on Nov 10, 2010
 
 # pylint: disable-all
 
-from pyocci import registry
+from pyocci import registry, service
 from pyocci.examples.keyvalue import KeyValueBackend, KeyValueLink
 from pyocci.rendering_parsers import TextPlainRendering, TextHeaderRendering, \
     TextHTMLRendering
-from pyocci.service import ResourceHandler, ListHandler, QueryHandler
+from pyocci.service import ResourceHandler, ListHandler, QueryHandler, \
+    LoginHandler, LogoutHandler
 import tornado.httpserver
 import tornado.web
+
+class Login(LoginHandler):
+
+    def authenticate(self, user, password):
+        if user == 'foo' and password == 'bar':
+            return True
+        elif user == 'foo2' and password == 'bar':
+            return True
+        else:
+            return False
 
 class MyService():
     '''
@@ -40,19 +51,20 @@ class MyService():
 
     application = None
 
+    service.AUTHENTICATION = False
+
     def __init__(self):
-#        settings = {
-#            "static_path": os.path.join(os.path.dirname(__file__), "static"),
-#            "cookie_secret": "61oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
-#            "login_url": "/login",
-#            "xsrf_cookies": True,
-#        }
+        settings = {
+                    "cookie_secret": "61oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
+                    "login_url": "/login",
+        }
         self.application = tornado.web.Application([
             (r"/-/", QueryHandler),
+            (r"/login", Login),
+            (r"/logout", LogoutHandler),
             (r"/(.*)/", ListHandler),
             (r"(.*)", ResourceHandler),
-        ])
-        #, **settings
+        ], **settings)
 
     def start(self):
         '''
@@ -81,13 +93,3 @@ if __name__ == '__main__':
                               KeyValueLink())
     SERVICE = MyService()
     SERVICE.start()
-
-#try:
-#    registry.register_backend([KeyValueBackend.kind], KeyValueBackend())
-#    registry.register_backend([ComputeBackend.category], ComputeBackend())
-#    registry.register_backend([MixinBackend.category], MixinBackend())
-#    registry.register_backend([DefunctBackend.category], DefunctBackend())
-#    registry.register_backend([NetworkLinkBackend.category], 
-#                               NetworkLinkBackend())
-#except:
-#    pass

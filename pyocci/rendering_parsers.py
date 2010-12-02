@@ -23,7 +23,7 @@ Created on Nov 11, 2010
 @author: tmetsch
 '''
 
-from pyocci import registry
+from pyocci import registry, service
 from pyocci.core import Category, Kind, Resource, Link, Action, Mixin
 from pyocci.my_exceptions import ParsingException
 import re
@@ -91,7 +91,13 @@ class Rendering(object):
         @param body: The HTTP body.
         @type body: str
         '''
-        raise NotImplementedError
+        raise NotImplementedError()
+
+    def login_information(self):
+        '''
+        Return proper information indicating how the user can login.
+        '''
+        raise NotImplementedError()
 
     def to_action(self, headers, data):
         '''
@@ -364,6 +370,13 @@ class TextPlainRendering(Rendering):
             raise ParsingException('Body does not contain any X-OCCI-Locations'
                                    + ' pointing to resource instances.')
 
+    def login_information(self):
+        html = 'Please do a POST operation with a name and pass attribute.'
+
+        headers = {}
+        headers['Content-Type'] = self.content_type
+        return headers, html
+
     def to_action(self, headers, body):
         data = self._get_data(body)
 
@@ -542,6 +555,13 @@ class TextHeaderRendering(Rendering):
         else:
             raise ParsingException('Header does not contain a location.')
 
+    def login_information(self):
+        html = 'Please do a POST operation with a name and pass attribute.'
+
+        headers = {}
+        headers['Content-Type'] = self.content_type
+        return headers, html
+
     def to_action(self, headers, body):
         data = self._get_data(headers)
 
@@ -635,6 +655,7 @@ class TextHTMLRendering(Rendering):
         css_string = 'body {font: .8em/normal sans-serif;}'
         css_string += 'div {padding: 1em; margin: 1em;'
         css_string += 'border: 1px solid #73c167;}'
+        css_string += 'table {margin: 1em; border: 1px solid #444;}'
 
     def from_categories(self, categories):
         html = self._create_html_head()
@@ -786,6 +807,20 @@ class TextHTMLRendering(Rendering):
         # This is something HTML rendering cannot do...
         raise NotImplementedError('HTML rendering does not support this.')
 
+    def login_information(self):
+        html = self._create_html_head()
+        html += '<h1>Please Sign in</h1>'
+        html += '<form action="/login" method="post">'
+        html += 'Username: <input type="text" name="name"><br />'
+        html += 'Password: <input type="password" name="pass"><br />'
+        html += '<input type="submit" value="Sign in">'
+        html += '</form>'
+        html += self._create_html_footer()
+
+        headers = {}
+        headers['Content-Type'] = self.content_type
+        return headers, html
+
     def to_action(self, headers, body):
         if body is not None:
             tmp = urllib.unquote(body).split('&')
@@ -921,6 +956,8 @@ class TextHTMLRendering(Rendering):
         html += '<div id="header">'
         html += '    <a href="/">Home</a>'
         html += '    <a href="/-/">Query Interface</a>'
+        if service.AUTHENTICATION is True:
+            html += '    <a href="/logout">Logout</a>'
         html += '</div>'
         html += '<div id="content">'
         return html

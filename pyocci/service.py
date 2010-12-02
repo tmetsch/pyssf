@@ -15,6 +15,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 # 
+
 '''
 Implementation for an OCCI compliant service.
 
@@ -33,6 +34,7 @@ import tornado.web
 import uuid
 
 RESOURCES = {}
+AUTHENTICATION = False
 
 class BaseHandler(tornado.web.RequestHandler):
     '''
@@ -102,6 +104,12 @@ class BaseHandler(tornado.web.RequestHandler):
                 self._headers[item] = heads[item]
         self.write(data)
 
+    def get_current_user(self):
+        if AUTHENTICATION is True:
+            return self.get_secure_cookie("pyocci_user")
+        else:
+            return 'default'
+
 class ResourceHandler(BaseHandler):
     '''
     Handles basic HTTP operations. To achieve this it will make use of WSGI and
@@ -114,7 +122,7 @@ class ResourceHandler(BaseHandler):
     # pylint: disable=R0904,W0221
 
     # XXX: What to do with links when creating a resource?
-
+    @tornado.web.authenticated
     def post(self, key):
         headers, body = self.extract_http_data()
         parser = self.get_pyocci_parser('Content-Type')
@@ -139,10 +147,12 @@ class ResourceHandler(BaseHandler):
                 raise HTTPError(400, str(pse))
 
             key = self._create_key(entity)
+            entity.owner = self.get_current_user()
             RESOURCES[key] = entity
             self._headers['Location'] = key
         self.write('OK')
 
+    @tornado.web.authenticated
     def put(self, key):
         headers, body = self.extract_http_data()
         parser = self.get_pyocci_parser('Content-Type')
@@ -155,7 +165,11 @@ class ResourceHandler(BaseHandler):
                                               allow_incomplete = True,
                                               defined_kind = old_entity.kind)
 
+                if self.get_current_user() != old_entity.owner:
+                    raise HTTPError(401)
+
                 backend = registry.get_backend(old_entity.kind)
+
                 backend.update(old_entity, new_entity)
             except (ParsingException, AttributeError) as pse:
                 raise HTTPError(400, str(pse))
@@ -169,14 +183,18 @@ class ResourceHandler(BaseHandler):
                 raise HTTPError(400, str(pse))
             RESOURCES[key] = new_entity
             new_entity.identifier = key
+            new_entity.owner = self.get_current_user()
         self.write('OK')
 
+    @tornado.web.authenticated
     def get(self, key):
         # find a parser for the data format the client provided...
         parser = self.get_pyocci_parser('Accept')
 
         if key in RESOURCES.keys():
             entity = RESOURCES[key]
+            if entity.owner != self.get_current_user():
+                raise HTTPError(401)
 
             # trigger backend to get the freshest results
             backend = registry.get_backend(entity.kind)
@@ -188,14 +206,23 @@ class ResourceHandler(BaseHandler):
             self._send_response(heads, data)
         elif key == '/':
             # render a list of resources...
-            heads, data = parser.from_entities(RESOURCES.values())
+            resources = []
+            for item in RESOURCES.values():
+                if item.owner == self.get_current_user():
+                    resources.append(item)
+
+            heads, data = parser.from_entities(resources)
             self._send_response(heads, data)
         else:
             raise HTTPError(404)
 
+    @tornado.web.authenticated
     def delete(self, key):
         if key in RESOURCES.keys():
             entity = RESOURCES[key]
+
+            if entity.owner != self.get_current_user():
+                raise HTTPError(401)
 
             # trigger backend to delete the resource
             backend = registry.get_backend(entity.kind)
@@ -239,9 +266,13 @@ class ListHandler(BaseHandler):
         locations = {}
         for cat in registry.BACKENDS.keys():
             if hasattr(cat, 'location') and cat.location is not '':
+                if hasattr(cat, 'owner') and cat.owner is not '':
+                    if cat.owner is not self.get_current_user():
+                        break
                 locations[cat.location] = cat
         return locations
 
+    @tornado.web.authenticated
     def get(self, key):
         key = '/' + key + '/'
         headers, body = self.extract_http_data()
@@ -259,7 +290,9 @@ class ListHandler(BaseHandler):
 
         for name in RESOURCES.keys():
             res = RESOURCES[name]
-            if key in locations:
+            if res.owner != self.get_current_user():
+                break
+            elif key in locations:
                 if res.kind == locations[key]:
                     resources.append(res)
                 elif locations[key] in res.mixins:
@@ -281,6 +314,7 @@ class ListHandler(BaseHandler):
         else:
             raise HTTPError(404)
 
+    @tornado.web.authenticated
     def put(self, key):
         key = '/' + key + '/'
         headers, body = self.extract_http_data()
@@ -303,6 +337,7 @@ class ListHandler(BaseHandler):
         else:
             raise HTTPError(400, 'Put is only allowed on a location path.')
 
+    @tornado.web.authenticated
     def delete(self, key):
         key = '/' + key + '/'
         headers, body = self.extract_http_data()
@@ -328,14 +363,26 @@ class QueryHandler(BaseHandler):
     This class represents the OCCI query interface.
     '''
 
+    # TODO: check for adding one location twice...
+
     # disabling 'Too many public methods' pylint check (tornado's fault)
     # pylint: disable=R0904
 
+    @tornado.web.authenticated
     def get(self):
         parser = self.get_pyocci_parser('Accept')
-        heads, data = parser.from_categories(registry.BACKENDS.keys())
+        cats = []
+        for item in registry.BACKENDS.keys():
+            if isinstance(item, Mixin):
+                if item.owner == self.get_current_user() or item.owner == '':
+                    cats.append(item)
+            else:
+                cats.append(item)
+
+        heads, data = parser.from_categories(cats)
         self._send_response(heads, data)
 
+    @tornado.web.authenticated
     def put(self):
         headers, body = self.extract_http_data()
         parser = self.get_pyocci_parser('Content-Type')
@@ -344,25 +391,96 @@ class QueryHandler(BaseHandler):
             categories = parser.to_categories(headers, body)
             for tmp in categories:
                 if isinstance(tmp, Mixin):
+                    tmp.owner = self.get_current_user()
                     registry.register_backend([tmp], MixinBackend())
                 else:
                     raise ParsingException('Not a valid mixin.')
         except (ParsingException, AttributeError) as pse:
             raise HTTPError(400, log_message = str(pse))
 
+    @tornado.web.authenticated
     def delete(self):
         headers, body = self.extract_http_data()
         parser = self.get_pyocci_parser('Content-Type')
 
         try:
-            categories = parser.to_categories(headers, body)
-            for tmp in categories:
-                if isinstance(tmp, Mixin):
-                    registry.unregister_backend([tmp])
-                else:
-                    raise ParsingException('This mixin is not registered.')
+            del_categories = parser.to_categories(headers, body)
         except ParsingException as pse:
             raise HTTPError(400, log_message = str(pse))
+
+        for cat in registry.BACKENDS.keys():
+            if cat in del_categories:
+                if isinstance(cat, Mixin):
+                    if cat.owner == self.get_current_user():
+                        registry.unregister_backend([cat])
+                        del_categories.remove(cat)
+                    else:
+                        raise HTTPError(401)
+
+        if len(del_categories) > 0:
+            raise HTTPError(400, log_message = 'Cannot delete these'
+                            + ' categories.')
+
+#===============================================================================
+# Basic Security handlers
+#===============================================================================
+
+class LoginHandler(BaseHandler):
+    '''
+    Simple Handler for a login which sets a cookie for a session.
+    '''
+
+    # disabling 'Too many public methods' pylint check (tornado's fault)
+    # pylint: disable=R0904
+
+    def get(self):
+        parser = self.get_pyocci_parser('Accept')
+        heads, data = parser.login_information()
+        self._send_response(heads, data)
+
+    def post(self):
+        username = self.get_argument('name')
+        password = self.get_argument('pass')
+        if self.authenticate(username, password):
+            self.set_secure_cookie("pyocci_user", username)
+            self.redirect("/")
+        else:
+            raise HTTPError(401)
+
+    # disabling 'Unused argument' pylint check (method should be overwritten)
+    # disabling 'Method could be a function' pylint check (method should be 
+    #                                                      overwritten) 
+    # pylint: disable=R0201,W0613
+
+    def authenticate(self, username, password):
+        '''
+        Authenticates a user by username and password. Should be overwritten by
+        any real implementation. This one will return False as default.
+        
+        @param username: The name of the user.
+        @type username: str
+        @param password: The password.
+        @type password: str
+        '''
+        return False
+
+class LogoutHandler(BaseHandler):
+    '''
+    Simple handler which deletes a preivously set cookie.
+    '''
+
+    # disabling 'Too many public methods' pylint check (tornado's fault)
+    # pylint: disable=R0904
+
+    URL = r'/logout'
+
+    def get(self):
+        self.clear_cookie('pyocci_user')
+        self.redirect('/')
+
+#===============================================================================
+# Some Basic Backends
+#===============================================================================
 
 class MixinBackend(Backend):
     '''

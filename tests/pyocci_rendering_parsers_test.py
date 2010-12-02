@@ -15,15 +15,8 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 # 
-'''
-Created on Nov 17, 2010
-
-@author: tmetsch
-'''
-
-# pylint: disable-all
-
-from pyocci.core import Resource, Link, Mixin, Action
+from pyocci import registry, service
+from pyocci.core import Resource, Link, Mixin
 from pyocci.my_exceptions import ParsingException
 from pyocci.rendering_parsers import TextPlainRendering, Rendering, HTTPData, \
     TextHTMLRendering, TextHeaderRendering
@@ -31,7 +24,7 @@ from tests import http_body, http_body_add_info, http_body_faulty_scheme, \
     http_body_faulty_sep, http_body_faulty_term, http_body_just_crap, \
     http_body_mul_cats, http_body_mis_keyword, http_body_mis_scheme, \
     http_body_mis_term, http_body_non_existing_category, ComputeBackend, \
-    http_body_with_attr, http_body_only_attr, http_body_link, MixinBackend, \
+    http_body_with_attr, http_body_only_attr, http_body_link, MyMixinBackend, \
     http_head, http_head_with_attr, http_head_add_info, http_head_only_attr, \
     http_head_link, http_head_non_existing_category, NetworkLinkBackend, \
     http_body_loc, http_body_action, http_body_mixin, http_body_faulty_loc, \
@@ -44,6 +37,14 @@ from tests import http_body, http_body_add_info, http_body_faulty_scheme, \
     http_head_mis_scheme, http_head_mis_term, http_head_with_faulty_attr
 import unittest
 import urllib
+'''
+Created on Nov 17, 2010
+
+@author: tmetsch
+'''
+
+# pylint: disable-all
+
 
 class HTTPDataTest(unittest.TestCase):
 
@@ -59,6 +60,7 @@ class RenderingTest(unittest.TestCase):
         self.assertRaises(NotImplementedError, self.rendered.from_entities, [None])
         self.assertRaises(NotImplementedError, self.rendered.from_entity, None)
         self.assertRaises(NotImplementedError, self.rendered.get_entities, None, None)
+        self.assertRaises(NotImplementedError, self.rendered.login_information)
         self.assertRaises(NotImplementedError, self.rendered.to_action, None, None)
         self.assertRaises(NotImplementedError, self.rendered.to_categories, None, None)
         self.assertRaises(NotImplementedError, self.rendered.to_entity, None, None)
@@ -73,11 +75,18 @@ class TextPlainRenderingTest(unittest.TestCase):
         self.link.source = 'bar'
         self.link.target = 'foo'
         self.entity.kind = ComputeBackend.category
-        self.entity.mixins = [MixinBackend.category]
+        self.entity.mixins = [MyMixinBackend.category]
         self.entity.actions = [ComputeBackend.start_action]
         self.entity.links = [self.link]
         self.entity.attributes['foo'] = 'bar'
         self.entity.summary = 'foo'
+
+        registry.register_backend([ComputeBackend.start_category, ComputeBackend.category], ComputeBackend())
+        registry.register_backend([NetworkLinkBackend.category], NetworkLinkBackend())
+        registry.register_backend([MyMixinBackend.category], MyMixinBackend())
+
+    def tearDown(self):
+        registry.BACKENDS = {}
 
     #===========================================================================
     # Test for succes
@@ -96,6 +105,9 @@ class TextPlainRenderingTest(unittest.TestCase):
 
     def test_get_entities_for_succes(self):
         self.parser.get_entities(None, http_body_loc)
+
+    def test_login_information_for_succes(self):
+        self.parser.login_information()
 
     def test_to_action_for_succes(self):
         self.parser.to_action(None, http_body_action)
@@ -121,6 +133,8 @@ class TextPlainRenderingTest(unittest.TestCase):
         self.assertRaises(ParsingException, self.parser.get_entities, None, http_body_faulty_loc)
 
     def test_to_action_for_failure(self):
+        self.assertRaises(ParsingException, self.parser.to_action, None, '')
+        self.assertRaises(ParsingException, self.parser.to_action, None, http_body_mixin)
         self.assertRaises(ParsingException, self.parser.to_action, None, http_body_faulty_action)
         self.assertRaises(ParsingException, self.parser.to_action, None, http_body)
 
@@ -173,6 +187,10 @@ class TextPlainRenderingTest(unittest.TestCase):
         en_list = self.parser.get_entities(None, http_body_loc)
         self.assertTrue(len(en_list) == 1)
 
+    def test_login_information_for_sanity(self):
+        heads, data = self.parser.login_information()
+        self.assertEquals(heads['Content-Type'], 'text/plain')
+
     def test_to_action_for_sanity(self):
         action = self.parser.to_action(None, http_body_action)
         self.assertEqual(action.kind, ComputeBackend.start_category)
@@ -210,11 +228,18 @@ class TextHeaderRenderingTest(unittest.TestCase):
         self.link.source = 'bar'
         self.link.target = 'foo'
         self.entity.kind = ComputeBackend.category
-        self.entity.mixins = [MixinBackend.category]
+        self.entity.mixins = [MyMixinBackend.category]
         self.entity.actions = [ComputeBackend.start_action]
         self.entity.links = [self.link]
         self.entity.attributes['foo'] = 'bar'
         self.entity.summary = 'foo'
+
+        registry.register_backend([ComputeBackend.start_category, ComputeBackend.category], ComputeBackend())
+        registry.register_backend([NetworkLinkBackend.category], NetworkLinkBackend())
+        registry.register_backend([MyMixinBackend.category], MyMixinBackend())
+
+    def tearDown(self):
+        registry.BACKENDS = {}
 
     #===========================================================================
     # Test for succes
@@ -233,6 +258,9 @@ class TextHeaderRenderingTest(unittest.TestCase):
 
     def test_get_entities_for_succes(self):
         self.parser.get_entities(http_head_loc, None)
+
+    def test_login_information_for_succes(self):
+        self.parser.login_information()
 
     def test_to_action_for_succes(self):
         self.parser.to_action(http_head_action, None)
@@ -258,6 +286,8 @@ class TextHeaderRenderingTest(unittest.TestCase):
         self.assertRaises(ParsingException, self.parser.get_entities, http_head_faulty_loc, None)
 
     def test_to_action_for_failure(self):
+        self.assertRaises(ParsingException, self.parser.to_action, {}, None)
+        self.assertRaises(ParsingException, self.parser.to_action, http_head_mixin, None)
         self.assertRaises(ParsingException, self.parser.to_action, http_head_faulty_action, None)
         self.assertRaises(ParsingException, self.parser.to_action, http_head, None)
 
@@ -312,6 +342,10 @@ class TextHeaderRenderingTest(unittest.TestCase):
         en_list = self.parser.get_entities(http_head_loc, None)
         self.assertTrue(len(en_list) == 1)
 
+    def test_login_information_for_sanity(self):
+        heads, data = self.parser.login_information()
+        self.assertEquals(heads['Content-Type'], 'text/occi')
+
     def test_to_action_for_sanity(self):
         action = self.parser.to_action(http_head_action, None)
         self.assertEqual(action.kind, ComputeBackend.start_category)
@@ -344,11 +378,21 @@ class TextHTMLRenderingTest(unittest.TestCase):
         self.link.source = 'bar'
         self.link.target = 'foo'
         self.entity.kind = ComputeBackend.category
-        self.entity.mixins = [MixinBackend.category]
+        self.entity.mixins = [MyMixinBackend.category]
         self.entity.actions = [ComputeBackend.start_action]
         self.entity.links = [self.link]
         self.entity.attributes['foo'] = 'bar'
         self.entity.summary = 'foo'
+
+        service.AUTHENTICATION = True
+
+        registry.register_backend([ComputeBackend.start_category, ComputeBackend.category], ComputeBackend())
+        registry.register_backend([NetworkLinkBackend.category], NetworkLinkBackend())
+        registry.register_backend([MyMixinBackend.category], MyMixinBackend())
+
+    def tearDown(self):
+        registry.BACKENDS = {}
+        service.AUTHENTICATION = False
 
     #===========================================================================
     # Test for success
@@ -367,6 +411,9 @@ class TextHTMLRenderingTest(unittest.TestCase):
         self.parser.from_entity(self.entity)
         self.parser.from_entity(self.link)
 
+    def test_login_information_for_succes(self):
+        self.parser.login_information()
+
     def test_to_action_for_success(self):
         data = urllib.quote(html_action)
         self.parser.to_action(None, data)
@@ -381,6 +428,7 @@ class TextHTMLRenderingTest(unittest.TestCase):
     #===========================================================================
 
     def test_to_action_for_failure(self):
+        self.assertRaises(ParsingException, self.parser.to_action, None, 'Category=http://example.com/occi/mine#my_stuff')
         self.assertRaises(ParsingException, self.parser.to_action, None, http_body_just_crap)
         self.assertRaises(ParsingException, self.parser.to_action, None, None)
 

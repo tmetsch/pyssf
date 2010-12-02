@@ -23,37 +23,44 @@ Created on Nov 10, 2010
 
 # pylint: disable-all
 
-from pyocci import service
+from pyocci import service, registry
 from pyocci.core import Link, Resource
-from pyocci.service import ResourceHandler, BaseHandler, ListHandler, \
-    QueryHandler, LinkBackend, MixinBackend
+from pyocci.rendering_parsers import TextPlainRendering, TextHeaderRendering
+from pyocci.service import BaseHandler, LinkBackend, MixinBackend, LoginHandler
 from tests import http_body, http_body_action, http_body_mixin, \
-    NetworkLinkBackend
+    NetworkLinkBackend, ComputeBackend, MyMixinBackend, http_body_mixin2
+from tests.Wrappers import Wrapper, ListWrapper, QueryWrapper, Login, Logout, \
+    SecureWrapper, SecureQueryWrapper, SecureListWrapper
 from tornado.httpserver import HTTPRequest
 from tornado.web import Application, HTTPError
+import cgi
 import unittest
+
+class Request(HTTPRequest):
+
+    def write(self, data):
+        pass
+
+    def finish(self):
+        self.remote_ip = '127.0.0.1'
+        pass
 
 def create_request(verb, headers = None, body = None, uri = None):
     if headers is None:
         headers = {}
-    request = HTTPRequest(verb, '', headers = headers, body = body)
+    request = Request(verb, '', headers = headers, body = body)
     if uri is not None:
         request.uri = uri
     request.__delattr__('connection')
+
+    arguments = {}
+    if body:
+        arguments = cgi.parse_qs(body)
+        for name, values in arguments.iteritems():
+            values = [v for v in values if v]
+            if values: arguments[name] = values
+    request.arguments = arguments
     return request
-
-class Wrapper(ResourceHandler):
-
-    body = ''
-
-    def get_output(self):
-        heads, data = self._headers, self.body
-        self.body = ''
-        self._headers = {}
-        return heads, data
-
-    def write(self, chunk):
-        self.body = chunk
 
 class BaseHandlerTest(unittest.TestCase):
 
@@ -62,10 +69,11 @@ class BaseHandlerTest(unittest.TestCase):
 
     def setUp(self):
         self.application = Application([(r"(.*)", BaseHandler)])
-        self.headers['Content-Type'] = 'test/plain';
+        self.headers['Content-Type'] = 'text/plain';
         self.headers['Accept'] = '';
         self.headers['Category'] = '';
         self.headers['X-Occi-Attribute'] = '';
+        self.headers['X-Occi-Location'] = '';
 
     #===========================================================================
     # Test for success
@@ -85,14 +93,22 @@ class BaseHandlerTest(unittest.TestCase):
         handler.get_error_html(123)
         handler.get_error_html(404, exception = HTTPError(404))
 
-    # Leaving out all other test - those routines should throw anything!
+    # Leaving out all other test - those routines should not throw anything!
 
-class BasicOCCISpecificationTest(unittest.TestCase):
+class ResourceHandlerTest(unittest.TestCase):
 
     application = None
 
     def setUp(self):
         self.application = Application([(r"(.*)", Wrapper)])
+        registry.register_parser('text/plain', TextPlainRendering())
+        registry.register_parser('text/occi', TextHeaderRendering())
+        registry.register_backend([ComputeBackend.start_category, ComputeBackend.category], ComputeBackend())
+
+    def tearDown(self):
+        service.RESOURCES = {}
+        registry.RENDERINGS = {}
+        registry.BACKENDS = {}
 
     # All test done with default */* content-type
 
@@ -188,6 +204,10 @@ class BasicLinkTest(unittest.TestCase):
 
     def setUp(self):
         self.application = Application([(r"(.*)", Wrapper)])
+        registry.register_parser('text/plain', TextPlainRendering())
+        registry.register_parser('text/occi', TextHeaderRendering())
+        registry.register_backend([NetworkLinkBackend.category], NetworkLinkBackend())
+        registry.register_backend([ComputeBackend.category], ComputeBackend())
 
         try:
             request = create_request('PUT', body = http_body)
@@ -202,8 +222,13 @@ class BasicLinkTest(unittest.TestCase):
             handler = Wrapper(self.application, request)
             handler.put('/link_test/3')
         except:
-            pass
+            raise
             # All test done with default */* content-type
+
+    def tearDown(self):
+        service.RESOURCES = {}
+        registry.RENDERINGS = {}
+        registry.BACKENDS = {}
 
     #===========================================================================
     # Test creation of links
@@ -261,6 +286,14 @@ class ErrorResourceHandlerTest(unittest.TestCase):
 
     def setUp(self):
         self.application = Application([(r"(.*)", Wrapper)])
+
+        registry.register_parser('text/plain', TextPlainRendering())
+        registry.register_backend([ComputeBackend.category], ComputeBackend())
+
+    def tearDown(self):
+        service.RESOURCES = {}
+        registry.RENDERINGS = {}
+        registry.BACKENDS = {}
 
     #===========================================================================
     # POST
@@ -350,19 +383,6 @@ class ErrorResourceHandlerTest(unittest.TestCase):
         handler = Wrapper(self.application, request)
         self.assertRaises(HTTPError, handler.delete, '/foo/bar')
 
-class ListWrapper(ListHandler):
-
-    body = ''
-
-    def get_output(self):
-        heads, data = self._headers, self.body
-        self.body = ''
-        self._headers = {}
-        return heads, data
-
-    def write(self, chunk):
-        self.body = chunk
-
 class ListHandlerTest(unittest.TestCase):
 
     application = None
@@ -370,11 +390,18 @@ class ListHandlerTest(unittest.TestCase):
     def setUp(self):
         self.application = Application([(r"/-/", QueryWrapper), (r"/(.*)/", ListWrapper), (r"(.*)", Wrapper)])
 
+        registry.register_parser('text/plain', TextPlainRendering())
+        registry.register_parser('text/occi', TextHeaderRendering())
+        registry.register_backend([ComputeBackend.category], ComputeBackend())
+
         try:
             request = create_request('PUT', body = http_body_mixin)
             handler = QueryWrapper(self.application, request)
             handler.put()
+        except:
+            raise
 
+        try:
             request = create_request('PUT', body = http_body)
             handler = Wrapper(self.application, request)
             handler.put('/list_test/1')
@@ -387,7 +414,12 @@ class ListHandlerTest(unittest.TestCase):
             handler = Wrapper(self.application, request)
             handler.put('/list_test/foo/2')
         except:
-            pass
+            raise
+
+    def tearDown(self):
+        service.RESOURCES = {}
+        registry.RENDERINGS = {}
+        registry.BACKENDS = {}
 
     #===========================================================================
     # Test for success
@@ -446,7 +478,6 @@ class ListHandlerTest(unittest.TestCase):
         handler = ListWrapper(self.application, request)
         handler.get('compute')
         heads, data = handler.get_output()
-        self.assertTrue(data.find('/bar/123') > -1)
         self.assertTrue(data.find('/list_test/1') > -1)
         self.assertTrue(data.find('/list_test/foo/1') > -1)
         self.assertTrue(data.find('/list_test/foo/2') > -1)
@@ -527,19 +558,6 @@ class ListHandlerTest(unittest.TestCase):
         heads, data = handler.get_output()
         self.assertTrue(data.find('/list_test/foo/2') == -1)
 
-class QueryWrapper(QueryHandler):
-
-    body = ''
-
-    def get_output(self):
-        heads, data = self._headers, self.body
-        self.body = ''
-        self._headers = {}
-        return heads, data
-
-    def write(self, chunk):
-        self.body = chunk
-
 class QueryHandlerTest(unittest.TestCase):
 
     application = None
@@ -547,12 +565,12 @@ class QueryHandlerTest(unittest.TestCase):
     def setUp(self):
         self.application = Application([(r"/-/", QueryWrapper)])
 
-        try:
-            request = create_request('DELETE', body = http_body_mixin)
-            handler = QueryWrapper(self.application, request)
-            handler.delete()
-        except:
-            pass
+        registry.register_parser('text/plain', TextPlainRendering())
+
+    def tearDown(self):
+        service.RESOURCES = {}
+        registry.RENDERINGS = {}
+        registry.BACKENDS = {}
 
     #===========================================================================
     # Test for success
@@ -570,6 +588,7 @@ class QueryHandlerTest(unittest.TestCase):
         handler.put()
 
     def test_delete_for_success(self):
+        from pyocci import registry
         request = create_request('PUT', body = http_body_mixin)
         handler = QueryWrapper(self.application, request)
         handler.put()
@@ -600,6 +619,15 @@ class QueryHandlerTest(unittest.TestCase):
         request = create_request('DELETE', body = http_body)
         handler = QueryWrapper(self.application, request)
         self.assertRaises(HTTPError, handler.delete)
+
+        request = create_request('DELETE', body = http_body_mixin2)
+        handler = QueryWrapper(self.application, request)
+        self.assertRaises(HTTPError, handler.delete)
+
+        request = create_request('DELETE', body = 'carappasdf')
+        handler = QueryWrapper(self.application, request)
+        self.assertRaises(HTTPError, handler.delete)
+
 
     #===========================================================================
     # Test for sanity
@@ -637,6 +665,354 @@ class QueryHandlerTest(unittest.TestCase):
         heads, data = handler.get_output()
         self.assertTrue(data.find('mine;scheme=http://mystuff.com/occi;location=/foo/bar/') == -1)
 
+#===============================================================================
+# Security tests
+#===============================================================================
+
+class SecureResourceHandlerTest(unittest.TestCase):
+
+    application = None
+
+    def setUp(self):
+        service.RESOURCES = {}
+        service.AUTHENTICATION = True
+        settings = {
+                    "cookie_secret": "61oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
+                    "login_url": "/login",
+        }
+        self.application = Application([
+                                        (r"/login", Login),
+                                        (r"/logout", Logout),
+                                        (r"(.*)", SecureWrapper)
+                                        ], **settings)
+        registry.register_parser('text/plain', TextPlainRendering())
+        registry.register_backend([ComputeBackend.start_category, ComputeBackend.category], ComputeBackend())
+
+    def tearDown(self):
+        SecureWrapper.current_user = ''
+        SecureQueryWrapper.current_user = ''
+        service.AUTHENTICATION = False
+        service.RESOURCES = {}
+        registry.RENDERINGS = {}
+        registry.BACKENDS = {}
+
+    #===========================================================================
+    # Test for success
+    #===========================================================================
+
+    def test_login_handler(self):
+        # test if information on howto login can be retrieved
+        request = create_request('GET')
+        handler = Login(self.application, request)
+        handler.get()
+        heads, data = handler.get_output()
+        self.assertEquals(data, 'Please do a POST operation with a name and pass attribute.')
+
+        # invalid login
+        request = create_request('POST', body = 'name=asd&pass=asd')
+        handler = Login(self.application, request)
+        self.assertRaises(HTTPError, handler.post)
+
+        # if authenticate is not overwritten it should return false!
+        request = create_request('GET')
+        handler = LoginHandler(self.application, request)
+        self.assertEquals(False, handler.authenticate(None, None))
+
+    def test_login(self):
+        # login
+        request = create_request('POST', body = 'name=foo&pass=bar')
+        handler = Login(self.application, request)
+        handler.post()
+        heads, data = handler.get_output()
+
+        # should be okay
+        request = create_request('GET')
+        handler = SecureWrapper(self.application, request)
+        handler.get('/')
+        heads, data = handler.get_output()
+
+        # logout
+        request = create_request('GET')
+        handler = Logout(self.application, request)
+        handler.get()
+        heads, data = handler.get_output()
+
+        # should redirect
+        request = create_request('GET')
+        handler = SecureWrapper(self.application, request)
+        handler.get('/')
+        heads, data = handler.get_output()
+        self.assertTrue(heads['Location'].find('/login') != -1)
+
+    def test_resource_access(self):
+        # login
+        request = create_request('POST', body = 'name=foo&pass=bar')
+        handler = Login(self.application, request)
+        handler.post()
+        heads, data = handler.get_output()
+
+        # should be okay
+        request = create_request('POST', body = http_body)
+        handler = SecureWrapper(self.application, request)
+        handler.post('/')
+        heads, data = handler.get_output()
+        url = heads['Location']
+
+        # logout
+        request = create_request('GET')
+        handler = Logout(self.application, request)
+        handler.get()
+        heads, data = handler.get_output()
+
+        # login
+        request = create_request('POST', body = 'name=foo2&pass=bar')
+        handler = Login(self.application, request)
+        handler.post()
+        heads, data = handler.get_output()
+
+        # get
+        request = create_request('GET')
+        handler = SecureWrapper(self.application, request)
+        self.assertRaises(HTTPError, handler.get, url)
+
+        # delete
+        request = create_request('DELETE')
+        handler = SecureWrapper(self.application, request)
+        self.assertRaises(HTTPError, handler.delete, url)
+
+        # update
+        request = create_request('PUT', body = 'X-OCCI-Attribute: occi.compute.cores=3\nX-OCCI-Attribute:occi.compute.architecture=x86')
+        handler = SecureWrapper(self.application, request)
+        self.assertRaises(HTTPError, handler.put, url)
+
+        # create an own...
+        request = create_request('POST', body = http_body)
+        handler = SecureWrapper(self.application, request)
+        handler.post('/')
+
+        # Get should not show foo's resources
+        request = create_request('GET')
+        handler = SecureWrapper(self.application, request)
+        handler.get('/')
+        self.assertTrue(data.find(url) == -1)
+
+class SecureQueryHandlerTest(unittest.TestCase):
+
+    application = None
+
+    def setUp(self):
+        service.RESOURCES = {}
+        service.AUTHENTICATION = True
+        settings = {
+                    "cookie_secret": "61oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
+                    "login_url": "/login",
+        }
+        self.application = Application([
+                                        (r"/login", Login),
+                                        (r"/logout", Logout),
+                                        (r"/-/", SecureQueryWrapper)
+                                        ], **settings)
+
+        registry.register_parser('text/plain', TextPlainRendering())
+        registry.register_backend([ComputeBackend.start_category, ComputeBackend.category], ComputeBackend())
+
+    def tearDown(self):
+        SecureWrapper.current_user = ''
+        SecureQueryWrapper.current_user = ''
+        SecureListWrapper.current_user = ''
+        service.AUTHENTICATION = False
+        service.RESOURCES = {}
+        registry.RENDERINGS = {}
+        registry.BACKENDS = {}
+
+    #===========================================================================
+    # Test for success
+    #===========================================================================
+
+    def test_login(self):
+        # should not be okay
+        request = create_request('GET')
+        handler = SecureQueryWrapper(self.application, request)
+        handler.get()
+        heads, data = handler.get_output()
+        self.assertTrue(heads['Location'].find('/login') != -1)
+
+        # login
+        request = create_request('POST', body = 'name=foo&pass=bar')
+        handler = Login(self.application, request)
+        handler.post()
+
+        # should be okay
+        request = create_request('GET')
+        handler = SecureQueryWrapper(self.application, request)
+        handler.get()
+        heads, data = handler.get_output()
+        self.assertTrue(data.find('Category') != -1)
+
+    def test_mixin_access(self):
+        # login
+        request = create_request('POST', body = 'name=foo&pass=bar')
+        handler = Login(self.application, request)
+        handler.post()
+
+        request = create_request('PUT', body = http_body_mixin)
+        handler = SecureQueryWrapper(self.application, request)
+        handler.put()
+        heads, data = handler.get_output()
+
+        request = create_request('GET')
+        handler = SecureQueryWrapper(self.application, request)
+        handler.get()
+        heads, data = handler.get_output()
+        self.assertTrue(data.find('mine;scheme=http://mystuff.com/occi;location=/foo/bar/') > -1)
+
+        # logout
+        request = create_request('GET')
+        handler = Logout(self.application, request)
+        handler.get()
+
+        # login
+        request = create_request('POST', body = 'name=foo2&pass=bar')
+        handler = Login(self.application, request)
+        handler.post()
+
+        request = create_request('PUT', body = http_body_mixin2)
+        handler = SecureQueryWrapper(self.application, request)
+        handler.put()
+
+        request = create_request('GET')
+        handler = SecureQueryWrapper(self.application, request)
+        handler.get()
+        heads, data = handler.get_output()
+        self.assertFalse(data.find('mine;scheme=http://mystuff.com/occi;location=/foo/bar/') > -1)
+        self.assertTrue(data.find('mine2;scheme=http://mystuff.com/occi;location=/foo/bar/') > -1)
+
+    def test_delete_for_success(self):
+        # login
+        request = create_request('POST', body = 'name=foo&pass=bar')
+        handler = Login(self.application, request)
+        handler.post()
+
+        request = create_request('PUT', body = http_body_mixin)
+        handler = SecureQueryWrapper(self.application, request)
+        handler.put()
+        heads, data = handler.get_output()
+
+        # logout
+        request = create_request('GET')
+        handler = Logout(self.application, request)
+        handler.get()
+
+        # login
+        request = create_request('POST', body = 'name=foo2&pass=bar')
+        handler = Login(self.application, request)
+        handler.post()
+
+        request = create_request('PUT', body = http_body_mixin2)
+        handler = SecureQueryWrapper(self.application, request)
+        handler.put()
+
+        request = create_request('DELETE', body = http_body_mixin)
+        handler = SecureQueryWrapper(self.application, request)
+        self.assertRaises(HTTPError, handler.delete)
+
+        request = create_request('DELETE', body = http_body_mixin2)
+        handler = SecureQueryWrapper(self.application, request)
+        handler.delete()
+
+        request = create_request('GET')
+        handler = SecureQueryWrapper(self.application, request)
+        handler.get()
+        heads, data = handler.get_output()
+        self.assertFalse(data.find('mine;scheme=http://mystuff.com/occi;location=/foo/bar/') > -1)
+        self.assertFalse(data.find('mine2;scheme=http://mystuff.com/occi;location=/foo/bar/') > -1)
+
+class SecureListHandlerTest(unittest.TestCase):
+
+    application = None
+
+    def setUp(self):
+        service.RESOURCES = {}
+        service.AUTHENTICATION = True
+        settings = {
+                    "cookie_secret": "61oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
+                    "login_url": "/login",
+        }
+        self.application = Application([
+                                        (r"/login", Login),
+                                        (r"/logout", Logout),
+                                        (r"/-/", SecureQueryWrapper),
+                                        (r"/.*/", SecureListWrapper),
+                                        ], **settings)
+
+        registry.register_parser('text/plain', TextPlainRendering())
+        registry.register_backend([ComputeBackend.start_category, ComputeBackend.category], ComputeBackend())
+
+        try:
+            request = create_request('PUT', body = http_body)
+            handler = Wrapper(self.application, request)
+            handler.put('/list_test/1')
+
+            request = create_request('PUT', body = http_body)
+            handler = Wrapper(self.application, request)
+            handler.put('/list_test/foo/1')
+
+            request = create_request('PUT', body = http_body)
+            handler = Wrapper(self.application, request)
+            handler.put('/list_test/foo/2')
+        except:
+            raise
+
+    def tearDown(self):
+        SecureWrapper.current_user = ''
+        SecureQueryWrapper.current_user = ''
+        SecureListWrapper.current_user = ''
+        service.AUTHENTICATION = False
+        service.RESOURCES = {}
+        registry.RENDERINGS = {}
+        registry.BACKENDS = {}
+
+    #===========================================================================
+    # Test for success
+    #===========================================================================
+
+    def test_login(self):
+        # should not be okay
+        request = create_request('GET')
+        handler = SecureListWrapper(self.application, request)
+        handler.get('/compute/')
+        heads, data = handler.get_output()
+        self.assertTrue(heads['Location'].find('/login') != -1)
+
+    def test_get_location_for_success(self):
+        # login
+        request = create_request('POST', body = 'name=foo&pass=bar')
+        handler = Login(self.application, request)
+        handler.post()
+
+        request = create_request('PUT', body = http_body_mixin)
+        handler = SecureQueryWrapper(self.application, request)
+        handler.put()
+        heads, data = handler.get_output()
+
+        # logout
+        request = create_request('GET')
+        handler = Logout(self.application, request)
+        handler.get()
+
+        # login
+        request = create_request('POST', body = 'name=foo2&pass=bar')
+        handler = Login(self.application, request)
+        handler.post()
+
+        request = create_request('GET')
+        handler = SecureListWrapper(self.application, request)
+        self.assertRaises(HTTPError, handler.get, 'foo/bar')
+
+#===============================================================================
+# Basic Backend Tests
+#===============================================================================
+
 class LinkBackendTest(unittest.TestCase):
 
     backend = LinkBackend()
@@ -659,8 +1035,7 @@ class LinkBackendTest(unittest.TestCase):
         service.RESOURCES['2'] = self.entityTwo
 
     def tearDown(self):
-        service.RESOURCES.pop('1')
-        service.RESOURCES.pop('2')
+        service.RESOURCES = {}
 
     #===========================================================================
     # Test for success

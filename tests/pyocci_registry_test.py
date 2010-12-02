@@ -27,30 +27,13 @@ from pyocci import registry
 from pyocci.examples.keyvalue import KeyValueBackend, Backend
 from pyocci.my_exceptions import AlreadyRegisteredException, \
     NoEntryFoundException
-from pyocci.rendering_parsers import TextHTMLRendering, TextPlainRendering, \
-    TextHeaderRendering
-from tests import ComputeBackend, MixinBackend, DefunctBackend, \
-    NetworkLinkBackend
+from pyocci.rendering_parsers import TextHTMLRendering, TextPlainRendering
 import unittest
 
 class BackendTest(unittest.TestCase):
 
-    def setUp(self):
-        registry.BACKENDS = {}
-
     def tearDown(self):
         registry.BACKENDS = {}
-        try:
-            compute_backend = ComputeBackend()
-            registry.register_backend([ComputeBackend.start_category], compute_backend)
-            registry.register_backend([ComputeBackend.category], compute_backend)
-            registry.register_backend([MixinBackend.category], MixinBackend())
-            defunct = DefunctBackend()
-            registry.register_backend([DefunctBackend.a_category], defunct)
-            registry.register_backend([DefunctBackend.category], defunct)
-            registry.register_backend([NetworkLinkBackend.category], NetworkLinkBackend())
-        except:
-            pass
 
     #===========================================================================
     # Test for success
@@ -102,14 +85,8 @@ class BackendTest(unittest.TestCase):
 
 class RenderingTest(unittest.TestCase):
 
-    def setUp(self):
-        registry.RENDERINGS = {}
-
     def tearDown(self):
         registry.RENDERINGS = {}
-        registry.register_parser(TextPlainRendering.content_type, TextPlainRendering())
-        registry.register_parser(TextHeaderRendering.content_type, TextHeaderRendering())
-        registry.register_parser(TextHTMLRendering.content_type, TextHTMLRendering())
 
     #===========================================================================
     # Test for success
