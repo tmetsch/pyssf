@@ -98,7 +98,8 @@ case "$1" in
     ;;
 
   pypi)
-    python setup.py clean sdist register upload
+    hg tag `cat setup.py | grep 'version =' | awk -F'version =' '{print $2}' | sed 's/,//'`
+	python setup.py clean sdist register upload
     ;;
 
   *)
