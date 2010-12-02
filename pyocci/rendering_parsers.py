@@ -744,6 +744,7 @@ class TextHTMLRendering(Rendering):
 
         html += '<h1>Resource</h1>'
         html += '<p><strong>Id: </strong>' + entity.identifier + '</p>'
+        html += '<p><strong>Owner: </strong>' + repr(entity.owner) + '</p>'
         html += '<p><strong>Kind: </strong>' + repr(entity.kind) + '</p>'
 
         for item in entity.mixins:

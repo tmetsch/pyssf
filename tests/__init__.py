@@ -76,7 +76,7 @@ class NetworkLinkBackend(LinkBackend):
     category.term = 'networklink'
     category.scheme = 'http://schemas.ogf.org/occi/infrastructure'
     category.related = [Link.category]
-    category.location = '/ip_addr/'
+    #category.location = '/ip_addr/'
     category.attributes = []
 
 class MyMixinBackend(Backend):

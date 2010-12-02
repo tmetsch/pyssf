@@ -241,11 +241,15 @@ class BasicLinkTest(unittest.TestCase):
         handler = Wrapper(self.application, request)
         handler.put('/my_links/12')
 
+        request = create_request('POST', body = link_1_2)
+        handler = Wrapper(self.application, request)
+        handler.post('/sdf')
+
         request = create_request('GET', headers = {'Accept':'text/occi'})
         handler = Wrapper(self.application, request)
         handler.get('/link_test/1')
         header, data = handler.get_output()
-        self.assertEqual(header['Link'], '</link_test/2>;self=/my_links/12;')
+        self.assertTrue(header['Link'].find('</link_test/2>;self=/my_links/12;') > -1)
 
         link_2_3 = 'Category:' + NetworkLinkBackend.category.term + ';scheme=' + NetworkLinkBackend.category.scheme + '\nX-OCCI-Attribute:source=/link_test/2,target=/link_test/3'
 

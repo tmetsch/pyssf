@@ -51,7 +51,7 @@ class MyService():
 
     application = None
 
-    service.AUTHENTICATION = False
+    service.AUTHENTICATION = True
 
     def __init__(self):
         settings = {

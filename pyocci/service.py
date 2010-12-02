@@ -146,8 +146,8 @@ class ResourceHandler(BaseHandler):
             except (ParsingException, AttributeError) as pse:
                 raise HTTPError(400, str(pse))
 
-            key = self._create_key(entity)
             entity.owner = self.get_current_user()
+            key = self._create_key(entity)
             RESOURCES[key] = entity
             self._headers['Location'] = key
         self.write('OK')
@@ -240,9 +240,11 @@ class ResourceHandler(BaseHandler):
         @param entity: The entity to create the key for.
         @type entity: Entity
         '''
-        # FIXME: handle name-spaces here...
-        # pylint: disable=R0201
-        key = entity.kind.location + str(uuid.uuid4())
+        if entity.kind.location is not '':
+            key = '/users/' + self.get_current_user() + entity.kind.location
+            key += str(uuid.uuid4())
+        else:
+            key = '/users/' + self.get_current_user() + '/' + str(uuid.uuid4())
         entity.identifier = key
         return key
 
@@ -262,12 +264,12 @@ class ListHandler(BaseHandler):
         '''
         Returns a dict with all categories which have locations.
         '''
-        # FIXME: move this up to self.locations...
         locations = {}
         for cat in registry.BACKENDS.keys():
             if hasattr(cat, 'location') and cat.location is not '':
                 if hasattr(cat, 'owner') and cat.owner is not '':
-                    if cat.owner is not self.get_current_user():
+                    if cat.owner is self.get_current_user():
+                        locations[cat.location] = cat
                         break
                 locations[cat.location] = cat
         return locations
@@ -366,6 +368,7 @@ class ListHandler(BaseHandler):
         parser = self.get_pyocci_parser('Content-Type')
 
         locations = self.get_locations()
+        print locations
 
         if key in locations:
             try:
