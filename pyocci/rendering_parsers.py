@@ -795,6 +795,7 @@ class TextHTMLRendering(Rendering):
                 html += entity.attributes[item] + '</td></tr>'
             html += '</table>'
 
+        html += '<h2>&nbsp;</h2>'
         html += '<input type="button" value="Back" onclick="goBack()" />'
 
         html += self._create_html_footer()

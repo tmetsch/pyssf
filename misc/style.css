@@ -56,6 +56,7 @@ h1 {
     width: 20em;
 }
 h2 {
+    clear: all;
     font-size: 1.0em;    
     border-bottom: 1px solid #73c167;
     width: 20em;
@@ -68,6 +69,7 @@ strong {
     font-style: bold;
 }
 table {
+    float: left;
     margin: 1em;
     border: 0px;
     min-width: 30em;
