@@ -272,6 +272,60 @@ class ListHandler(BaseHandler):
                 locations[cat.location] = cat
         return locations
 
+    def get_my_resources(self):
+        '''
+        Returns a list of all resources belonging to the current user.
+        '''
+        my_resources = []
+        for tmp in RESOURCES.keys():
+            item = RESOURCES[tmp]
+            if item.owner == self.get_current_user():
+                my_resources.append(item)
+        return my_resources
+
+    def get_all_resources_of_category(self, category, resources):
+        '''
+        Return all resources belonging to one category.
+        
+        @param category: A category
+        @type category: Category
+        @param resources: List of resources
+        @type resources: list
+        '''
+        tmp = []
+        for res in resources:
+            if res.kind == category:
+                tmp.append(res)
+            elif category in res.mixins:
+                tmp.append(res)
+        return tmp
+
+    def filter_childs(self, key, resources, categories):
+        '''
+        Retrieve childs in a hierachy and use categories to filter the result.
+        
+        @param key: A key.
+        @type key: str
+        @param resources: A list of resources.
+        @type resources: list
+        @param categories: A list of categories which is used to filter.
+        @type categories: list
+        '''
+        tmp = []
+        for name in resources:
+            if name.identifier.find(key) > -1 and key.endswith('/'):
+                if categories is None:
+                    tmp.append(name)
+                elif len(categories) > 0:
+                    for category in categories:
+                        if category == name.kind:
+                            tmp.append(name)
+                        elif category in name.kind.related:
+                            tmp.append(name)
+                        elif category in name.mixins:
+                            tmp.append(name)
+        return tmp
+
     @tornado.web.authenticated
     def get(self, key):
         key = '/' + key + '/'
@@ -282,36 +336,22 @@ class ListHandler(BaseHandler):
         try:
             data_parser = self.get_pyocci_parser('Content-Type')
             categories = data_parser.to_categories(headers, body)
+            print categories
         except (KeyError, ParsingException):
             pass
 
         locations = self.get_locations()
         resources = []
 
-        my_resources = {}
-        for tmp in RESOURCES.keys():
-            item = RESOURCES[tmp]
-            if item.owner == self.get_current_user():
-                my_resources[tmp] = item
+        my_resources = self.get_my_resources()
 
-        for name in my_resources.keys():
-            res = my_resources[name]
-            if key in locations:
-                if res.kind == locations[key]:
-                    resources.append(res)
-                elif locations[key] in res.mixins:
-                    resources.append(res)
-            elif name.find(key) > -1 and key.endswith('/'):
-                if categories is None:
-                    resources.append(res)
-                elif len(categories) > 0:
-                    for category in categories:
-                        if category == res.kind:
-                            resources.append(res)
-                        elif category in res.kind.related:
-                            resources.append(res)
-                        elif category in res.mixins:
-                            resources.append(res)
+        if key in locations:
+            tmp = self.get_all_resources_of_category(locations[key],
+                                                     my_resources)
+            resources = self.filter_childs('/', tmp, categories)
+        elif key.endswith('/'):
+            resources = self.filter_childs(key, my_resources, categories)
+
         if len(resources) > 0:
             heads, data = return_parser.from_entities(resources)
             return self._send_response(heads, data)
@@ -368,6 +408,7 @@ class QueryHandler(BaseHandler):
     '''
 
     # TODO: check for adding one location twice...
+    # TODO: filter categories...
 
     # disabling 'Too many public methods' pylint check (tornado's fault)
     # pylint: disable=R0904
