@@ -288,11 +288,15 @@ class ListHandler(BaseHandler):
         locations = self.get_locations()
         resources = []
 
-        for name in RESOURCES.keys():
-            res = RESOURCES[name]
-            if res.owner != self.get_current_user():
-                break
-            elif key in locations:
+        my_resources = {}
+        for tmp in RESOURCES.keys():
+            item = RESOURCES[tmp]
+            if item.owner == self.get_current_user():
+                my_resources[tmp] = item
+
+        for name in my_resources.keys():
+            res = my_resources[name]
+            if key in locations:
                 if res.kind == locations[key]:
                     resources.append(res)
                 elif locations[key] in res.mixins:
