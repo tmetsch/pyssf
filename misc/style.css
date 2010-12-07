@@ -71,11 +71,17 @@ strong {
     color:#444;
     font-style: bold;
 }
+ul {
+    margin: 0.2em;
+}
+li {
+    margin: 0.2em;
+}
 table {
     float: left;
     margin: 1em;
     border: 0px;
-    min-width: 30em;
+    min-width: 40%;
 }
 th {
     padding: 0.4em;

@@ -25,7 +25,7 @@ Created on Nov 10, 2010
 
 # pylint: disable-all
 
-from pyocci import registry
+from pyocci import registry, service
 from pyocci.examples.vm_skeleton import Compute, Network, IPNetworking, Storage, \
     NetworkInterface, StorageLink
 from pyocci.rendering_parsers import TextPlainRendering, TextHeaderRendering, \
@@ -51,6 +51,8 @@ class MyService():
     '''
 
     application = None
+
+    service.AUTHENTICATION = True
 
     def __init__(self):
         settings = {

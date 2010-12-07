@@ -681,12 +681,16 @@ class TextHTMLRendering(Rendering):
                     tmp += cat.title + '</td></tr>'
                 if hasattr(cat, 'actions') and len(cat.actions) > 0:
                     tmp += '<tr><th>Actions'
-                    tmp += '</th><td>'
-                    tmp += repr(cat.actions) + '</td></tr>'
+                    tmp += '</th><td><ul>'
+                    for item in cat.actions:
+                        tmp += '<li>' + item.kind.term + '</li>'
+                    tmp += '</ul></td></tr>'
                 if hasattr(cat, 'attributes')and len(cat.attributes) > 0:
                     tmp += '<tr><th>Attributes'
-                    tmp += '</th><td>'
-                    tmp += ','.join(cat.attributes) + '</td></tr>'
+                    tmp += '</th><td><ul>'
+                    for item in cat.attributes:
+                        tmp += '<li>' + item + '</li>'
+                    tmp += '</ul></td></tr>'
                 if hasattr(cat, 'location') and cat.location is not '':
                     tmp += '<tr><th>Location'
                     tmp += '</th><td><a href="'
@@ -694,8 +698,10 @@ class TextHTMLRendering(Rendering):
                     tmp += cat.location + '</a></td></tr>'
                 if hasattr(cat, 'related')and len(cat.related) > 0:
                     tmp += '<tr><th>related'
-                    tmp += '</th><td>'
-                    tmp += repr(cat.related) + '</td></tr>'
+                    tmp += '</th><td><ul>'
+                    for item in cat.related:
+                        tmp += '<li>' + repr(item) + '</li>'
+                    tmp += '</ul></td></tr>'
 
                 tmp += '</table>'
                 if sorted_cats.has_key(cat.scheme):

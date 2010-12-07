@@ -25,7 +25,7 @@ Created on Nov 10, 2010
 
 # pylint: disable-all
 
-from pyocci import registry
+from pyocci import registry, service
 from pyocci.examples.occi_drmaa import DRMAABackend
 from pyocci.rendering_parsers import TextPlainRendering, TextHeaderRendering, \
     TextHTMLRendering
@@ -50,6 +50,8 @@ class MyService():
     '''
 
     application = None
+
+    service.AUTHENTICATION = True
 
     def __init__(self):
         settings = {
