@@ -26,12 +26,24 @@ Created on Nov 10, 2010
 # pylint: disable-all
 
 from pyocci import registry
+from pyocci.examples.vm_skeleton import Compute, Network, IPNetworking, Storage, \
+    NetworkInterface, StorageLink
 from pyocci.rendering_parsers import TextPlainRendering, TextHeaderRendering, \
     TextHTMLRendering
-from pyocci.service import ResourceHandler, ListHandler, QueryHandler
-from tests import ComputeBackend, MixinBackend, NetworkLinkBackend
+from pyocci.service import ResourceHandler, ListHandler, QueryHandler, \
+    LogoutHandler, LoginHandler
 import tornado.httpserver
 import tornado.web
+
+class Login(LoginHandler):
+
+    def authenticate(self, user, password):
+        if user == 'foo' and password == 'bar':
+            return True
+        elif user == 'foo2' and password == 'bar':
+            return True
+        else:
+            return False
 
 class MyService():
     '''
@@ -41,18 +53,17 @@ class MyService():
     application = None
 
     def __init__(self):
-#        settings = {
-#            "static_path": os.path.join(os.path.dirname(__file__), "static"),
-#            "cookie_secret": "61oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
-#            "login_url": "/login",
-#            "xsrf_cookies": True,
-#        }
+        settings = {
+                    "cookie_secret": "61oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
+                    "login_url": "/login",
+        }
         self.application = tornado.web.Application([
             (r"/-/", QueryHandler),
+            (r"/login", Login),
+            (r"/logout", LogoutHandler),
             (r"/(.*)/", ListHandler),
             (r"(.*)", ResourceHandler),
-        ])
-        #, **settings
+        ], **settings)
 
     def start(self):
         '''
@@ -78,22 +89,26 @@ if __name__ == '__main__':
         registry.register_parser('application/x-www-form-urlencoded', HTML_RENDERER)
 
         # register a simple key value backend
-        registry.register_backend([ComputeBackend.category,
-                                   ComputeBackend.start_category],
-                                  ComputeBackend())
-        registry.register_backend([NetworkLinkBackend.category],
-                                  NetworkLinkBackend())
+        registry.register_backend([Compute.kind, Compute.start_action_cat,
+                                   Compute.stop_action_cat,
+                                   Compute.suspend_action_cat,
+                                   Compute.restart_action_cat],
+                                  Compute())
+        registry.register_backend([Network.kind, Network.up_action_cat,
+                                   Network.down_action_cat],
+                                  Network())
+        registry.register_backend([IPNetworking.mixin],
+                                  IPNetworking())
+        registry.register_backend([Storage.kind, Storage.online_action_cat,
+                                   Storage.offline_action_cat,
+                                   Storage.backup_action_cat,
+                                   Storage.snapshot_action_cat,
+                                   Storage.resize_action_cat],
+                                  Storage())
+        registry.register_backend([NetworkInterface.kind], NetworkInterface())
+        registry.register_backend([StorageLink.kind], StorageLink())
+
     except:
         pass
     SERVICE = MyService()
     SERVICE.start()
-
-#try:
-#    registry.register_backend([KeyValueBackend.kind], KeyValueBackend())
-#    registry.register_backend([ComputeBackend.category], ComputeBackend())
-#    registry.register_backend([MixinBackend.category], MixinBackend())
-#    registry.register_backend([DefunctBackend.category], DefunctBackend())
-#    registry.register_backend([NetworkLinkBackend.category], 
-#                               NetworkLinkBackend())
-#except:
-#    pass

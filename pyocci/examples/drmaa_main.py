@@ -26,12 +26,23 @@ Created on Nov 10, 2010
 # pylint: disable-all
 
 from pyocci import registry
+from pyocci.examples.occi_drmaa import DRMAABackend
 from pyocci.rendering_parsers import TextPlainRendering, TextHeaderRendering, \
     TextHTMLRendering
-from pyocci.service import ResourceHandler, ListHandler, QueryHandler
-from pyocci.examples.occi_drmaa import DRMAABackend
+from pyocci.service import ResourceHandler, ListHandler, QueryHandler, \
+    LoginHandler, LogoutHandler
 import tornado.httpserver
 import tornado.web
+
+class Login(LoginHandler):
+
+    def authenticate(self, user, password):
+        if user == 'foo' and password == 'bar':
+            return True
+        elif user == 'foo2' and password == 'bar':
+            return True
+        else:
+            return False
 
 class MyService():
     '''
@@ -41,12 +52,17 @@ class MyService():
     application = None
 
     def __init__(self):
+        settings = {
+                    "cookie_secret": "61oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
+                    "login_url": "/login",
+        }
         self.application = tornado.web.Application([
             (r"/-/", QueryHandler),
+            (r"/login", Login),
+            (r"/logout", LogoutHandler),
             (r"/(.*)/", ListHandler),
             (r"(.*)", ResourceHandler),
-        ])
-        #, **settings
+        ], **settings)
 
     def start(self):
         '''

@@ -26,7 +26,7 @@ Created on Nov 25, 2010
 # pylint: disable-all
 
 from pyocci.backends import Backend
-from pyocci.core import Action, Kind, Resource, Link
+from pyocci.core import Action, Kind, Resource, Link, Category
 from pyocci.service import LinkBackend
 
 class KeyValueBackend(Backend):
@@ -36,12 +36,11 @@ class KeyValueBackend(Backend):
     '''
 
     terminate_action = Action()
-    terminate_category = Kind()
+    terminate_category = Category()
     terminate_category.term = 'flip'
     terminate_category.scheme = 'http://example.com/occi/keyvalue'
     terminate_category.attributes = ['foo', 'bar']
     terminate_category.title = 'Flips the key and the value'
-    terminate_category.related = [Action.category]
     terminate_action.kind = terminate_category
 
     kind = Kind()

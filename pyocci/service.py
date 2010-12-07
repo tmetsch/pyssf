@@ -15,7 +15,6 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 # 
-
 '''
 Implementation for an OCCI compliant service.
 
@@ -127,6 +126,7 @@ class ResourceHandler(BaseHandler):
         headers, body = self.extract_http_data()
         parser = self.get_pyocci_parser('Content-Type')
 
+
         if self.request.uri.find('?action=') > -1:
             key = self.request.uri.split('?')[0]
             try:
@@ -149,8 +149,7 @@ class ResourceHandler(BaseHandler):
             entity.owner = self.get_current_user()
             key = self._create_key(entity)
             RESOURCES[key] = entity
-            self._headers['Location'] = key
-        self.write('OK')
+        self._send_response({'Location': key}, 'OK')
 
     @tornado.web.authenticated
     def put(self, key):
@@ -184,7 +183,7 @@ class ResourceHandler(BaseHandler):
             RESOURCES[key] = new_entity
             new_entity.identifier = key
             new_entity.owner = self.get_current_user()
-        self.write('OK')
+        self._send_response(None, 'OK')
 
     @tornado.web.authenticated
     def get(self, key):
@@ -229,7 +228,7 @@ class ResourceHandler(BaseHandler):
             backend.delete(entity)
 
             RESOURCES.pop(key)
-            self.write('OK')
+            self._send_response(None, 'OK')
         else:
             raise HTTPError(404)
 
@@ -338,7 +337,6 @@ class ListHandler(BaseHandler):
         try:
             data_parser = self.get_pyocci_parser('Content-Type')
             categories = data_parser.to_categories(headers, body)
-            print categories
         except (KeyError, ParsingException):
             pass
 
@@ -368,8 +366,6 @@ class ListHandler(BaseHandler):
         parser = self.get_pyocci_parser('Content-Type')
 
         locations = self.get_locations()
-        print locations
-
         if key in locations:
             try:
                 category = locations[key]

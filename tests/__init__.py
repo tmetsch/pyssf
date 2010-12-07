@@ -34,10 +34,9 @@ from pyocci.rendering_parsers import TextPlainRendering, TextHeaderRendering, \
 class ComputeBackend(Backend):
 
     start_action = Action()
-    start_category = Kind()
+    start_category = Category()
     start_category.term = 'start'
     start_category.scheme = 'http://schemas.ogf.org/occi/infrastructure'
-    start_category.related = [Action.category]
     start_action.kind = start_category
 
     category = Kind()
@@ -136,14 +135,14 @@ http_head_add_info['Category'] = http_head['Category'] + ';term=foo'
 
 http_head_loc = {'X-OCCI-Location': '/foo/bar1'}
 
-http_head_action = {'Category': ComputeBackend.start_category.term + ';scheme=' + ComputeBackend.start_category.scheme}
+http_head_action = {'Category': ComputeBackend.start_category.term + ';scheme=' + ComputeBackend.start_category.scheme, 'X-OCCI-Attribute':'foo=bar'}
 
 http_head_mixin = {'Category': 'mine;scheme=http://mystuff.com/occi;location=/foo/bar/;'}
-
 
 # text/html
 
 html_create_res = 'Category=http://schemas.ogf.org/occi/infrastructure#compute&X-OCCI-Attribute=key=foo+value=bar+summary=jeeha'
+html_with_empty_attr = 'Category=http://schemas.ogf.org/occi/infrastructure#compute' + '&X-OCCI-Attribute='
 html_create_link = 'Category=http://schemas.ogf.org/occi/infrastructure#networklink&X-OCCI-Attribute=source=foo+target=bar'
 html_action = 'Category=' + ComputeBackend.start_category.scheme + '#' + ComputeBackend.start_category.term
 
@@ -186,6 +185,7 @@ http_head_faulty_loc = {'X-OCCI-Locations':''}
 http_head_faulty_action = {'Category': DefunctBackend.a_category.term + ';scheme=' + DefunctBackend.a_category.scheme}
 http_head_faulty_mixin = {}
 
+http_head_faulty_action_attr = {'Category': ComputeBackend.start_category.term + ';scheme=' + ComputeBackend.start_category.scheme, 'X-OCCI-Attribute':'foo:bar, summary = bar'}
 
 # text/html
 html_faulty_create = 'Category=http://jeeha.com/bla#tida&Attribute=key=foo+value=bar+summary=jeeha'

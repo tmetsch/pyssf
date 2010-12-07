@@ -206,7 +206,7 @@ def _get_categories(category_string_list):
         for cat_string in tmp.split(','):
             cat = _get_category(cat_string)
 
-            # now that we have a category try to look it up and use that object
+            # now that we have a category try to look it up and use that objects
             for category in registry.BACKENDS.keys():
                 if cat == category:
                     if isinstance(category, Kind) and kind is None:
@@ -236,7 +236,7 @@ def _get_attributes(attributes):
             try:
                 tmp[attr.split('=')[0].strip()] = attr.split('=')[1]
             except IndexError:
-                raise ParsingException('Could not determine the attributes')
+                raise ParsingException('Could not determine the attributes...')
     return tmp
 
 def _create_categories(kind, extended = False):
@@ -382,20 +382,20 @@ class TextPlainRendering(Rendering):
 
         # Parse the data
         kind, categories = _get_categories(data.categories)
-        attributes = _get_attributes(data.attributes)
 
-        if kind is None:
-            raise ParsingException('Could not find a Kind for this'
+        action = None
+        if len(categories) == 0:
+            raise ParsingException('Could not find a Category for this'
                                    + ' request.')
-        elif Action.category in kind.related:
-            entity = Action()
-            entity.kind = kind
-            entity.attributes = attributes
         else:
-            raise ParsingException('Could not parse the action.')
+            for cat in categories:
+                action = Action()
+                action.kind = cat
+                action.attributes = _get_attributes(data.attributes)
+                break
 
         del(data)
-        return entity
+        return action
 
     def to_categories(self, headers, body):
         categories = []
@@ -569,18 +569,19 @@ class TextHeaderRendering(Rendering):
         kind, categories = _get_categories(data.categories)
         attributes = _get_attributes(data.attributes)
 
-        if kind is None:
-            raise ParsingException('Could not find a Kind for this'
+        action = None
+        if len(categories) == 0:
+            raise ParsingException('Could not find a Category for this'
                                    + ' request.')
-        elif Action.category in kind.related:
-            entity = Action()
-            entity.kind = kind
-            entity.attributes = attributes
         else:
-            raise ParsingException('Could not parse the action.')
+            for cat in categories:
+                action = Action()
+                action.kind = cat
+                action.attributes = _get_attributes(data.attributes)
+                break
 
         del(data)
-        return entity
+        return action
 
     def to_categories(self, headers, body):
         categories = []
@@ -766,7 +767,7 @@ class TextHTMLRendering(Rendering):
                     html += '?action=' + action.kind.term + '>'
                     html += '<input type="hidden" name="Category" value='
                     html += action.kind.scheme + '#' + action.kind.term + ' />'
-                    html += '<input type="submit" value="Trigger" />'
+                    html += '<input type="submit" value="Trigger" /></form>'
 
                     html += '</td></tr>'
                 html += '</table>'
@@ -842,17 +843,19 @@ class TextHTMLRendering(Rendering):
         # all data...
         kind, categories = _get_categories(data.categories)
 
-        if kind is None:
-            raise ParsingException('Could not find a Kind for this'
+        action = None
+
+        if len(categories) == 0:
+            raise ParsingException('Could not find a Category for this'
                                    + ' request.')
-        elif Action.category in kind.related:
-            entity = Action()
-            entity.kind = kind
         else:
-            raise ParsingException('Could not parse the action.')
+            for cat in categories:
+                action = Action()
+                action.kind = cat
+                break
 
         del(data)
-        return entity
+        return action
 
     def to_categories(self, headers, body):
         # This is something HTML rendering cannot do...
@@ -873,7 +876,11 @@ class TextHTMLRendering(Rendering):
         try:
             kin = tmp[0][tmp[0].find('Category=') + 9:].split('#')
             kin = kin[1] + ';scheme=' + kin[0]
-            attr = tmp[1][tmp[1].find('X-OCCI-Attribute=') + 17:].split('+')
+            test = tmp[1][tmp[1].find('X-OCCI-Attribute=') + 17:]
+            if test is '':
+                attr = []
+            else:
+                attr = test.split('+')
         except IndexError:
             raise ParsingException('Cannot find properely formatted data.')
 

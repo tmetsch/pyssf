@@ -26,7 +26,7 @@ Created on Nov 26, 2010
 from drmaa.const import JobControlAction
 from drmaa.errors import InvalidJobException
 from pyocci.backends import Backend
-from pyocci.core import Action, Kind, Resource
+from pyocci.core import Action, Kind, Resource, Category
 import drmaa
 
 class DRMAAJob():
@@ -70,7 +70,7 @@ class DRMAABackend(Backend):
     jobs = {}
 
     terminate_action = Action()
-    terminate_category = Kind()
+    terminate_category = Category()
     terminate_category.term = 'terminate'
     terminate_category.scheme = 'http://example.com/occi/drmaa'
     terminate_category.attributes = []

@@ -47,8 +47,11 @@ body {
     background-color: #eee;
     color: #444;
 }
-a:link, a:hover, a:focus, a:visited {
+a:link, a:hover, a:focus {
     color: #73c167;
+}
+a:visited {
+    color: #444;
 }
 h1 {
     font-size: 1.4em;

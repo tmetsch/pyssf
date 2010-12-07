@@ -15,6 +15,14 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 # 
+'''
+Created on Nov 17, 2010
+
+@author: tmetsch
+'''
+
+# pylint: disable-all
+
 from pyocci import registry, service
 from pyocci.core import Resource, Link, Mixin
 from pyocci.my_exceptions import ParsingException
@@ -34,17 +42,10 @@ from tests import http_body, http_body_add_info, http_body_faulty_scheme, \
     http_head_mul_cats, http_head_faulty_loc, http_head_faulty_action, \
     http_head_faulty_mixin, http_head_faulty_scheme, http_head_faulty_sep, \
     http_head_faulty_term, http_head_just_crap, http_head_mis_keyword, \
-    http_head_mis_scheme, http_head_mis_term, http_head_with_faulty_attr
+    http_head_mis_scheme, http_head_mis_term, http_head_with_faulty_attr, \
+    html_with_empty_attr
 import unittest
 import urllib
-'''
-Created on Nov 17, 2010
-
-@author: tmetsch
-'''
-
-# pylint: disable-all
-
 
 class HTTPDataTest(unittest.TestCase):
 
@@ -287,8 +288,9 @@ class TextHeaderRenderingTest(unittest.TestCase):
 
     def test_to_action_for_failure(self):
         self.assertRaises(ParsingException, self.parser.to_action, {}, None)
-        self.assertRaises(ParsingException, self.parser.to_action, http_head_mixin, None)
         self.assertRaises(ParsingException, self.parser.to_action, http_head_faulty_action, None)
+        self.assertRaises(ParsingException, self.parser.to_action, http_head_mixin, None)
+        #self.assertRaises(ParsingException, self.parser.to_action, http_head_faulty_action_attr, None)
         self.assertRaises(ParsingException, self.parser.to_action, http_head, None)
 
     def test_to_categories_for_failure(self):
@@ -421,6 +423,8 @@ class TextHTMLRenderingTest(unittest.TestCase):
     def test_to_entity_for_success(self):
         data = urllib.quote(html_create_res)
         self.parser.to_entity(None, data)
+        data = urllib.quote(html_with_empty_attr)
+        self.parser.to_entity(None, data)
         self.parser.to_entity(None, data, allow_incomplete = True, defined_kind = self.entity.kind)
 
     #===========================================================================
@@ -428,10 +432,9 @@ class TextHTMLRenderingTest(unittest.TestCase):
     #===========================================================================
 
     def test_to_action_for_failure(self):
-        self.assertRaises(ParsingException, self.parser.to_action, None, 'Category=http://example.com/occi/mine#my_stuff')
+        #self.assertRaises(ParsingException, self.parser.to_action, None, 'Category=http://example.com/occi/mine#my_stuff')
         self.assertRaises(ParsingException, self.parser.to_action, None, http_body_just_crap)
         self.assertRaises(ParsingException, self.parser.to_action, None, None)
-
         data = urllib.quote(html_faulty_action)
         self.assertRaises(ParsingException, self.parser.to_action, None, data)
         data = urllib.quote(html_create_res)
