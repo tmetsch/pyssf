@@ -1,8 +1,18 @@
 Service Sharing Facility (SSF)
 ==============================
 
-BUILDING
---------
+INSTALLING THE PYOCCI MODULE
+----------------------------
+Simply running 'python setup.py install' Should do. Prerequisites for the
+pyocci module are pretty low - You just need to ensure that you have the
+tornado web part installed. 
+
+RUNNING EXAMPLES
+----------------
+Simply use the 'demo.sh' script in the root directory.
+
+BUILDING ALL SSF MODULES
+------------------------
 Normally a 'python setup.py build' should do. The 'dist' target will also work
 and build all modules including the SWIG and GCC runs needed for pyLSF. There 
 is no need to run make. Although you can build the pyLSF module using the 
