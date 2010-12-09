@@ -1,4 +1,5 @@
 include README
+include demo.sh
 recursive-include pydrmaa/ *.py
 recursive-include pylsf/ *.py *.i Makefile README
 recursive-include pyocci/ *.py

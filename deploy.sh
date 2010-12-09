@@ -24,24 +24,6 @@ case "$1" in
     rm -rf docs/_build sdist dist
 	;;
 
-  demo1)
-    export PYOCCI_STYLE_SHEET=`pwd`/misc/style.css
-    export PYTHONPATH=`pwd`
-    python pyocci/examples/keyvalue_main.py
-    ;;
-
-  demo2)
-    export PYOCCI_STYLE_SHEET=`pwd`/misc/style.css
-    export PYTHONPATH=`pwd`
-    python pyocci/examples/vms_main.py
-    ;;
-
-  demo3)
-    export PYOCCI_STYLE_SHEET=`pwd`/misc/style.css
-    export PYTHONPATH=`pwd`
-    python pyocci/examples/drmaa_main.py
-    ;;
-
   build)
     $0 clean
     python setup.py build
@@ -103,7 +85,7 @@ case "$1" in
     ;;
 
   *)
-    echo "Usage: $N {a command...}"
+    echo "Usage: $N {clean,build,coverage,doc,big-doc,test,deploy,pypi}"
     exit 1
     ;;
 esac

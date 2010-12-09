@@ -71,7 +71,7 @@ class MyService():
         Start a OCCI comliant service.
         '''
         http_server = tornado.httpserver.HTTPServer(self.application)
-        http_server.listen(8080)
+        http_server.listen(8888)
         tornado.ioloop.IOLoop.instance().start()
 
 if __name__ == '__main__':
