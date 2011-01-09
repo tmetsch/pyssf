@@ -20,13 +20,13 @@
 from distutils.core import setup, Extension
 
 setup(name = 'pyssf',
-      version = '0.2.5',
+      version = '0.2.6',
       description = 'Service Sharing Facility',
       license = 'LGPL',
       keywords = 'REST,RESTful,OCCI,LSF,Platform,Cloud,Grid,Cluster,HPC',
       url = 'http://pyssf.sourceforge.net',
       packages = ['pyocci'],
-      long_description = 'A set of Python modules to integrate you existing or future applications with Clouds, Grids and Clusters.',
+      long_description = 'A set of Python modules to integrate you existing or future applications with Clouds, Grids and Clusters. Includes an implementation of the OCCI specification.',
       classifiers = ["Development Status :: 2 - Pre-Alpha",
                      "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
                      "Operating System :: OS Independent",

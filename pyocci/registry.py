@@ -34,6 +34,8 @@ from pyocci.my_exceptions import AlreadyRegisteredException, \
 RENDERINGS = {}
 BACKENDS = {}
 
+HOST = ''
+
 DEFAULT_CONTENT_TYPE = 'text/plain'
 
 #===============================================================================

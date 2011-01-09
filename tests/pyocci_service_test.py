@@ -184,6 +184,7 @@ class ResourceHandlerTest(unittest.TestCase):
 
         request = create_request('DELETE')
         handler = Wrapper(self.application, request)
+        print url
         handler.delete(url)
         heads, data = handler.get_output()
         self.assertRaises(HTTPError, handler.get, url)

@@ -166,21 +166,21 @@ def _get_category(cat_string):
         end = tmp.find(";")
         if end > -1:
             tmp = tmp[:end]
-        scheme = tmp.rstrip("\"").lstrip("\"")
+        scheme = tmp.rstrip('"').lstrip('"')
         if scheme.find('http') is not - 1:
             cat.scheme = scheme.strip()
         else:
             raise ParsingException('No valid scheme for given category'
                                    + ' could be found.')
 
-    # find the scheme
+    # find the location
     begin = cat_string.find('location=')
     if begin is not - 1:
         tmp = cat_string[begin + 9:]
         end = tmp.find(";")
         if end > -1:
             tmp = tmp[:end]
-        location = tmp.rstrip("\"").lstrip("\"")
+        location = tmp.rstrip('"').lstrip('"')
         tmp = location
         if tmp.find('/') is 0 and tmp.rfind('/') is len(tmp) - 1:
             res = Mixin()
@@ -251,7 +251,7 @@ def _create_categories(kind, extended = False):
     '''
     tmp = ''
     tmp += kind.term
-    tmp += ';scheme=' + kind.scheme
+    tmp += ';scheme="' + kind.scheme + '"'
     if extended:
         if hasattr(kind, 'title') and kind.title is not '':
             tmp += ';title=' + kind.title
@@ -317,7 +317,7 @@ class TextPlainRendering(Rendering):
         headers = {}
         body = ''
         for item in entities:
-            body += 'X-OCCI-Location: ' + item.identifier + '\n'
+            body += 'X-OCCI-Location: ' + registry.HOST + item.identifier + '\n'
         headers['Content-Type'] = self.content_type
         return headers, body
 
@@ -337,18 +337,18 @@ class TextPlainRendering(Rendering):
 
             if len(entity.actions) > 0:
                 for action in entity.actions:
-                    data += 'Link: <' + entity.identifier + '?action='
+                    data += 'Link: <' + registry.HOST + entity.identifier + '?action='
                     data += action.kind.term + '>\n'
 
             if len(entity.links) > 0:
                 for item in entity.links:
                     data += 'Link: <' + item.target + '>;self='
-                    data += item.identifier + ';\n'
+                    data += registry.HOST + item.identifier + ';\n'
 
         elif isinstance(entity, Link):
             # source and target must be there!
-            data += 'X-OCCI-Attribute: source=' + entity.source + '\n'
-            data += 'X-OCCI-Attribute: target=' + entity.target + '\n'
+            data += 'X-OCCI-Attribute: source=' + registry.HOST + entity.source + '\n'
+            data += 'X-OCCI-Attribute: target=' + registry.HOST + entity.target + '\n'
         for item in entity.attributes.keys():
             data += 'X-OCCI-Attribute: ' + item + '='
             data += entity.attributes[item] + '\n'
@@ -363,7 +363,10 @@ class TextPlainRendering(Rendering):
             if entry.find('X-OCCI-Location:') > -1:
                 tmp = entry[entry.find('X-OCCI-Location:') + 16:]
                 for item in tmp.split(','):
-                    ids.append(item.strip())
+                    if item.find(registry.HOST) == 0:
+                        ids.append(item.strip()[len(registry.HOST):])
+                    else:
+                        ids.append(item.strip())
         if len(ids) > 0:
             return ids
         else:
@@ -436,10 +439,18 @@ class TextPlainRendering(Rendering):
         elif Link.category in kind.related:
             entity = Link()
             if 'source' in attributes.keys():
-                entity.source = attributes['source']
+                source = attributes['source']
+                if source.find(registry.HOST) == 0:
+                    entity.source = source[len(registry.HOST):]
+                else:
+                    entity.source = attributes['source']
                 attributes.pop('source')
             if 'target' in attributes.keys():
-                entity.target = attributes['target']
+                target = attributes['target']
+                if target.find(registry.HOST) == 0:
+                    entity.target = target[len(registry.HOST):]
+                else:
+                    entity.target = target
                 attributes.pop('target')
         entity.kind = kind
         entity.mixins = categories
@@ -491,7 +502,7 @@ class TextHeaderRendering(Rendering):
         headers = {}
         tmp = []
         for item in entities:
-            tmp.append(item.identifier)
+            tmp.append(registry.HOST + item.identifier)
         if len(tmp) > 0:
             headers['X-OCCI-Location'] = ','.join(tmp)
         headers['Content-Type'] = self.content_type
@@ -520,18 +531,18 @@ class TextHeaderRendering(Rendering):
 
             if len(entity.actions) > 0:
                 for action in entity.actions:
-                    link_tmp.append('<' + entity.identifier + '?action='
+                    link_tmp.append('<' + registry.HOST + entity.identifier + '?action='
                                     + action.kind.term + '>')
 
             if len(entity.links) > 0:
                 for item in entity.links:
-                    link_tmp.append('<' + item.target + '>;self='
-                                    + item.identifier + ';')
+                    link_tmp.append('<' + registry.HOST + item.target + '>;self='
+                                    + registry.HOST + item.identifier + ';')
 
         elif isinstance(entity, Link):
             # source and target must be there!
-            attr_tmp.append('source=' + entity.source)
-            attr_tmp.append('target=' + entity.target)
+            attr_tmp.append('source=' + registry.HOST + entity.source)
+            attr_tmp.append('target=' + registry.HOST + entity.target)
 
         # rest of the attributes.
         for item in entity.attributes.keys():
@@ -549,7 +560,10 @@ class TextHeaderRendering(Rendering):
         ids = []
         if 'X-OCCI-Location' in headers.keys():
             for item in headers['X-OCCI-Location'].split(','):
-                ids.append(item.strip())
+                if item.find(registry.HOST) == 0:
+                    ids.append(item.strip()[len(registry.HOST):])
+                else:
+                    ids.append(item.strip())
         if len(ids) > 0:
             return ids
         else:
@@ -621,10 +635,18 @@ class TextHeaderRendering(Rendering):
         elif Link.category in kind.related:
             entity = Link()
             if 'source' in attributes.keys():
-                entity.source = attributes['source']
+                source = attributes['source']
+                if source.find(registry.HOST) == 0:
+                    entity.source = source[len(registry.HOST):]
+                else:
+                    entity.source = attributes['source']
                 attributes.pop('source')
             if 'target' in attributes.keys():
-                entity.target = attributes['target']
+                target = attributes['target']
+                if target.find(registry.HOST) == 0:
+                    entity.target = target[len(registry.HOST):]
+                else:
+                    entity.target = target
                 attributes.pop('target')
         entity.kind = kind
         entity.mixins = categories
@@ -911,10 +933,18 @@ class TextHTMLRendering(Rendering):
         elif Link.category in kind.related:
             entity = Link()
             if 'source' in attributes.keys():
-                entity.source = attributes['source']
+                source = attributes['source']
+                if source.find(registry.HOST) == 0:
+                    entity.source = source[len(registry.HOST):]
+                else:
+                    entity.source = attributes['source']
                 attributes.pop('source')
             if 'target' in attributes.keys():
-                entity.target = attributes['target']
+                target = attributes['target']
+                if target.find(registry.HOST) == 0:
+                    entity.target = target[len(registry.HOST):]
+                else:
+                    entity.target = target
                 attributes.pop('target')
         entity.kind = kind
         entity.attributes = attributes

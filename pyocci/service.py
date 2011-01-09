@@ -47,6 +47,12 @@ class BaseHandler(tornado.web.RequestHandler):
 
     version = 'pyocci OCCI/1.1'
 
+    def __init__(self, application, request, transforms = None):
+        if registry.HOST == '':
+            registry.HOST = request.protocol + '://' + request.host
+        super(BaseHandler, self).__init__(application, request,
+                                          transforms = None)
+
     def extract_http_data(self):
         '''
         Extracts all necessary information from the HTTP envelop. Minimize the
@@ -109,6 +115,43 @@ class BaseHandler(tornado.web.RequestHandler):
         else:
             return 'default'
 
+    def filter_childs(self, key, resources, categories):
+        '''
+        Retrieve childs in a hierachy and use categories to filter the result.
+        
+        @param key: A key.
+        @type key: str
+        @param resources: A list of resources.
+        @type resources: list
+        @param categories: A list of categories which is used to filter.
+        @type categories: list
+        '''
+        tmp = []
+        for name in resources:
+            if name.identifier.find(key) > -1 and key.endswith('/'):
+                if categories is None:
+                    tmp.append(name)
+                elif len(categories) > 0:
+                    for category in categories:
+                        if category == name.kind:
+                            tmp.append(name)
+                        elif category in name.kind.related:
+                            tmp.append(name)
+                        elif category in name.mixins:
+                            tmp.append(name)
+        return tmp
+
+    def get_my_resources(self):
+        '''
+        Returns a list of all resources belonging to the current user.
+        '''
+        my_resources = []
+        for tmp in RESOURCES.keys():
+            item = RESOURCES[tmp]
+            if item.owner == self.get_current_user():
+                my_resources.append(item)
+        return my_resources
+
 class ResourceHandler(BaseHandler):
     '''
     Handles basic HTTP operations. To achieve this it will make use of WSGI and
@@ -149,7 +192,7 @@ class ResourceHandler(BaseHandler):
             entity.owner = self.get_current_user()
             key = self._create_key(entity)
             RESOURCES[key] = entity
-        self._send_response({'Location': key}, 'OK')
+        self._send_response({'Location': registry.HOST + key}, 'OK')
 
     @tornado.web.authenticated
     def put(self, key):
@@ -189,6 +232,7 @@ class ResourceHandler(BaseHandler):
     def get(self, key):
         # find a parser for the data format the client provided...
         parser = self.get_pyocci_parser('Accept')
+        headers, body = self.extract_http_data()
 
         if key in RESOURCES.keys():
             entity = RESOURCES[key]
@@ -205,11 +249,16 @@ class ResourceHandler(BaseHandler):
             self._send_response(heads, data)
         elif key == '/':
             # render a list of resources...
-            resources = []
-            for item in RESOURCES.values():
-                if item.owner == self.get_current_user():
-                    resources.append(item)
+            categories = None
+            try:
+                data_parser = self.get_pyocci_parser('Content-Type')
+                categories = data_parser.to_categories(headers, body)
+            except (KeyError, ParsingException):
+                pass
 
+            my_resources = self.get_my_resources()
+
+            resources = self.filter_childs(key, my_resources, categories)
             heads, data = parser.from_entities(resources)
             self._send_response(heads, data)
         else:
@@ -217,6 +266,7 @@ class ResourceHandler(BaseHandler):
 
     @tornado.web.authenticated
     def delete(self, key):
+        print key, RESOURCES.keys()
         if key in RESOURCES.keys():
             entity = RESOURCES[key]
 
@@ -273,17 +323,6 @@ class ListHandler(BaseHandler):
                 locations[cat.location] = cat
         return locations
 
-    def get_my_resources(self):
-        '''
-        Returns a list of all resources belonging to the current user.
-        '''
-        my_resources = []
-        for tmp in RESOURCES.keys():
-            item = RESOURCES[tmp]
-            if item.owner == self.get_current_user():
-                my_resources.append(item)
-        return my_resources
-
     def get_all_resources_of_category(self, category, resources):
         '''
         Return all resources belonging to one category.
@@ -299,32 +338,6 @@ class ListHandler(BaseHandler):
                 tmp.append(res)
             elif category in res.mixins:
                 tmp.append(res)
-        return tmp
-
-    def filter_childs(self, key, resources, categories):
-        '''
-        Retrieve childs in a hierachy and use categories to filter the result.
-        
-        @param key: A key.
-        @type key: str
-        @param resources: A list of resources.
-        @type resources: list
-        @param categories: A list of categories which is used to filter.
-        @type categories: list
-        '''
-        tmp = []
-        for name in resources:
-            if name.identifier.find(key) > -1 and key.endswith('/'):
-                if categories is None:
-                    tmp.append(name)
-                elif len(categories) > 0:
-                    for category in categories:
-                        if category == name.kind:
-                            tmp.append(name)
-                        elif category in name.kind.related:
-                            tmp.append(name)
-                        elif category in name.mixins:
-                            tmp.append(name)
         return tmp
 
     @tornado.web.authenticated
@@ -370,6 +383,7 @@ class ListHandler(BaseHandler):
             try:
                 category = locations[key]
                 entities = parser.get_entities(headers, body)
+                print entities, category
                 for item in entities:
                     if RESOURCES.has_key(item):
                         res = RESOURCES[item]
