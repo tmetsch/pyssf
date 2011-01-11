@@ -29,8 +29,6 @@ from pyocci.my_exceptions import ParsingException
 import re
 import urllib
 
-# TODO: fix the length of the file:
-
 class HTTPData(object):
     '''
     Simple class which functions as an adapter between the OCCI model and the
@@ -152,7 +150,7 @@ def _get_category(cat_string):
     @type cat_string: str
     '''
 
-    # TODO: make sue of th class attribute
+    # TODO: make use of the class attribute
 
     cat = Category()
     # find the term
@@ -244,7 +242,7 @@ def _get_attributes(attributes):
                 raise ParsingException('Could not determine the attributes...')
     return tmp
 
-def _create_categories(kind, extended = False):
+def _from_category(kind, extended = False):
     '''
     Create a category rendering for a kind or mixin. If extended it will try to
     put in as much information as possible.
@@ -252,30 +250,116 @@ def _create_categories(kind, extended = False):
     @param kind: A kind of a mixin.
     @type kind: Kind or Mixin
     @param extended: Indicating wether rendering should be minimal or not.
-    @param extended: boolean  
+    @type extended: boolean  
     '''
     tmp = ''
     tmp += kind.term
     tmp += ';scheme="' + kind.scheme + '#"'
-    tmp += ';class=' + kind.cls_str
+    tmp += ';class="' + kind.cls_str + '"'
     if extended:
         if hasattr(kind, 'title') and kind.title is not '':
-            tmp += ';title=' + kind.title
-        if hasattr(kind, 'location') and kind.location is not '':
-            tmp += ';location=' + kind.location
+            tmp += ';title="' + kind.title + '"'
         if hasattr(kind, 'related') and len(kind.related) > 0:
             rel_list = []
             for item in kind.related:
                 rel_list.append(repr(item))
             tmp += ';rel=' + ' '.join(rel_list)
+        if hasattr(kind, 'location') and kind.location is not '':
+            tmp += ';location=' + kind.location
         if hasattr(kind, 'attributes') and len(kind.attributes) > 0:
-            tmp += ';attributes=' + ' '.join(kind.attributes)
+            tmp += ';attributes="' + ' '.join(kind.attributes) + '"'
         if hasattr(kind, 'actions') and len(kind.actions) > 0:
             action_list = []
             for item in kind.actions:
                 action_list.append(repr(item))
-            tmp += ';actions=' + ' '.join(action_list)
+            tmp += ';actions="' + ' '.join(action_list) + '"'
     return tmp
+
+def _to_entity(defined_kind, kind, categories, attributes, allow_incomplete):
+    '''
+    Helper routine for creating a new entity.
+    
+    @param defined_kind: A previsously defined kind.
+    @type defined_kind: Kind
+    @param kind: A kind
+    @type kind: Kind
+    @param categories: A list of all categories.
+    @type categories: list
+    @param attributes: A list of all attributes.
+    @type attributes: list
+    @param allow_incomplete: Indicates wether rendering should be complete.
+    @type allow_incomplete: boolean
+    '''
+    if allow_incomplete:
+        kind = defined_kind
+    elif kind is None:
+        raise ParsingException('Could not find a Kind for this request.')
+
+    if Resource.category in kind.related:
+        entity = Resource()
+        if 'summary' in attributes.keys():
+            entity.summary = attributes['summary']
+            attributes.pop('summary')
+    elif Link.category in kind.related:
+        entity = Link()
+        if 'source' in attributes.keys():
+            source = attributes['source']
+            if source.find(registry.HOST) == 0:
+                entity.source = source[len(registry.HOST):]
+            else:
+                entity.source = attributes['source']
+            attributes.pop('source')
+        if 'target' in attributes.keys():
+            target = attributes['target']
+            if target.find(registry.HOST) == 0:
+                entity.target = target[len(registry.HOST):]
+            else:
+                entity.target = target
+            attributes.pop('target')
+    entity.kind = kind
+    entity.mixins = categories
+    entity.attributes = attributes
+    return entity
+
+def _from_entity(entity):
+    '''
+    Helper routine for rendering an entity.
+    
+    @param entity: The entity to create a rendering for.
+    @type entity: Entity
+    '''
+    result = HTTPData()
+
+    # add kind
+    result.categories.append(_from_category(entity.kind))
+    # mixins...
+    for item in entity.mixins:
+        result.categories.append(_from_category(item))
+
+    if isinstance(entity, Resource):
+        # check if summary is available...
+        if entity.summary is not '':
+            result.attributes.append('summary=' + entity.summary)
+
+        if len(entity.actions) > 0:
+            for action in entity.actions:
+                result.links.append('<' + registry.HOST + entity.identifier
+                                    + '?action=' + action.kind.term + '>')
+
+        if len(entity.links) > 0:
+            for item in entity.links:
+                result.links.append('<' + registry.HOST + item.target
+                                    + '>;self=' + registry.HOST
+                                    + item.identifier + ';')
+
+    elif isinstance(entity, Link):
+        # source and target must be there!
+        result.attributes.append('source=' + registry.HOST + entity.source)
+        result.attributes.append('target=' + registry.HOST + entity.target)
+    for item in entity.attributes.keys():
+        result.attributes.append(item + '=' + entity.attributes[item])
+
+    return result
 
 #===============================================================================
 # Renderings for different content types can be found below this comment
@@ -314,7 +398,7 @@ class TextPlainRendering(Rendering):
         headers = {}
         body = ''
         for item in categories:
-            body += 'Category: ' + _create_categories(item, extended = True)
+            body += 'Category: ' + _from_category(item, extended = True)
             body += '\n'
         headers['Content-Type'] = self.content_type
         return headers, body
@@ -328,43 +412,20 @@ class TextPlainRendering(Rendering):
         return headers, body
 
     def from_entity(self, entity):
-        data = ''
+        data = _from_entity(entity)
+        body = ''
 
-        # add kind
-        data += 'Category: ' + _create_categories(entity.kind) + '\n'
-        # mixins...
-        for item in entity.mixins:
-            data += 'Category: ' + _create_categories(item) + '\n'
-
-        if isinstance(entity, Resource):
-            # check if summary is available...
-            if entity.summary is not '':
-                data += 'X-OCCI-Attribute: summary=' + entity.summary + '\n'
-
-            if len(entity.actions) > 0:
-                for action in entity.actions:
-                    data += 'Link: <' + registry.HOST + entity.identifier
-                    data += '?action='
-                    data += action.kind.term + '>\n'
-
-            if len(entity.links) > 0:
-                for item in entity.links:
-                    data += 'Link: <' + item.target + '>;self='
-                    data += registry.HOST + item.identifier + ';\n'
-
-        elif isinstance(entity, Link):
-            # source and target must be there!
-            data += 'X-OCCI-Attribute: source=' + registry.HOST
-            data += entity.source + '\n'
-            data += 'X-OCCI-Attribute: target=' + registry.HOST
-            data += entity.target + '\n'
-        for item in entity.attributes.keys():
-            data += 'X-OCCI-Attribute: ' + item + '='
-            data += entity.attributes[item] + '\n'
+        for item in data.categories:
+            body += 'Category: ' + item + '\n'
+        for item in data.attributes:
+            body += 'X-OCCI-Attribute: ' + item + '\n'
+        for item in data.links:
+            body += 'Link: ' + item + '\n'
 
         headers = {}
         headers['Content-Type'] = self.content_type
-        return headers, data
+        del(data)
+        return headers, body
 
     def get_entities(self, headers, body):
         ids = []
@@ -434,36 +495,8 @@ class TextPlainRendering(Rendering):
         kind, categories = _get_categories(data.categories)
         attributes = _get_attributes(data.attributes)
 
-        if allow_incomplete:
-            kind = defined_kind
-        elif kind is None:
-            raise ParsingException('Could not find a Kind for this'
-                                   + ' request.')
-
-        if Resource.category in kind.related:
-            entity = Resource()
-            if 'summary' in attributes.keys():
-                entity.summary = attributes['summary']
-                attributes.pop('summary')
-        elif Link.category in kind.related:
-            entity = Link()
-            if 'source' in attributes.keys():
-                source = attributes['source']
-                if source.find(registry.HOST) == 0:
-                    entity.source = source[len(registry.HOST):]
-                else:
-                    entity.source = attributes['source']
-                attributes.pop('source')
-            if 'target' in attributes.keys():
-                target = attributes['target']
-                if target.find(registry.HOST) == 0:
-                    entity.target = target[len(registry.HOST):]
-                else:
-                    entity.target = target
-                attributes.pop('target')
-        entity.kind = kind
-        entity.mixins = categories
-        entity.attributes = attributes
+        entity = _to_entity(defined_kind, kind, categories, attributes,
+                            allow_incomplete)
 
         del(data)
         return entity
@@ -501,7 +534,7 @@ class TextHeaderRendering(Rendering):
         headers = {}
         tmp = []
         for item in categories:
-            tmp.append(_create_categories(item, extended = True))
+            tmp.append(_from_category(item, extended = True))
         if len(tmp) > 0:
             headers['Category'] = ','.join(tmp)
         headers['Content-Type'] = self.content_type
@@ -519,51 +552,17 @@ class TextHeaderRendering(Rendering):
 
     def from_entity(self, entity):
         headers = {}
+        data = _from_entity(entity)
 
-        # add kind
-        tmp = []
-
-        tmp.append(_create_categories(entity.kind))
-        # mixins...
-        for item in entity.mixins:
-            tmp.append(_create_categories(item))
-        if len(tmp) > 0:
-            headers['Category'] = ','.join(tmp)
-
-        attr_tmp = []
-        link_tmp = []
-
-        if isinstance(entity, Resource):
-            # check if summary is available...
-            if entity.summary is not '':
-                attr_tmp.append('summary=' + entity.summary)
-
-            if len(entity.actions) > 0:
-                for action in entity.actions:
-                    link_tmp.append('<' + registry.HOST + entity.identifier
-                                    + '?action=' + action.kind.term + '>')
-
-            if len(entity.links) > 0:
-                for item in entity.links:
-                    link_tmp.append('<' + registry.HOST
-                                    + item.target + '>;self='
-                                    + registry.HOST + item.identifier + ';')
-
-        elif isinstance(entity, Link):
-            # source and target must be there!
-            attr_tmp.append('source=' + registry.HOST + entity.source)
-            attr_tmp.append('target=' + registry.HOST + entity.target)
-
-        # rest of the attributes.
-        for item in entity.attributes.keys():
-            attr_tmp.append(item + '=' + entity.attributes[item])
-
-        if len(attr_tmp) > 0:
-            headers['X-OCCI-Attribute'] = ','.join(attr_tmp)
-        if len(link_tmp) > 0:
-            headers['Link'] = ','.join(link_tmp)
+        if len(data.categories) > 0:
+            headers['Category'] = ','.join(data.categories)
+        if len(data.attributes) > 0:
+            headers['X-OCCI-Attribute'] = ','.join(data.attributes)
+        if len(data.links) > 0:
+            headers['Link'] = ','.join(data.links)
 
         headers['Content-Type'] = self.content_type
+        del(data)
         return headers, 'OK'
 
     def get_entities(self, headers, body):
@@ -630,37 +629,8 @@ class TextHeaderRendering(Rendering):
         kind, categories = _get_categories(data.categories)
         attributes = _get_attributes(data.attributes)
 
-        # create a resource or link
-        if allow_incomplete:
-            kind = defined_kind
-        elif kind is None:
-            raise ParsingException('Could not find a Kind for this'
-                                   + ' request.')
-
-        if Resource.category in kind.related:
-            entity = Resource()
-            if 'summary' in attributes.keys():
-                entity.summary = attributes['summary']
-                attributes.pop('summary')
-        elif Link.category in kind.related:
-            entity = Link()
-            if 'source' in attributes.keys():
-                source = attributes['source']
-                if source.find(registry.HOST) == 0:
-                    entity.source = source[len(registry.HOST):]
-                else:
-                    entity.source = attributes['source']
-                attributes.pop('source')
-            if 'target' in attributes.keys():
-                target = attributes['target']
-                if target.find(registry.HOST) == 0:
-                    entity.target = target[len(registry.HOST):]
-                else:
-                    entity.target = target
-                attributes.pop('target')
-        entity.kind = kind
-        entity.mixins = categories
-        entity.attributes = attributes
+        entity = _to_entity(defined_kind, kind, categories, attributes,
+                            allow_incomplete)
 
         del(data)
         return entity
@@ -672,6 +642,7 @@ class URIListRendering(Rendering):
     '''
 
     content_type = 'text/uri-list'
+    err_msg = 'text/uri-list rendering cannot be used for this operation.'
 
     def from_categories(self, categories):
         body = ''
@@ -692,23 +663,23 @@ class URIListRendering(Rendering):
         return headers, body
 
     def from_entity(self, entity):
-        raise NotImplementedError()
+        raise NotImplementedError(self.err_msg)
 
     def get_entities(self, headers, data):
-        raise NotImplementedError()
+        raise NotImplementedError(self.err_msg)
 
     def login_information(self):
-        raise NotImplementedError()
+        raise NotImplementedError(self.err_msg)
 
     def to_action(self, headers, data):
-        raise NotImplementedError()
+        raise NotImplementedError(self.err_msg)
 
     def to_categories(self, headers, data):
-        raise NotImplementedError()
+        raise NotImplementedError(self.err_msg)
 
     def to_entity(self, headers, body, allow_incomplete = False,
                   defined_kind = None):
-        raise NotImplementedError()
+        raise NotImplementedError(self.err_msg)
 
 class TextHTMLRendering(Rendering):
     '''
@@ -782,47 +753,12 @@ class TextHTMLRendering(Rendering):
 
         if len(categories) > 0:
             for cat in categories:
-                tmp = '<table>'
-                tmp += '<tr><th>Term'
-                tmp += '</th><td>'
-                tmp += cat.term + '</td></tr>'
-                tmp += '<tr><th>Scheme'
-                tmp += '</th><td>'
-                tmp += cat.scheme + '</td></tr>'
-
-                if hasattr(cat, 'title') and cat.title is not '':
-                    tmp += '<tr><th>Title'
-                    tmp += '</th><td>'
-                    tmp += cat.title + '</td></tr>'
-                if hasattr(cat, 'actions') and len(cat.actions) > 0:
-                    tmp += '<tr><th>Actions'
-                    tmp += '</th><td><ul>'
-                    for item in cat.actions:
-                        tmp += '<li>' + item.kind.term + '</li>'
-                    tmp += '</ul></td></tr>'
-                if hasattr(cat, 'attributes') and len(cat.attributes) > 0:
-                    tmp += '<tr><th>Attributes'
-                    tmp += '</th><td><ul>'
-                    for item in cat.attributes:
-                        tmp += '<li>' + item + '</li>'
-                    tmp += '</ul></td></tr>'
-                if hasattr(cat, 'location') and cat.location is not '':
-                    tmp += '<tr><th>Location'
-                    tmp += '</th><td><a href="'
-                    tmp += cat.location + '">'
-                    tmp += cat.location + '</a></td></tr>'
-                if hasattr(cat, 'related')and len(cat.related) > 0:
-                    tmp += '<tr><th>related'
-                    tmp += '</th><td><ul>'
-                    for item in cat.related:
-                        tmp += '<li>' + repr(item) + '</li>'
-                    tmp += '</ul></td></tr>'
-
-                tmp += '</table>'
+                tmp = self._create_category_table(cat)
                 if sorted_cats.has_key(cat.scheme):
                     sorted_cats[cat.scheme] = sorted_cats[cat.scheme] + tmp
                 else:
                     sorted_cats[cat.scheme] = tmp
+
             for scheme in sorted_cats:
                 html += '<h2>' + scheme + '</h2>'
                 html += sorted_cats[scheme]
@@ -1017,6 +953,39 @@ class TextHTMLRendering(Rendering):
 
     # disabling 'Method could be a function' pylint check (these belong here!)
     # pylint: disable=R0201
+
+    def _create_category_table(self, category):
+        '''
+        Create a string containing a table with the category's information.
+        '''
+        tmp = '<table>'
+        tmp += '<tr><th>Term</th><td>' + category.term + '</td></tr>'
+        tmp += '<tr><th>Scheme</th><td>' + category.scheme + '</td></tr>'
+        tmp += '<tr><th>Class</th><td>' + category.cls_str + '</td></tr>'
+
+        if hasattr(category, 'title') and category.title is not '':
+            tmp += '<tr><th>Title/th><td>' + category.title + '</td></tr>'
+        if hasattr(category, 'actions') and len(category.actions) > 0:
+            tmp += '<tr><th>Actions</th><td><ul>'
+            for item in category.actions:
+                tmp += '<li>' + item.kind.term + '</li>'
+            tmp += '</ul></td></tr>'
+        if hasattr(category, 'attributes') and len(category.attributes) > 0:
+            tmp += '<tr><th>Attributes</th><td><ul>'
+            for item in category.attributes:
+                tmp += '<li>' + item + '</li>'
+            tmp += '</ul></td></tr>'
+        if hasattr(category, 'location') and category.location is not '':
+            tmp += '<tr><th>Location</th><td><a href="'
+            tmp += category.location + '">'
+            tmp += category.location + '</a></td></tr>'
+        if hasattr(category, 'related')and len(category.related) > 0:
+            tmp += '<tr><th>related</th><td><ul>'
+            for item in category.related:
+                tmp += '<li>' + repr(item) + '</li>'
+            tmp += '</ul></td></tr>'
+        tmp += '</table>'
+        return tmp
 
     def _create_form(self):
         '''

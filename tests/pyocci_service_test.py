@@ -659,6 +659,17 @@ class QueryHandlerTest(unittest.TestCase):
         handler.get()
         heads, data = handler.get_output()
 
+    def test_get_with_filter_sanity(self):
+        request = create_request('PUT', body = http_body_mixin)
+        handler = QueryWrapper(self.application, request)
+        handler.put()
+        heads, data = handler.get_output()
+
+        request = create_request('GET', body = http_body_mixin)
+        handler = QueryWrapper(self.application, request)
+        handler.get()
+        heads, data = handler.get_output()
+
     def test_put_for_sanity(self):
         request = create_request('PUT', body = http_body_mixin)
         handler = QueryWrapper(self.application, request)
@@ -668,7 +679,7 @@ class QueryHandlerTest(unittest.TestCase):
         handler = QueryWrapper(self.application, request)
         handler.get()
         heads, data = handler.get_output()
-        self.assertTrue(data.find('mine;scheme="http://mystuff.com/occi#";location=/foo/bar/') > -1)
+        self.assertTrue(data.find('mine;scheme="http://mystuff.com/occi#";class="mixin";location=/foo/bar/') > -1)
 
     def test_delete_for_sanity(self):
         request = create_request('PUT', body = http_body_mixin)
@@ -683,7 +694,7 @@ class QueryHandlerTest(unittest.TestCase):
         handler = QueryWrapper(self.application, request)
         handler.get()
         heads, data = handler.get_output()
-        self.assertTrue(data.find('mine;scheme="http://mystuff.com/occi#";location=/foo/bar/') == -1)
+        self.assertTrue(data.find('mine;scheme="http://mystuff.com/occi#";class="mixin";location=/foo/bar/') == -1)
 
 #===============================================================================
 # Security tests
@@ -887,7 +898,7 @@ class SecureQueryHandlerTest(unittest.TestCase):
         handler = SecureQueryWrapper(self.application, request)
         handler.get()
         heads, data = handler.get_output()
-        self.assertTrue(data.find('mine;scheme="http://mystuff.com/occi#";location=/foo/bar/') > -1)
+        self.assertTrue(data.find('mine;scheme="http://mystuff.com/occi#";class="mixin";location=/foo/bar/') > -1)
 
         # logout
         request = create_request('GET')
@@ -907,8 +918,8 @@ class SecureQueryHandlerTest(unittest.TestCase):
         handler = SecureQueryWrapper(self.application, request)
         handler.get()
         heads, data = handler.get_output()
-        self.assertFalse(data.find('mine;scheme="http://mystuff.com/occi#";location=/foo/bar/') > -1)
-        self.assertTrue(data.find('mine2;scheme="http://mystuff.com/occi#";location=/foo/bar/') > -1)
+        self.assertFalse(data.find('mine;scheme="http://mystuff.com/occi#";class="mixin";location=/foo/bar/') > -1)
+        self.assertTrue(data.find('mine2;scheme="http://mystuff.com/occi#";class="mixin";location=/foo/bar/') > -1)
 
     def test_delete_for_success(self):
         # login

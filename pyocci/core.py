@@ -25,7 +25,8 @@ Created on Nov 10, 2010
 
 # disabling 'Too few public methods' pylint check R0903 (This is a model)
 # disabling 'Missing docstring' pylint check C0111 (Docs can be found in OCCI)
-# pylint: disable=R0903,C0111
+# disabling 'Too many instance attributes' pyling check Ro902 (All okay)
+# pylint: disable=R0903,C0111,R0902
 
 class Category(object):
 
@@ -149,7 +150,7 @@ class Action(object):
         self.attributes = {}
 
     def __repr__(self):
-        return self.kind.term
+        return self.kind.scheme + '#' + self.kind.term
 
     def __eq__(self, instance):
         if instance is None or not isinstance(instance, Action):

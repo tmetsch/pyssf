@@ -426,7 +426,12 @@ class QueryHandler(BaseHandler):
 
     @tornado.web.authenticated
     def get(self):
-        parser = self.get_pyocci_parser('Accept')
+        headers, body = self.extract_http_data()
+        parser = self.get_pyocci_parser('Content-Type')
+        return_parser = self.get_pyocci_parser('Accept')
+
+        result = []
+
         cats = []
         for item in registry.BACKENDS.keys():
             if isinstance(item, Mixin):
@@ -435,7 +440,20 @@ class QueryHandler(BaseHandler):
             else:
                 cats.append(item)
 
-        heads, data = parser.from_categories(cats)
+        filter_cats = []
+        try:
+            filter_cats = parser.to_categories(headers, body)
+        except ParsingException:
+            pass
+
+        if len(filter_cats) == 0:
+            result = cats
+        else:
+            for item in cats:
+                if item in filter_cats:
+                    result.append(item)
+
+        heads, data = return_parser.from_categories(result)
         self._send_response(heads, data)
 
     @tornado.web.authenticated

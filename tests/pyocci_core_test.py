@@ -51,7 +51,7 @@ class CoreTest(unittest.TestCase):
     def test_action_repr_for_sanity(self):
         action = Action()
         action.kind = Action.category
-        self.assertEquals(repr(action), Action.category.term)
+        self.assertEquals(repr(action), Action.category.scheme + '#' + Action.category.term)
 
     def test_category_eq_for_sanity(self):
         self.assertTrue(Resource.category == Resource.category)
