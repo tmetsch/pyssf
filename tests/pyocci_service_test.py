@@ -141,6 +141,8 @@ class ResourceHandlerTest(unittest.TestCase):
 
         request = create_request('GET')
         handler = Wrapper(self.application, request)
+        # leave out the host...
+        url = url[len(request.protocol + '://' + request.host):]
         handler.get(url)
         heads, data = handler.get_output()
         self.assertEquals(http_body, data.strip())
@@ -166,6 +168,8 @@ class ResourceHandlerTest(unittest.TestCase):
 
         request = create_request('PUT', body = 'X-OCCI-Attribute: occi.compute.cores=3\nX-OCCI-Attribute:occi.compute.architecture=x86')
         handler = Wrapper(self.application, request)
+        # leave out the host...
+        url = url[len(request.protocol + '://' + request.host):]
         handler.put(url)
         heads, data = handler.get_output()
 
@@ -184,7 +188,8 @@ class ResourceHandlerTest(unittest.TestCase):
 
         request = create_request('DELETE')
         handler = Wrapper(self.application, request)
-        print url
+        # leave out the host...
+        url = url[len(request.protocol + '://' + request.host):]
         handler.delete(url)
         heads, data = handler.get_output()
         self.assertRaises(HTTPError, handler.get, url)
@@ -250,7 +255,8 @@ class BasicLinkTest(unittest.TestCase):
         handler = Wrapper(self.application, request)
         handler.get('/link_test/1')
         header, data = handler.get_output()
-        self.assertTrue(header['Link'].find('</link_test/2>;self=/my_links/12;') > -1)
+        base_url = request.protocol + '://' + request.host
+        self.assertTrue(header['Link'].find('<' + base_url + '/link_test/2>;self=' + base_url + '/my_links/12;') > -1)
 
         link_2_3 = 'Category:' + NetworkLinkBackend.category.term + ';scheme=' + NetworkLinkBackend.category.scheme + '\nX-OCCI-Attribute:source=/link_test/2,target=/link_test/3'
 
@@ -262,7 +268,7 @@ class BasicLinkTest(unittest.TestCase):
         handler = Wrapper(self.application, request)
         handler.get('/link_test/2')
         header, data = handler.get_output()
-        self.assertEqual(header['Link'], '</link_test/3>;self=/my_links/12;')
+        self.assertEqual(header['Link'], '<' + base_url + '/link_test/3>;self=' + base_url + '/my_links/12;')
 
         link_2_1 = 'Category:' + NetworkLinkBackend.category.term + ';scheme=' + NetworkLinkBackend.category.scheme + '\nX-OCCI-Attribute:source=/link_test/2,target=/link_test/1'
         request = create_request('PUT', body = link_2_3)
@@ -273,7 +279,7 @@ class BasicLinkTest(unittest.TestCase):
         handler = Wrapper(self.application, request)
         handler.get('/link_test/2')
         header, data = handler.get_output()
-        self.assertEqual(header['Link'], '</link_test/3>;self=/my_links/12;,</link_test/3>;self=/my_links/21;')
+        self.assertEqual(header['Link'], '<' + base_url + '/link_test/3>;self=' + base_url + '/my_links/12;,<' + base_url + '/link_test/3>;self=' + base_url + '/my_links/21;')
 
         request = create_request('DELETE')
         handler = Wrapper(self.application, request)
@@ -283,7 +289,7 @@ class BasicLinkTest(unittest.TestCase):
         handler = Wrapper(self.application, request)
         handler.get('/link_test/2')
         header, data = handler.get_output()
-        self.assertEqual(header['Link'], '</link_test/3>;self=/my_links/12;')
+        self.assertEqual(header['Link'], '<' + base_url + '/link_test/3>;self=' + base_url + '/my_links/12;')
 
 class ErrorResourceHandlerTest(unittest.TestCase):
 
@@ -339,6 +345,9 @@ class ErrorResourceHandlerTest(unittest.TestCase):
         heads, data = handler.get_output()
         url = heads['Location']
 
+        # leave out the host...
+        url = url[len(request.protocol + '://' + request.host):]
+
         request = create_request('PUT', headers = {'Content-Type':'text/json'}, body = http_body)
         handler = Wrapper(self.application, request)
         self.assertRaises(HTTPError, handler.put, url)
@@ -355,6 +364,9 @@ class ErrorResourceHandlerTest(unittest.TestCase):
         heads, data = handler.get_output()
         url = heads['Location']
 
+        # leave out the host...
+        url = url[len(request.protocol + '://' + request.host):]
+
         request = create_request('PUT', body = 'Category:superduper;scheme=http://ogf.org/bla')
         handler = Wrapper(self.application, request)
         self.assertRaises(HTTPError, handler.put, url)
@@ -369,6 +381,9 @@ class ErrorResourceHandlerTest(unittest.TestCase):
         handler.post('/')
         heads, data = handler.get_output()
         url = heads['Location']
+
+        # leave out the host...
+        url = url[len(request.protocol + '://' + request.host):]
 
         request = create_request('GET', headers = {'Accept':'text/json'}, body = http_body)
         handler = Wrapper(self.application, request)
@@ -522,7 +537,7 @@ class ListHandlerTest(unittest.TestCase):
         self.assertTrue(data.find('/list_test/foo/1') > -1)
         self.assertTrue(data.find('/list_test/foo/2') > -1)
 
-        request = create_request('GET', body = 'Category: resource;scheme=http://schemas.ogf.org/occi/core')
+        request = create_request('GET', body = 'Category: resource;scheme="http://schemas.ogf.org/occi/core"')
         handler = ListWrapper(self.application, request)
         handler.get('list_test')
         heads, data = handler.get_output()
@@ -653,7 +668,7 @@ class QueryHandlerTest(unittest.TestCase):
         handler = QueryWrapper(self.application, request)
         handler.get()
         heads, data = handler.get_output()
-        self.assertTrue(data.find('mine;scheme=http://mystuff.com/occi;location=/foo/bar/') > -1)
+        self.assertTrue(data.find('mine;scheme="http://mystuff.com/occi#";location=/foo/bar/') > -1)
 
     def test_delete_for_sanity(self):
         request = create_request('PUT', body = http_body_mixin)
@@ -668,7 +683,7 @@ class QueryHandlerTest(unittest.TestCase):
         handler = QueryWrapper(self.application, request)
         handler.get()
         heads, data = handler.get_output()
-        self.assertTrue(data.find('mine;scheme=http://mystuff.com/occi;location=/foo/bar/') == -1)
+        self.assertTrue(data.find('mine;scheme="http://mystuff.com/occi#";location=/foo/bar/') == -1)
 
 #===============================================================================
 # Security tests
@@ -762,6 +777,9 @@ class SecureResourceHandlerTest(unittest.TestCase):
         handler.post('/')
         heads, data = handler.get_output()
         url = heads['Location']
+
+        # leave out the host...
+        url = url[len(request.protocol + '://' + request.host):]
 
         # logout
         request = create_request('GET')
@@ -869,7 +887,7 @@ class SecureQueryHandlerTest(unittest.TestCase):
         handler = SecureQueryWrapper(self.application, request)
         handler.get()
         heads, data = handler.get_output()
-        self.assertTrue(data.find('mine;scheme=http://mystuff.com/occi;location=/foo/bar/') > -1)
+        self.assertTrue(data.find('mine;scheme="http://mystuff.com/occi#";location=/foo/bar/') > -1)
 
         # logout
         request = create_request('GET')
@@ -889,8 +907,8 @@ class SecureQueryHandlerTest(unittest.TestCase):
         handler = SecureQueryWrapper(self.application, request)
         handler.get()
         heads, data = handler.get_output()
-        self.assertFalse(data.find('mine;scheme=http://mystuff.com/occi;location=/foo/bar/') > -1)
-        self.assertTrue(data.find('mine2;scheme=http://mystuff.com/occi;location=/foo/bar/') > -1)
+        self.assertFalse(data.find('mine;scheme="http://mystuff.com/occi#";location=/foo/bar/') > -1)
+        self.assertTrue(data.find('mine2;scheme="http://mystuff.com/occi#";location=/foo/bar/') > -1)
 
     def test_delete_for_success(self):
         # login

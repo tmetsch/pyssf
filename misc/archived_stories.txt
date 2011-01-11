@@ -1,10 +1,14 @@
 R,S30,Develop & Integrate RESTful Interface
+R,S30.1,Auth Autho Multiuser support (security)
 R,S30.2,Categories
 R,S30.3,Basic HTTP handling & Resource creation
 R,S30.4,Links
 R,S30.5,Actions
+R,S30.6,Queries
 R,S30.7,Attributes
+R,S30.8,Versioning
 R,S30.10,Error codes and handling
+R,S30.11,Listing of sub-resources
 R,S40,Create a pyLSF interface
 R,S70,Setup Software Development Environment (build tools etc)
 R,S80,Create a modular SSF system which will act a Integration-Point / Enhanced Frontend
@@ -16,3 +20,17 @@ R,S140,Let DMRMAAv2 interface with LSF directly
 R,S160,Test if pydrmaa (v1) is usable instead of pylsf
 R,S170,Work on extensibility
 R,S180,Update schemes
+R,S190,Update Attribute handling according to spec
+R,S200,Update resource_model to new rev of the OCCI spec
+R,S210,Updated Link implementation (links now REST-resources)
+R,S220,Document configurations
+R,S240,Collections
+R,S250,Let backends register their categories and support multiple backends
+R,S260,Automatic selection of Parsers based on content-type
+R,S270,Updated HTTP parser to use body as well (revoked use different parser instead)
+R,S280,Handle hierarchy of categories and rels
+R,S290,Tagging
+R,S300,Logging
+R,S310,Fix parsing of scheme for category
+R,S320,Switch to tornado web
+R,S360,Cleanup Unittests

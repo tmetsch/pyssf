@@ -43,7 +43,8 @@ class BaseHandler(tornado.web.RequestHandler):
 
     # disabling 'Unused argument' pylint check (overwritten methods)
     # disabling 'Too many public methods' pylint check (tornado's fault)
-    # pylint: disable=R0904,W0613
+    # disabling 'method could be a function' pylint check (for sanity reasons)
+    # pylint: disable=R0904,W0613,R0201
 
     version = 'pyocci OCCI/1.1'
 
@@ -169,7 +170,6 @@ class ResourceHandler(BaseHandler):
         headers, body = self.extract_http_data()
         parser = self.get_pyocci_parser('Content-Type')
 
-
         if self.request.uri.find('?action=') > -1:
             key = self.request.uri.split('?')[0]
             try:
@@ -266,7 +266,6 @@ class ResourceHandler(BaseHandler):
 
     @tornado.web.authenticated
     def delete(self, key):
-        print key, RESOURCES.keys()
         if key in RESOURCES.keys():
             entity = RESOURCES[key]
 
@@ -383,7 +382,6 @@ class ListHandler(BaseHandler):
             try:
                 category = locations[key]
                 entities = parser.get_entities(headers, body)
-                print entities, category
                 for item in entities:
                     if RESOURCES.has_key(item):
                         res = RESOURCES[item]

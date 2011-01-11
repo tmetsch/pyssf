@@ -104,46 +104,51 @@ class DefunctBackend(Backend):
 
 # text/plain
 
-http_body = 'Category: ' + ComputeBackend.category.term + ';scheme=' + ComputeBackend.category.scheme
+http_body = 'Category: ' + ComputeBackend.category.term + ';scheme="' + ComputeBackend.category.scheme + '#"'
 http_body_with_attr = http_body + '\nX-OCCI-Attribute:foo=bar,summary=bar'
 http_body_only_attr = 'X-OCCI-Attribute:foo=bar'
-http_body_link = 'Category:' + NetworkLinkBackend.category.term + ';scheme=' + NetworkLinkBackend.category.scheme + '\nX-OCCI-Attribute:source=foo,target=bar'
-defunct_http_body = 'Category:' + DefunctBackend.category.term + ';scheme=' + DefunctBackend.category.scheme
-http_body_mul_cats = http_body + ',' + MyMixinBackend.category.term + ';scheme=' + MyMixinBackend.category.scheme
+http_body_link = 'Category:' + NetworkLinkBackend.category.term + ';scheme="' + NetworkLinkBackend.category.scheme + '#"\nX-OCCI-Attribute:source=foo,target=bar'
+http_body_link_with_base_url = 'Category:' + NetworkLinkBackend.category.term + ';scheme="' + NetworkLinkBackend.category.scheme + '#"\nX-OCCI-Attribute:source=http://localhost:8080/foo,target=http://localhost:8080/bar'
+defunct_http_body = 'Category:' + DefunctBackend.category.term + ';scheme="' + DefunctBackend.category.scheme + '#"'
+http_body_mul_cats = http_body + ',' + MyMixinBackend.category.term + ';scheme="' + MyMixinBackend.category.scheme + '#"'
 http_body_add_info = http_body + ';term=foo'
 
 http_body_loc = 'X-OCCI-Location: /foo/bar1'
+http_body_loc_with_base_url = 'X-OCCI-Location: http://localhost:8080/foo/bar1'
 
-http_body_action = 'Category: ' + ComputeBackend.start_category.term + ';scheme=' + ComputeBackend.start_category.scheme
+http_body_action = 'Category: ' + ComputeBackend.start_category.term + ';scheme="' + ComputeBackend.start_category.scheme + '#"'
 
-http_body_mixin = 'Category: mine;scheme=http://mystuff.com/occi;location=/foo/bar/;'
-http_body_mixin2 = 'Category: mine2;scheme=http://mystuff.com/occi;location=/foo/bar/;'
+http_body_mixin = 'Category: mine;scheme=http://mystuff.com/occi#;location=/foo/bar/;'
+http_body_mixin2 = 'Category: mine2;scheme=http://mystuff.com/occi#;location=/foo/bar/;'
 
 # text/occi
 
-http_head = {'Category': ComputeBackend.category.term + ';scheme=' + ComputeBackend.category.scheme}
+http_head = {'Category': ComputeBackend.category.term + ';scheme="' + ComputeBackend.category.scheme + '#"'}
 http_head_with_attr = {'Category': http_head['Category'], 'X-OCCI-Attribute':'foo=bar,summary=bar'}
 http_head_only_attr = {'X-OCCI-Attribute':'foo=bar'}
-http_head_link = {'Category': NetworkLinkBackend.category.term + ';scheme=' + NetworkLinkBackend.category.scheme, 'X-OCCI-Attribute':'source=foo,target=bar'}
-defunct_http_head = {'Category': DefunctBackend.category.term + ';scheme=' + DefunctBackend.category.scheme}
+http_head_link = {'Category': NetworkLinkBackend.category.term + ';scheme="' + NetworkLinkBackend.category.scheme + '#"', 'X-OCCI-Attribute':'source=foo,target=bar'}
+http_head_link_with_base_url = {'Category': NetworkLinkBackend.category.term + ';scheme="' + NetworkLinkBackend.category.scheme + '#"', 'X-OCCI-Attribute':'source=http://localhost:8080/foo,target=http://localhost:8080/bar'}
+defunct_http_head = {'Category': DefunctBackend.category.term + ';scheme="' + DefunctBackend.category.scheme + '#"'}
 
 http_head_mul_cats = http_head.copy()
-http_head_mul_cats['Category'] = http_head['Category'] + ',' + MyMixinBackend.category.term + ';scheme=' + MyMixinBackend.category.scheme
+http_head_mul_cats['Category'] = http_head['Category'] + ',' + MyMixinBackend.category.term + ';scheme="' + MyMixinBackend.category.scheme + '#"'
 
 http_head_add_info = http_head.copy()
 http_head_add_info['Category'] = http_head['Category'] + ';term=foo'
 
 http_head_loc = {'X-OCCI-Location': '/foo/bar1'}
+http_head_loc_with_base_url = {'X-OCCI-Location': 'http://localhost:8080/foo/bar1'}
 
-http_head_action = {'Category': ComputeBackend.start_category.term + ';scheme=' + ComputeBackend.start_category.scheme, 'X-OCCI-Attribute':'foo=bar'}
+http_head_action = {'Category': ComputeBackend.start_category.term + ';scheme="' + ComputeBackend.start_category.scheme + '#"', 'X-OCCI-Attribute':'foo=bar'}
 
-http_head_mixin = {'Category': 'mine;scheme=http://mystuff.com/occi;location=/foo/bar/;'}
+http_head_mixin = {'Category': 'mine;scheme="http://mystuff.com/occi#";location=/foo/bar/;'}
 
 # text/html
 
 html_create_res = 'Category=http://schemas.ogf.org/occi/infrastructure#compute&X-OCCI-Attribute=key=foo+value=bar+summary=jeeha'
 html_with_empty_attr = 'Category=http://schemas.ogf.org/occi/infrastructure#compute' + '&X-OCCI-Attribute='
 html_create_link = 'Category=http://schemas.ogf.org/occi/infrastructure#networklink&X-OCCI-Attribute=source=foo+target=bar'
+html_create_link_with_base_url = 'Category=http://schemas.ogf.org/occi/infrastructure#networklink&X-OCCI-Attribute=source=http://localhost:8080/foo+target=http://localhost:8080/bar'
 html_action = 'Category=' + ComputeBackend.start_category.scheme + '#' + ComputeBackend.start_category.term
 
 #===============================================================================
@@ -152,40 +157,40 @@ html_action = 'Category=' + ComputeBackend.start_category.scheme + '#' + Compute
 
 # text/plain
 
-http_body_mis_term = 'Category:scheme=example.com/occi/keyvalue'
+http_body_mis_term = 'Category:scheme="example.com/occi/keyvalue"'
 http_body_mis_scheme = 'Category:123;'
 http_body_with_faulty_attr = http_body + '\nX-OCCI-Attribute:foo:bar,summary=bar'
-http_body_faulty_term = 'Category:123;scheme=example.com/occi/keyvalue'
-http_body_faulty_scheme = 'Category:keyvalue;scheme=example.com/occi/keyvalue'
-http_body_mis_keyword = 'keyvalue;scheme=example.com/occi/keyvalue'
-http_body_faulty_sep = 'Category:keyvalue,scheme=example.com/occi/keyvalue'
+http_body_faulty_term = 'Category:123;scheme="example.com/occi/keyvalue"'
+http_body_faulty_scheme = 'Category:keyvalue;scheme="example.com/occi/keyvalue"'
+http_body_mis_keyword = 'keyvalue;scheme="example.com/occi/keyvalue"'
+http_body_faulty_sep = 'Category:keyvalue,scheme="example.com/occi/keyvalue"'
 http_body_just_crap = 'sdkfhkjh;sdkjfhaksj'
-http_body_non_existing_category = 'Category:foo;scheme=http://example.com/occi/bar'
+http_body_non_existing_category = 'Category:foo;scheme="http://example.com/occi/bar"'
 
 http_body_faulty_loc = 'X-OCCI-Locations:'
-http_body_faulty_action = 'Category: ' + DefunctBackend.a_category.term + ';scheme=' + DefunctBackend.a_category.scheme
+http_body_faulty_action = 'Category: ' + DefunctBackend.a_category.term + ';scheme="' + DefunctBackend.a_category.scheme + '"'
 http_body_faulty_mixin = ''
 
 # text/occi
 
-http_head_mis_term = {'Category': 'scheme=example.com/occi/keyvalue'}
+http_head_mis_term = {'Category': 'scheme="example.com/occi/keyvalue"'}
 http_head_mis_scheme = {'Category':'123;'}
 http_head_with_faulty_attr = http_head.copy()
 http_head_with_faulty_attr['X-OCCI-Attribute'] = 'foo:bar,summary=bar'
-http_head_faulty_term = {'Category':'123;scheme=example.com/occi/keyvalue'}
-http_head_faulty_scheme = {'Category':'keyvalue;scheme=example.com/occi/keyvalue'}
-http_head_mis_keyword = {'':'keyvalue;scheme=example.com/occi/keyvalue'}
-http_head_faulty_sep = {'Category':'keyvalue,scheme=example.com/occi/keyvalue'}
+http_head_faulty_term = {'Category':'123;scheme="example.com/occi/keyvalue"'}
+http_head_faulty_scheme = {'Category':'keyvalue;scheme="example.com/occi/keyvalue"'}
+http_head_mis_keyword = {'':'keyvalue;scheme="example.com/occi/keyvalue"'}
+http_head_faulty_sep = {'Category':'keyvalue,scheme="example.com/occi/keyvalue"'}
 http_head_just_crap = {'sdkfhkjh':'sdkjfhaksj'}
-http_head_non_existing_category = {'Category':'foo;scheme=http://example.com/occi/bar'}
+http_head_non_existing_category = {'Category':'foo;scheme="http://example.com/occi/bar"'}
 
-http_head_non_existing_category = {'Category':'foo;scheme=http://example.com/occi/bar'}
+http_head_non_existing_category = {'Category':'foo;scheme="http://example.com/occi/bar"'}
 
 http_head_faulty_loc = {'X-OCCI-Locations':''}
-http_head_faulty_action = {'Category': DefunctBackend.a_category.term + ';scheme=' + DefunctBackend.a_category.scheme}
+http_head_faulty_action = {'Category': DefunctBackend.a_category.term + ';scheme="' + DefunctBackend.a_category.scheme + '"'}
 http_head_faulty_mixin = {}
 
-http_head_faulty_action_attr = {'Category': ComputeBackend.start_category.term + ';scheme=' + ComputeBackend.start_category.scheme, 'X-OCCI-Attribute':'foo:bar, summary = bar'}
+http_head_faulty_action_attr = {'Category': ComputeBackend.start_category.term + ';scheme="' + ComputeBackend.start_category.scheme + '"', 'X-OCCI-Attribute':'foo:bar, summary = bar'}
 
 # text/html
 html_faulty_create = 'Category=http://jeeha.com/bla#tida&Attribute=key=foo+value=bar+summary=jeeha'

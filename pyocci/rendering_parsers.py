@@ -29,6 +29,8 @@ from pyocci.my_exceptions import ParsingException
 import re
 import urllib
 
+# TODO: fix the length of the file:
+
 class HTTPData(object):
     '''
     Simple class which functions as an adapter between the OCCI model and the
@@ -168,7 +170,7 @@ def _get_category(cat_string):
             tmp = tmp[:end]
         scheme = tmp.rstrip('"').lstrip('"')
         if scheme.find('http') is not - 1:
-            cat.scheme = scheme.strip()
+            cat.scheme = scheme.strip().rstrip('#')
         else:
             raise ParsingException('No valid scheme for given category'
                                    + ' could be found.')
@@ -251,7 +253,7 @@ def _create_categories(kind, extended = False):
     '''
     tmp = ''
     tmp += kind.term
-    tmp += ';scheme="' + kind.scheme + '"'
+    tmp += ';scheme="' + kind.scheme + '#"'
     if extended:
         if hasattr(kind, 'title') and kind.title is not '':
             tmp += ';title=' + kind.title
@@ -337,7 +339,8 @@ class TextPlainRendering(Rendering):
 
             if len(entity.actions) > 0:
                 for action in entity.actions:
-                    data += 'Link: <' + registry.HOST + entity.identifier + '?action='
+                    data += 'Link: <' + registry.HOST + entity.identifier
+                    data += '?action='
                     data += action.kind.term + '>\n'
 
             if len(entity.links) > 0:
@@ -347,8 +350,10 @@ class TextPlainRendering(Rendering):
 
         elif isinstance(entity, Link):
             # source and target must be there!
-            data += 'X-OCCI-Attribute: source=' + registry.HOST + entity.source + '\n'
-            data += 'X-OCCI-Attribute: target=' + registry.HOST + entity.target + '\n'
+            data += 'X-OCCI-Attribute: source=' + registry.HOST
+            data += entity.source + '\n'
+            data += 'X-OCCI-Attribute: target=' + registry.HOST
+            data += entity.target + '\n'
         for item in entity.attributes.keys():
             data += 'X-OCCI-Attribute: ' + item + '='
             data += entity.attributes[item] + '\n'
@@ -363,7 +368,7 @@ class TextPlainRendering(Rendering):
             if entry.find('X-OCCI-Location:') > -1:
                 tmp = entry[entry.find('X-OCCI-Location:') + 16:]
                 for item in tmp.split(','):
-                    if item.find(registry.HOST) == 0:
+                    if item.strip().find(registry.HOST) == 0:
                         ids.append(item.strip()[len(registry.HOST):])
                     else:
                         ids.append(item.strip())
@@ -531,12 +536,13 @@ class TextHeaderRendering(Rendering):
 
             if len(entity.actions) > 0:
                 for action in entity.actions:
-                    link_tmp.append('<' + registry.HOST + entity.identifier + '?action='
-                                    + action.kind.term + '>')
+                    link_tmp.append('<' + registry.HOST + entity.identifier
+                                    + '?action=' + action.kind.term + '>')
 
             if len(entity.links) > 0:
                 for item in entity.links:
-                    link_tmp.append('<' + registry.HOST + item.target + '>;self='
+                    link_tmp.append('<' + registry.HOST
+                                    + item.target + '>;self='
                                     + registry.HOST + item.identifier + ';')
 
         elif isinstance(entity, Link):
@@ -560,7 +566,7 @@ class TextHeaderRendering(Rendering):
         ids = []
         if 'X-OCCI-Location' in headers.keys():
             for item in headers['X-OCCI-Location'].split(','):
-                if item.find(registry.HOST) == 0:
+                if item.strip().find(registry.HOST) == 0:
                     ids.append(item.strip()[len(registry.HOST):])
                 else:
                     ids.append(item.strip())
@@ -662,7 +668,8 @@ class TextHTMLRendering(Rendering):
 
     # disabling 'Unused variable' pylint check (categories are not used all 
     #                                          the time)
-    # pylint: disable=W0612
+    # disabling 'Method could be a function' pylint check (I want it here)
+    # pylint: disable=W0612,R0201
 
     # FIXME: check if it wouldn't be better to do term;scheme=scheme instead 
     # of scheme#term
@@ -679,6 +686,43 @@ class TextHTMLRendering(Rendering):
         css_string += 'div {padding: 1em; margin: 1em;'
         css_string += 'border: 1px solid #73c167;}'
         css_string += 'table {margin: 1em; border: 1px solid #444;}'
+
+    def _get_data(self, body):
+        '''
+        Simple method to split out the information from the HTTP HTML body.
+        
+        @param headers: The HTML body.
+        @type headers: str
+        '''
+        data = HTTPData()
+        if body is not None:
+            tmp = urllib.unquote(body).split('&')
+        else:
+            raise ParsingException('Body should not be empty.')
+
+        # FIXME!!! handle incomplete request properly!
+        try:
+            kin = tmp[0][tmp[0].find('Category=') + 9:].split('#')
+            kin = kin[1] + ';scheme=' + kin[0]
+        except IndexError:
+            raise ParsingException('Cannot find properely formatted data.')
+
+        attr = None
+        try:
+            test = tmp[1][tmp[1].find('X-OCCI-Attribute=') + 17:]
+            if test is '':
+                attr = []
+            else:
+                attr = test.split('+')
+        except IndexError:
+            pass
+
+        if kin is not None:
+            data.categories.append(kin)
+        if attr is not None:
+            data.attributes = attr
+
+        return data
 
     def from_categories(self, categories):
         html = self._create_html_head()
@@ -707,7 +751,7 @@ class TextHTMLRendering(Rendering):
                     for item in cat.actions:
                         tmp += '<li>' + item.kind.term + '</li>'
                     tmp += '</ul></td></tr>'
-                if hasattr(cat, 'attributes')and len(cat.attributes) > 0:
+                if hasattr(cat, 'attributes') and len(cat.attributes) > 0:
                     tmp += '<tr><th>Attributes'
                     tmp += '</th><td><ul>'
                     for item in cat.attributes:
@@ -853,20 +897,7 @@ class TextHTMLRendering(Rendering):
         return headers, html
 
     def to_action(self, headers, body):
-        if body is not None:
-            tmp = urllib.unquote(body).split('&')
-        else:
-            raise ParsingException('No valid data could be found.')
-
-        try:
-            kin = tmp[0][tmp[0].find("Category=") + 9:].split('#')
-            kin = kin[1] + ';scheme=' + kin[0]
-        except IndexError:
-            raise ParsingException('Could not find properly designed data.')
-
-        data = HTTPData()
-        if kin:
-            data.categories.append(kin)
+        data = self._get_data(body)
 
         # all data...
         kind, categories = _get_categories(data.categories)
@@ -895,28 +926,7 @@ class TextHTMLRendering(Rendering):
             raise ParsingException('When allowing an incomplete requests'
                                    + ' the kind must be predefined!')
 
-        if body is not None:
-            tmp = urllib.unquote(body).split('&')
-        else:
-            raise ParsingException('No valid data could be found.')
-
-        # FIXME!!! handle incomplete request properly!
-        try:
-            kin = tmp[0][tmp[0].find('Category=') + 9:].split('#')
-            kin = kin[1] + ';scheme=' + kin[0]
-            test = tmp[1][tmp[1].find('X-OCCI-Attribute=') + 17:]
-            if test is '':
-                attr = []
-            else:
-                attr = test.split('+')
-        except IndexError:
-            raise ParsingException('Cannot find properely formatted data.')
-
-        data = HTTPData()
-        if kin:
-            data.categories.append(kin)
-        if attr:
-            data.attributes = attr
+        data = self._get_data(body)
 
         # all data...
         kind, categories = _get_categories(data.categories)

@@ -43,7 +43,9 @@ from tests import http_body, http_body_add_info, http_body_faulty_scheme, \
     http_head_faulty_mixin, http_head_faulty_scheme, http_head_faulty_sep, \
     http_head_faulty_term, http_head_just_crap, http_head_mis_keyword, \
     http_head_mis_scheme, http_head_mis_term, http_head_with_faulty_attr, \
-    html_with_empty_attr
+    html_with_empty_attr, http_body_link_with_base_url, http_body_loc_with_base_url, \
+    http_head_loc_with_base_url, http_head_link_with_base_url, \
+    html_create_link_with_base_url
 import unittest
 import urllib
 
@@ -82,11 +84,13 @@ class TextPlainRenderingTest(unittest.TestCase):
         self.entity.attributes['foo'] = 'bar'
         self.entity.summary = 'foo'
 
+        registry.HOST = 'http://localhost:8080'
         registry.register_backend([ComputeBackend.start_category, ComputeBackend.category], ComputeBackend())
         registry.register_backend([NetworkLinkBackend.category], NetworkLinkBackend())
         registry.register_backend([MyMixinBackend.category], MyMixinBackend())
 
     def tearDown(self):
+        registry.HOST = ''
         registry.BACKENDS = {}
 
     #===========================================================================
@@ -187,6 +191,8 @@ class TextPlainRenderingTest(unittest.TestCase):
     def test_get_entities_for_sanity(self):
         en_list = self.parser.get_entities(None, http_body_loc)
         self.assertTrue(len(en_list) == 1)
+        en_list = self.parser.get_entities(None, http_body_loc_with_base_url)
+        self.assertTrue(len(en_list) == 1)
 
     def test_login_information_for_sanity(self):
         heads, data = self.parser.login_information()
@@ -213,6 +219,12 @@ class TextPlainRenderingTest(unittest.TestCase):
         self.assertEquals(link.target, 'bar')
         self.assertEquals(link.kind, NetworkLinkBackend.category)
 
+        link = self.parser.to_entity(None, http_body_link_with_base_url)
+        self.assertTrue(isinstance(link, Link))
+        self.assertEquals(link.source, '/foo')
+        self.assertEquals(link.target, '/bar')
+        self.assertEquals(link.kind, NetworkLinkBackend.category)
+
         multi_line = http_body + '\nCategory:' + http_body_mul_cats.split(',')[1]
         resource1 = self.parser.to_entity(None, http_body_mul_cats)
         resource2 = self.parser.to_entity(None, multi_line)
@@ -235,11 +247,13 @@ class TextHeaderRenderingTest(unittest.TestCase):
         self.entity.attributes['foo'] = 'bar'
         self.entity.summary = 'foo'
 
+        registry.HOST = 'http://localhost:8080'
         registry.register_backend([ComputeBackend.start_category, ComputeBackend.category], ComputeBackend())
         registry.register_backend([NetworkLinkBackend.category], NetworkLinkBackend())
         registry.register_backend([MyMixinBackend.category], MyMixinBackend())
 
     def tearDown(self):
+        registry.HOST = ''
         registry.BACKENDS = {}
 
     #===========================================================================
@@ -343,6 +357,9 @@ class TextHeaderRenderingTest(unittest.TestCase):
     def test_get_entities_for_sanity(self):
         en_list = self.parser.get_entities(http_head_loc, None)
         self.assertTrue(len(en_list) == 1)
+        en_list = self.parser.get_entities(http_head_loc_with_base_url, None)
+        self.assertTrue(len(en_list) == 1)
+
 
     def test_login_information_for_sanity(self):
         heads, data = self.parser.login_information()
@@ -369,6 +386,12 @@ class TextHeaderRenderingTest(unittest.TestCase):
         self.assertEquals(link.target, 'bar')
         self.assertEquals(link.kind, NetworkLinkBackend.category)
 
+        link = self.parser.to_entity(http_head_link_with_base_url, None)
+        self.assertTrue(isinstance(link, Link))
+        self.assertEquals(link.source, '/foo')
+        self.assertEquals(link.target, '/bar')
+        self.assertEquals(link.kind, NetworkLinkBackend.category)
+
 class TextHTMLRenderingTest(unittest.TestCase):
 
     parser = TextHTMLRendering()
@@ -388,11 +411,13 @@ class TextHTMLRenderingTest(unittest.TestCase):
 
         service.AUTHENTICATION = True
 
+        registry.HOST = 'http://localhost:8080'
         registry.register_backend([ComputeBackend.start_category, ComputeBackend.category], ComputeBackend())
         registry.register_backend([NetworkLinkBackend.category], NetworkLinkBackend())
         registry.register_backend([MyMixinBackend.category], MyMixinBackend())
 
     def tearDown(self):
+        registry.HOST = ''
         registry.BACKENDS = {}
         service.AUTHENTICATION = False
 
@@ -467,6 +492,10 @@ class TextHTMLRenderingTest(unittest.TestCase):
         self.assertTrue(isinstance(resource, Resource))
 
         data = urllib.quote(html_create_link)
+        link = self.parser.to_entity(None, data)
+        self.assertTrue(isinstance(link, Link))
+
+        data = urllib.quote(html_create_link_with_base_url)
         link = self.parser.to_entity(None, data)
         self.assertTrue(isinstance(link, Link))
 
