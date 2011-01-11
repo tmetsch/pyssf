@@ -151,6 +151,9 @@ def _get_category(cat_string):
     @param cat_string: The string with RFC compliant syntac of a Category.
     @type cat_string: str
     '''
+
+    # TODO: make sue of th class attribute
+
     cat = Category()
     # find the term
     tmp = cat_string.split(';')
