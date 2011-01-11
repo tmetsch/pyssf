@@ -27,7 +27,7 @@ from pyocci import registry, service
 from pyocci.core import Resource, Link, Mixin
 from pyocci.my_exceptions import ParsingException
 from pyocci.rendering_parsers import TextPlainRendering, Rendering, HTTPData, \
-    TextHTMLRendering, TextHeaderRendering
+    TextHTMLRendering, TextHeaderRendering, URIListRendering
 from tests import http_body, http_body_add_info, http_body_faulty_scheme, \
     http_body_faulty_sep, http_body_faulty_term, http_body_just_crap, \
     http_body_mul_cats, http_body_mis_keyword, http_body_mis_scheme, \
@@ -510,6 +510,70 @@ class TextHTMLRenderingTest(unittest.TestCase):
     def test_from_entity_for_sanity(self):
         heads, data = self.parser.from_entity(self.entity)
         self.assertEquals(heads['Content-Type'], 'text/html')
+
+class URIListRenderingTest(unittest.TestCase):
+
+    parser = URIListRendering()
+
+    entity = Resource()
+    link = Link()
+
+    def setUp(self):
+        self.link.source = 'bar'
+        self.link.target = 'foo'
+        self.entity.kind = ComputeBackend.category
+        self.entity.mixins = [MyMixinBackend.category]
+        self.entity.actions = [ComputeBackend.start_action]
+        self.entity.links = [self.link]
+        self.entity.attributes['foo'] = 'bar'
+        self.entity.summary = 'foo'
+
+        service.AUTHENTICATION = True
+
+        registry.HOST = 'http://localhost:8080'
+        registry.register_backend([ComputeBackend.start_category, ComputeBackend.category], ComputeBackend())
+        registry.register_backend([NetworkLinkBackend.category], NetworkLinkBackend())
+        registry.register_backend([MyMixinBackend.category], MyMixinBackend())
+
+    def tearDown(self):
+        registry.HOST = ''
+        registry.BACKENDS = {}
+        service.AUTHENTICATION = False
+
+    #===========================================================================
+    # Test for success
+    #===========================================================================
+
+    def test_from_categories_for_success(self):
+        self.parser.from_categories([])
+        self.parser.from_categories([ComputeBackend.category])
+        self.parser.from_categories([ComputeBackend.category, NetworkLinkBackend.category])
+
+    def test_from_entities_for_success(self):
+        self.parser.from_entities([self.entity])
+        self.parser.from_entities([])
+
+    #===========================================================================
+    # Test for failure
+    #===========================================================================
+
+    def test_from_entity_for_failure(self):
+        self.assertRaises(NotImplementedError, self.parser.from_entity, None)
+
+    def test_get_entities_failure(self):
+        self.assertRaises(NotImplementedError, self.parser.get_entities, None, None)
+
+    def test_login_information_for_failure(self):
+        self.assertRaises(NotImplementedError, self.parser.login_information)
+
+    def test_to_action_for_failure(self):
+        self.assertRaises(NotImplementedError, self.parser.to_action, None, None)
+
+    def test_to_categories_for_failure(self):
+        self.assertRaises(NotImplementedError, self.parser.to_categories, None, None)
+
+    def test_to_entity_for_failure(self):
+        self.assertRaises(NotImplementedError, self.parser.to_entity, None, None)
 
 if __name__ == "__main__":
     unittest.main()

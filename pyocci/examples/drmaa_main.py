@@ -28,7 +28,7 @@ Created on Nov 10, 2010
 from pyocci import registry, service
 from pyocci.examples.occi_drmaa import DRMAABackend
 from pyocci.rendering_parsers import TextPlainRendering, TextHeaderRendering, \
-    TextHTMLRendering
+    TextHTMLRendering, URIListRendering
 from pyocci.service import ResourceHandler, ListHandler, QueryHandler, \
     LoginHandler, LogoutHandler
 import tornado.httpserver
@@ -84,6 +84,7 @@ if __name__ == '__main__':
     registry.register_parser(TextHTMLRendering.content_type,
                                        HTML_RENDERER)
     registry.register_parser('application/x-www-form-urlencoded', HTML_RENDERER)
+    registry.register_parser(URIListRendering.content_type, URIListRendering())
 
     # register a simple key value backend
     registry.register_backend([DRMAABackend.kind,

@@ -661,6 +661,51 @@ class TextHeaderRendering(Rendering):
         del(data)
         return entity
 
+class URIListRendering(Rendering):
+    '''
+    This rendering can handle text/uri-list requests. Cannot be used for
+    creation of entities or similar.
+    '''
+
+    content_type = 'text/uri-list'
+
+    def from_categories(self, categories):
+        body = ''
+        for item in categories:
+            body += str(item) + '\n'
+
+        headers = {}
+        headers['Content-Type'] = self.content_type
+        return headers, body
+
+    def from_entities(self, entities):
+        body = ''
+        for item in entities:
+            body += registry.HOST + item.identifier + '\n'
+
+        headers = {}
+        headers['Content-Type'] = self.content_type
+        return headers, body
+
+    def from_entity(self, entity):
+        raise NotImplementedError()
+
+    def get_entities(self, headers, data):
+        raise NotImplementedError()
+
+    def login_information(self):
+        raise NotImplementedError()
+
+    def to_action(self, headers, data):
+        raise NotImplementedError()
+
+    def to_categories(self, headers, data):
+        raise NotImplementedError()
+
+    def to_entity(self, headers, body, allow_incomplete = False,
+                  defined_kind = None):
+        raise NotImplementedError()
+
 class TextHTMLRendering(Rendering):
     '''
     This rendering will use a generic HTML rendering to represent the resources.
