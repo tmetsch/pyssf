@@ -254,6 +254,7 @@ def _create_categories(kind, extended = False):
     tmp = ''
     tmp += kind.term
     tmp += ';scheme="' + kind.scheme + '#"'
+    tmp += ';class=' + kind.cls_str
     if extended:
         if hasattr(kind, 'title') and kind.title is not '':
             tmp += ';title=' + kind.title

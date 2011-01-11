@@ -35,6 +35,8 @@ class Category(object):
         self.title = ''
         self.attributes = []
 
+        self.cls_str = 'action'
+
     def __eq__(self, instance):
         if instance is None or not isinstance(instance, Category):
             return False
@@ -55,6 +57,7 @@ class Kind(Category):
 
         # Following are not defined by the OCCI spec
         self.location = ''
+        self.cls_str = 'kind'
 
 class Mixin(Category):
 
@@ -66,6 +69,7 @@ class Mixin(Category):
         # Following are not defined by the OCCI spec
         self.location = ''
         self.owner = ''
+        self.cls_str = 'mixin'
 
 class Entity(object):
 
