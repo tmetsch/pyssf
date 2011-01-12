@@ -36,6 +36,10 @@ package is installed. This can be done by:
 
     easy_install tornado
 
+.. note::
+    Although the pyocci sources have be thoroughly tested (100% code
+    coverage) consider yourself a tester since code still might change.
+
 Demos
 -----
 If you are using the source distribution the demos can be run by using the
