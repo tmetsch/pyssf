@@ -1,0 +1,77 @@
+.. 
+   Copyright (C) 2010-2011 Platform Computing
+   
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+   
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+   
+   You should have received a copy of the GNU Lesser General Public
+   License along with this library; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+   
+
+The pyocci package
+==================
+This part of ssf provides a [OCCI]_ implementation.
+
+Installation
+------------
+The pyssf package is registered on the [PYPI]_ website therefore a simple
+installation can be done by:
+
+    easy_install pyssf
+
+Another option is to directly download the source distribution from the
+[PYPI]_ website. If doing so unzip the file and you can run all examples with
+the include demo.sh script.
+
+Required to run all the demos and work with pyocci is that the [TORNADO]_
+package is installed. This can be done by:
+
+    easy_install tornado
+
+Demos
+-----
+If you are using the source distribution the demos can be run by using the
+demo.sh script. 2 demos are available: One for keyvalues, a simple job
+submission and a skeleton for the infrastructure model. After starting the
+service you can point you're browser to http://localhost:8888 or use any
+programming language or device which understands HTTP to interact with this
+OCCI implementation.
+
+The skeleton only needs to be bound to your hypervisor to create your own cloud
+API. All state changes for actions and all needed backends are implemented.
+
+If you have installed pyocci with the easy_install method go to the
+dist-packages directory of your python installation and enter the
+pyocci/examples directory. You'll find all the source files there. Now you can
+start each of the demos by running the corresponding *_main.py script.
+
+.. note::
+    When setting the environmental variable PYOCCI_STYLE_SHEET to an absolute
+    path of a CSS style sheet the HTML rendering will indeed look nice.
+
+Usage
+-----
+After installation feel free to write your own backends for the pyocci module.
+For examples see the files include with the installation. Normally they are
+located in the dist-packages directory of your python installation when using
+the easy_install method. If you have downloaded the source distribution feel
+free to go to the directory pyocci/examples directly.
+
+Extending
+---------
+You can easily extend the existing pyocci implementation with your own
+renderings or security implementations. Again please review the examples, see
+the tornado documentation for security related implementations, and dive into
+the pyocci code to see how to write your own rendering.
+
+.. [PYPI] pyssf on the pypi website - http://pypi.python.org/pypi/pyssf
+.. [TORNADO] Tornado website - http://www.tornadoweb.org/
+

@@ -38,8 +38,8 @@ Features:
  * Integration point to integrate your products with Grids/Clouds/Clusters
 
 .. note::
-    The [OCCI]_ implementation has moved from pyrest to pyocci. We will update
-    the documentation soon.
+    The [OCCI]_ implementation has moved from pyrest to pyocci. Documentation
+    can be found in the corresponding section.
 
 Contents:
 
