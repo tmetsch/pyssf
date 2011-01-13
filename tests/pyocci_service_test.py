@@ -29,7 +29,7 @@ from pyocci.rendering_parsers import TextPlainRendering, TextHeaderRendering
 from pyocci.service import BaseHandler, LinkBackend, MixinBackend, LoginHandler
 from tests import http_body, http_body_action, http_body_mixin, \
     NetworkLinkBackend, ComputeBackend, http_body_mixin2
-from tests.Wrappers import Wrapper, ListWrapper, QueryWrapper, Login, Logout, \
+from tests.wrappers import Wrapper, ListWrapper, QueryWrapper, Login, Logout, \
     SecureWrapper, SecureQueryWrapper, SecureListWrapper
 from tornado.httpserver import HTTPRequest
 from tornado.web import Application, HTTPError

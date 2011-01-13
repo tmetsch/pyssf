@@ -242,6 +242,22 @@ def _get_attributes(attributes):
                 raise ParsingException('Could not determine the attributes...')
     return tmp
 
+def _get_links(links):
+    '''
+    Parse the Attributes.
+    
+    @param links: List of Link renderings
+    @type links: list 
+    '''
+    tmp = {}
+    for item in links:
+        for attr in item.split(','):
+            try:
+                tmp[attr.split('=')[0].strip()] = attr.split('=')[1]
+            except IndexError:
+                raise ParsingException('Could not determine the links...')
+    return tmp
+
 def _from_category(kind, extended = False):
     '''
     Create a category rendering for a kind or mixin. If extended it will try to
@@ -254,52 +270,56 @@ def _from_category(kind, extended = False):
     '''
     tmp = ''
     tmp += kind.term
-    tmp += ';scheme="' + kind.scheme + '#"'
-    tmp += ';class="' + kind.cls_str + '"'
+    tmp += '; scheme="' + kind.scheme + '#"'
+    tmp += '; class="' + kind.cls_str + '"'
     if extended:
         if hasattr(kind, 'title') and kind.title is not '':
-            tmp += ';title="' + kind.title + '"'
+            tmp += '; title="' + kind.title + '"'
         if hasattr(kind, 'related') and len(kind.related) > 0:
             rel_list = []
             for item in kind.related:
                 rel_list.append(repr(item))
-            tmp += ';rel=' + ' '.join(rel_list)
+            tmp += '; rel=' + ' '.join(rel_list)
         if hasattr(kind, 'location') and kind.location is not '':
-            tmp += ';location=' + kind.location
+            tmp += '; location=' + kind.location
         if hasattr(kind, 'attributes') and len(kind.attributes) > 0:
-            tmp += ';attributes="' + ' '.join(kind.attributes) + '"'
+            tmp += '; attributes="' + ' '.join(kind.attributes) + '"'
         if hasattr(kind, 'actions') and len(kind.actions) > 0:
             action_list = []
             for item in kind.actions:
                 action_list.append(repr(item))
-            tmp += ';actions="' + ' '.join(action_list) + '"'
+            tmp += '; actions="' + ' '.join(action_list) + '"'
     return tmp
 
-def _to_entity(defined_kind, kind, categories, attributes, allow_incomplete):
+def _to_entity(defined_kind, data, allow_incomplete):
     '''
     Helper routine for creating a new entity.
     
     @param defined_kind: A previsously defined kind.
     @type defined_kind: Kind
-    @param kind: A kind
-    @type kind: Kind
-    @param categories: A list of all categories.
-    @type categories: list
-    @param attributes: A list of all attributes.
-    @type attributes: list
+    @param data: A HTTPData object.
+    @type data: HTTPData
     @param allow_incomplete: Indicates wether rendering should be complete.
     @type allow_incomplete: boolean
     '''
+
+    attributes = _get_attributes(data.attributes)
+    links = _get_links(data.links)
+    kind, categories = _get_categories(data.categories)
+
     if allow_incomplete:
         kind = defined_kind
-    elif kind is None:
-        raise ParsingException('Could not find a Kind for this request.')
 
     if Resource.category in kind.related:
         entity = Resource()
         if 'summary' in attributes.keys():
             entity.summary = attributes['summary']
             attributes.pop('summary')
+        if 'title' in attributes.keys():
+            entity.summary = attributes['title']
+            attributes.pop('title')
+        if len(links) > 0:
+            print data.links
     elif Link.category in kind.related:
         entity = Link()
         if 'source' in attributes.keys():
@@ -340,24 +360,35 @@ def _from_entity(entity):
         # check if summary is available...
         if entity.summary is not '':
             result.attributes.append('summary=' + entity.summary)
+        if entity.title is not '':
+            result.attributes.append('title=' + entity.summary)
 
         if len(entity.actions) > 0:
             for action in entity.actions:
                 result.links.append('<' + registry.HOST + entity.identifier
-                                    + '?action=' + action.kind.term + '>')
+                                    + '?action=' + action.kind.term + '>; rel="'
+                                    + str(action) + '"')
 
         if len(entity.links) > 0:
             for item in entity.links:
-                result.links.append('<' + registry.HOST + item.target
-                                    + '>;self=' + registry.HOST
-                                    + item.identifier + ';')
+                link_rendering = '<' + registry.HOST + item.target + '>; '
+                link_rendering += 'rel="' + repr(service.RESOURCES[item.target].kind) + '"; '
+                link_rendering += 'self="'
+                link_rendering += registry.HOST + item.identifier + '"; '
+                link_rendering += 'category="' + repr(item.kind) + '"; '
+
+                for attr in item.attributes.keys():
+                    link_rendering += attr + ' = "' + item.attributes[attr]
+                    link_rendering += '";'
+
+                result.links.append(link_rendering)
 
     elif isinstance(entity, Link):
         # source and target must be there!
-        result.attributes.append('source=' + registry.HOST + entity.source)
-        result.attributes.append('target=' + registry.HOST + entity.target)
+        result.attributes.append('source = ' + registry.HOST + entity.source)
+        result.attributes.append('target = ' + registry.HOST + entity.target)
     for item in entity.attributes.keys():
-        result.attributes.append(item + '=' + entity.attributes[item])
+        result.attributes.append(item + ' = ' + entity.attributes[item])
 
     return result
 
@@ -381,7 +412,7 @@ class TextPlainRendering(Rendering):
     def _get_data(self, body):
         '''
         Simple method to split out the information from the HTTP body.
-        
+
         @param body: The HTML body.
         @type body: str
         '''
@@ -392,6 +423,8 @@ class TextPlainRendering(Rendering):
             if entry.find('X-OCCI-Attribute:') > -1:
                 data.attributes.append(entry[entry.find('X-OCCI-Attribute:')
                                              + 17:])
+            if entry.find('Link:') > -1:
+                data.links.append(entry[entry.find('Link:') + 5:])
         return data
 
     def from_categories(self, categories):
@@ -491,12 +524,7 @@ class TextPlainRendering(Rendering):
 
         data = self._get_data(body)
 
-        # Parse the data
-        kind, categories = _get_categories(data.categories)
-        attributes = _get_attributes(data.attributes)
-
-        entity = _to_entity(defined_kind, kind, categories, attributes,
-                            allow_incomplete)
+        entity = _to_entity(defined_kind, data, allow_incomplete)
 
         del(data)
         return entity
@@ -518,7 +546,7 @@ class TextHeaderRendering(Rendering):
     def _get_data(self, headers):
         '''
         Simple method to split out the information from the HTTP headers.
-        
+
         @param headers: The HTML headers.
         @type headers: dict
         '''
@@ -528,6 +556,8 @@ class TextHeaderRendering(Rendering):
             data.categories.append(headers['Category'])
         if 'X-OCCI-Attribute' in headers.keys():
             data.attributes.append(headers['X-OCCI-Attribute'])
+        if 'Link' in headers.keys():
+            data.links.append(headers['Link'])
         return data
 
     def from_categories(self, categories):
@@ -625,19 +655,14 @@ class TextHeaderRendering(Rendering):
         # split out the information
         data = self._get_data(headers)
 
-        # all data...
-        kind, categories = _get_categories(data.categories)
-        attributes = _get_attributes(data.attributes)
-
-        entity = _to_entity(defined_kind, kind, categories, attributes,
-                            allow_incomplete)
+        entity = _to_entity(defined_kind, data, allow_incomplete)
 
         del(data)
         return entity
 
 class URIListRendering(Rendering):
     '''
-    This rendering can handle text/uri-list requests. Cannot be used for
+    This rendering can handle text / uri - list requests. Cannot be used for
     creation of entities or similar.
     '''
 
@@ -710,7 +735,7 @@ class TextHTMLRendering(Rendering):
     def _get_data(self, body):
         '''
         Simple method to split out the information from the HTTP HTML body.
-        
+
         @param headers: The HTML body.
         @type headers: str
         '''
@@ -964,7 +989,7 @@ class TextHTMLRendering(Rendering):
         tmp += '<tr><th>Class</th><td>' + category.cls_str + '</td></tr>'
 
         if hasattr(category, 'title') and category.title is not '':
-            tmp += '<tr><th>Title/th><td>' + category.title + '</td></tr>'
+            tmp += '<tr><th>Title</th><td>' + category.title + '</td></tr>'
         if hasattr(category, 'actions') and len(category.actions) > 0:
             tmp += '<tr><th>Actions</th><td><ul>'
             for item in category.actions:

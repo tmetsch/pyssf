@@ -15,9 +15,9 @@
 # 
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 # 
-from distutils.core import setup, Extension
+from distutils.core import setup
 
 setup(name = 'pyssf',
       version = '0.2.7',
@@ -25,9 +25,11 @@ setup(name = 'pyssf',
       license = 'LGPL',
       keywords = 'REST,RESTful,OCCI,LSF,Platform,Cloud,Grid,Cluster,HPC',
       url = 'http://pyssf.sourceforge.net',
-      packages = ['pyocci','pyocci.examples'],
-      long_description = 'A set of Python modules to integrate you existing or future applications with Clouds, Grids and Clusters. Includes an implementation of the OCCI specification.',
-      requires=['tornado'],
+      packages = ['pyocci', 'pyocci.examples'],
+      long_description = 'A set of Python modules to integrate you existing or'
+      + ' future applications with Clouds, Grids and Clusters. Includes an'
+      + ' implementation of the OCCI specification.',
+      requires = ['tornado'],
       classifiers = ["Development Status :: 2 - Pre-Alpha",
                      "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
                      "Operating System :: OS Independent",

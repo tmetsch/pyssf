@@ -69,6 +69,8 @@ class BaseHandler(tornado.web.RequestHandler):
             heads['X-OCCI-Attribute'] = headers['X-Occi-Attribute']
         if 'X-Occi-Location' in headers:
             heads['X-OCCI-Location'] = headers['X-Occi-Location']
+        if 'Link' in headers:
+            heads['Link'] = headers['Link']
         if self.request.body is not '':
             body = self.request.body.strip()
         else:
