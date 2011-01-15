@@ -679,7 +679,7 @@ class QueryHandlerTest(unittest.TestCase):
         handler = QueryWrapper(self.application, request)
         handler.get()
         heads, data = handler.get_output()
-        self.assertTrue(data.find('mine;scheme="http://mystuff.com/occi#";class="mixin";location=/foo/bar/') > -1)
+        self.assertTrue(data.find('mine; scheme="http://mystuff.com/occi#"; class="mixin"; location=/foo/bar/') > -1)
 
     def test_delete_for_sanity(self):
         request = create_request('PUT', body = http_body_mixin)
@@ -694,7 +694,7 @@ class QueryHandlerTest(unittest.TestCase):
         handler = QueryWrapper(self.application, request)
         handler.get()
         heads, data = handler.get_output()
-        self.assertTrue(data.find('mine;scheme="http://mystuff.com/occi#";class="mixin";location=/foo/bar/') == -1)
+        self.assertTrue(data.find('mine; scheme="http://mystuff.com/occi#"; class="mixin"; location=/foo/bar/') == -1)
 
 #===============================================================================
 # Security tests

@@ -247,6 +247,9 @@ class TextHeaderRenderingTest(unittest.TestCase):
         self.entity.attributes['foo'] = 'bar'
         self.entity.summary = 'foo'
 
+        service.RESOURCES['foo'] = self.entity
+        service.RESOURCES['bar'] = self.entity
+
         registry.HOST = 'http://localhost:8080'
         registry.register_backend([ComputeBackend.start_category, ComputeBackend.category], ComputeBackend())
         registry.register_backend([NetworkLinkBackend.category], NetworkLinkBackend())
@@ -359,7 +362,6 @@ class TextHeaderRenderingTest(unittest.TestCase):
         self.assertTrue(len(en_list) == 1)
         en_list = self.parser.get_entities(http_head_loc_with_base_url, None)
         self.assertTrue(len(en_list) == 1)
-
 
     def test_login_information_for_sanity(self):
         heads, data = self.parser.login_information()

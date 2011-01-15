@@ -139,22 +139,19 @@ class Rendering(object):
         raise NotImplementedError()
 
 #===============================================================================
-# Convenient routines
+# Convenient routines for the syntax defined in the spec
 #===============================================================================
 
-def _get_category(cat_string):
+def _from_http_category(category_string):
     '''
     Create a category instance from an string.
-    
-    @param cat_string: The string with RFC compliant syntac of a Category.
-    @type cat_string: str
+
+    @param category_string: The string with RFC compliant syntac of a Category.
+    @type category_string: str
     '''
-
-    # TODO: make use of the class attribute
-
     cat = Category()
     # find the term
-    tmp = cat_string.split(';')
+    tmp = category_string.split(';')
     term = tmp[0].strip()
     if re.match("^[\w\d_-]*$", term) and term is not '':
         cat.term = term.strip()
@@ -163,13 +160,13 @@ def _get_category(cat_string):
                                + ' be found.')
 
     # find the scheme
-    begin = cat_string.find('scheme=')
+    begin = category_string.find('scheme=')
     if begin is not - 1:
-        tmp = cat_string[begin + 7:]
+        tmp = category_string[begin + 7:]
         end = tmp.find(";")
         if end > -1:
             tmp = tmp[:end]
-        scheme = tmp.rstrip('"').lstrip('"')
+        scheme = _strip_all(tmp)
         if scheme.find('http') is not - 1:
             cat.scheme = scheme.strip().rstrip('#')
         else:
@@ -177,9 +174,9 @@ def _get_category(cat_string):
                                    + ' could be found.')
 
     # find the location
-    begin = cat_string.find('location=')
+    begin = category_string.find('location=')
     if begin is not - 1:
-        tmp = cat_string[begin + 9:]
+        tmp = category_string[begin + 9:]
         end = tmp.find(";")
         if end > -1:
             tmp = tmp[:end]
@@ -194,79 +191,15 @@ def _get_category(cat_string):
 
     return cat
 
-def _get_categories(category_string_list):
-    '''
-    Retrieve the Kind and a list of categories. Will only return those which are
-    eventually registered in this service.
-    
-    @param category_string_list: list with OCCI compliant renderings of 
-       categories
-    @type category_string_list: list
-    '''
-    kind = None
-    categories = []
-    for tmp in category_string_list:
-        for cat_string in tmp.split(','):
-            cat = _get_category(cat_string)
-
-            # now that we have a category try to look it up and use that objects
-            for category in registry.BACKENDS.keys():
-                if cat == category:
-                    if isinstance(category, Kind) and kind is None:
-                        kind = category
-                        break
-                    else:
-                        categories.append(category)
-                        break
-
-            if kind is None and len(categories) is 0:
-                raise ParsingException('The following category is not'
-                                        + ' registered in this service: '
-                                        + repr(cat))
-
-    return kind, categories
-
-def _get_attributes(attributes):
-    '''
-    Parse the Attributes.
-    
-    @param attributes: List of attributes
-    @type attributes: list 
-    '''
-    tmp = {}
-    for item in attributes:
-        for attr in item.split(','):
-            try:
-                tmp[attr.split('=')[0].strip()] = attr.split('=')[1]
-            except IndexError:
-                raise ParsingException('Could not determine the attributes...')
-    return tmp
-
-def _get_links(links):
-    '''
-    Parse the Attributes.
-    
-    @param links: List of Link renderings
-    @type links: list 
-    '''
-    tmp = {}
-    for item in links:
-        for attr in item.split(','):
-            try:
-                tmp[attr.split('=')[0].strip()] = attr.split('=')[1]
-            except IndexError:
-                raise ParsingException('Could not determine the links...')
-    return tmp
-
-def _from_category(kind, extended = False):
+def _to_http_category(kind, extended = False):
     '''
     Create a category rendering for a kind or mixin. If extended it will try to
     put in as much information as possible.
-    
+
     @param kind: A kind of a mixin.
     @type kind: Kind or Mixin
     @param extended: Indicating wether rendering should be minimal or not.
-    @type extended: boolean  
+    @type extended: boolean
     '''
     tmp = ''
     tmp += kind.term
@@ -291,6 +224,115 @@ def _from_category(kind, extended = False):
             tmp += '; actions="' + ' '.join(action_list) + '"'
     return tmp
 
+def _from_http_link(link_string):
+    '''
+    Retrieve information rendered from HTTP Link definition.
+    '''
+    pass
+
+def _to_http_link(entity, action = None, is_action = False):
+    '''
+    Creates a HTTP Link rendering.
+    '''
+    if is_action:
+        string = '<' + registry.HOST + entity.identifier + '?action='
+        string += action.kind.term + '>; rel="' + str(action) + '"'
+        return string
+    else:
+        link_rendering = '<' + registry.HOST + entity.target + '>; '
+        link_rendering += 'rel="' + repr(service.RESOURCES[entity.target].kind)
+        link_rendering += '"; self="'
+        link_rendering += registry.HOST + entity.identifier + '"; '
+        link_rendering += 'category="' + repr(entity.kind) + '"; '
+
+        for attr in entity.attributes.keys():
+            link_rendering += attr + ' = "' + entity.attributes[attr]
+            link_rendering += '";'
+        return link_rendering
+
+def _from_http_attribute(attribute_string):
+    '''
+    Retrieve the attributes from the HTTP X - OCCI - Attribute rendering.
+    '''
+    try:
+        key = _strip_all(attribute_string.split('=')[0])
+        value = attribute_string.split('=')[1]
+        if value.find('"') is not - 1:
+            value = value.lstrip('"').rstrip('"')
+    except IndexError:
+        raise ParsingException('Could not determine the given attributes')
+
+    return key, value
+
+def _to_http_attribute(key, value):
+    '''
+    Creates a HTTP X-OCCI-Attribute rendering.
+    '''
+    if value.find(' ') == -1:
+        return key + '=' + value
+    else:
+        return key + '="' + value + '"'
+
+def _from_http_location(location_string):
+    '''
+    Retrieve the informations from HTTP X-OCCI-Location rendering.
+    '''
+    if location_string.strip().find(registry.HOST) == 0:
+        id = location_string.strip()[len(registry.HOST):]
+    else:
+        id = location_string.strip()
+    return id
+
+def _to_http_location(item):
+    '''
+    Creates a HTTP X - OCCI - Location rendering.
+    '''
+    return registry.HOST + item.identifier
+
+def _strip_all(string):
+    '''
+    Removes beginning / ending quotes and whitespaces.
+    '''
+    return string.lstrip().lstrip('"').rstrip().rstrip('"')
+
+#===============================================================================
+# Convenient routines
+#===============================================================================
+
+def _get_categories(category_string_list):
+    '''
+    Retrieve the Kind and a list of categories. Will only return those which are
+    eventually registered in this service.
+    
+    @param category_string_list: list with OCCI compliant renderings of 
+       categories
+    @type category_string_list: list
+    '''
+    kind = None
+    categories = []
+    for tmp in category_string_list:
+        for cat_string in tmp.split(','):
+            cat = _from_http_category(cat_string)
+
+            # TODO: make use of the class attribute
+
+            # now that we have a category try to look it up and use that objects
+            for category in registry.BACKENDS.keys():
+                if cat == category:
+                    if isinstance(category, Kind) and kind is None:
+                        kind = category
+                        break
+                    else:
+                        categories.append(category)
+                        break
+
+            if kind is None and len(categories) is 0:
+                raise ParsingException('The following category is not'
+                                        + ' registered in this service: '
+                                        + repr(cat))
+
+    return kind, categories
+
 def _to_entity(defined_kind, data, allow_incomplete):
     '''
     Helper routine for creating a new entity.
@@ -303,12 +345,21 @@ def _to_entity(defined_kind, data, allow_incomplete):
     @type allow_incomplete: boolean
     '''
 
-    attributes = _get_attributes(data.attributes)
-    links = _get_links(data.links)
+    attributes = {}
+    for item in data.attributes:
+        key, value = _from_http_attribute(item)
+        attributes[key] = value
+
+    links = []
+    for item in data.links:
+        links.append(_from_http_link(item))
+
     kind, categories = _get_categories(data.categories)
 
     if allow_incomplete:
         kind = defined_kind
+    if kind is None:
+        raise ParsingException('Could not determine a kind.')
 
     if Resource.category in kind.related:
         entity = Resource()
@@ -316,7 +367,7 @@ def _to_entity(defined_kind, data, allow_incomplete):
             entity.summary = attributes['summary']
             attributes.pop('summary')
         if 'title' in attributes.keys():
-            entity.summary = attributes['title']
+            entity.title = attributes['title']
             attributes.pop('title')
         if len(links) > 0:
             print data.links
@@ -351,49 +402,45 @@ def _from_entity(entity):
     result = HTTPData()
 
     # add kind
-    result.categories.append(_from_category(entity.kind))
+    result.categories.append(_to_http_category(entity.kind))
     # mixins...
     for item in entity.mixins:
-        result.categories.append(_from_category(item))
+        result.categories.append(_to_http_category(item))
 
     if isinstance(entity, Resource):
         # check if summary is available...
         if entity.summary is not '':
-            result.attributes.append('summary=' + entity.summary)
+            result.attributes.append(_to_http_attribute('summary',
+                                                        entity.summary))
         if entity.title is not '':
-            result.attributes.append('title=' + entity.summary)
+            result.attributes.append(_to_http_attribute('title',
+                                                        entity.title))
 
         if len(entity.actions) > 0:
             for action in entity.actions:
-                result.links.append('<' + registry.HOST + entity.identifier
-                                    + '?action=' + action.kind.term + '>; rel="'
-                                    + str(action) + '"')
+                result.links.append(_to_http_link(entity, action = action,
+                                                  is_action = True))
 
         if len(entity.links) > 0:
             for item in entity.links:
-                link_rendering = '<' + registry.HOST + item.target + '>; '
-                link_rendering += 'rel="' + repr(service.RESOURCES[item.target].kind) + '"; '
-                link_rendering += 'self="'
-                link_rendering += registry.HOST + item.identifier + '"; '
-                link_rendering += 'category="' + repr(item.kind) + '"; '
-
-                for attr in item.attributes.keys():
-                    link_rendering += attr + ' = "' + item.attributes[attr]
-                    link_rendering += '";'
-
-                result.links.append(link_rendering)
+                result.links.append(_to_http_link(item))
 
     elif isinstance(entity, Link):
         # source and target must be there!
-        result.attributes.append('source = ' + registry.HOST + entity.source)
-        result.attributes.append('target = ' + registry.HOST + entity.target)
+        result.attributes.append(_to_http_attribute('source',
+                                                    registry.HOST
+                                                    + entity.source))
+        result.attributes.append(_to_http_attribute('target',
+                                                    registry.HOST
+                                                    + entity.target))
     for item in entity.attributes.keys():
-        result.attributes.append(item + ' = ' + entity.attributes[item])
+        result.attributes.append(_to_http_attribute(item,
+                                                    entity.attributes[item]))
 
     return result
 
 #===============================================================================
-# Renderings for different content types can be found below this comment
+# text/plain, text/occi, text/uri-list and text/html rendering parsers
 #===============================================================================
 
 class TextPlainRendering(Rendering):
@@ -419,19 +466,40 @@ class TextPlainRendering(Rendering):
         data = HTTPData()
         for entry in body.split('\n'):
             if entry.find('Category:') > -1:
-                data.categories.append(entry[entry.find('Category:') + 9:])
+                tmp = entry[entry.find('Category:') + 9:]
+                if tmp.find(',') == -1:
+                    data.categories.append(tmp)
+                else:
+                    for item in tmp.split(','):
+                        data.categories.append(item)
             if entry.find('X-OCCI-Attribute:') > -1:
-                data.attributes.append(entry[entry.find('X-OCCI-Attribute:')
-                                             + 17:])
+                tmp = entry[entry.find('X-OCCI-Attribute:') + 17:]
+                if tmp.find(',') == -1:
+                    data.attributes.append(tmp)
+                else:
+                    for item in tmp.split(','):
+                        data.attributes.append(item)
             if entry.find('Link:') > -1:
-                data.links.append(entry[entry.find('Link:') + 5:])
+                tmp = entry[entry.find('Link:') + 5:]
+                if tmp.find(',') == -1:
+                    data.links.append(tmp)
+                else:
+                    for item in tmp.split(','):
+                        data.links.append(item)
+            if entry.find('X-OCCI-Location:') > -1:
+                tmp = entry[entry.find('X-OCCI-Location:') + 16:]
+                if tmp.find(',') == -1:
+                    data.locations.append(tmp)
+                else:
+                    for item in tmp.split(','):
+                        data.locations.append(item)
         return data
 
     def from_categories(self, categories):
         headers = {}
         body = ''
         for item in categories:
-            body += 'Category: ' + _from_category(item, extended = True)
+            body += 'Category: ' + _to_http_category(item, extended = True)
             body += '\n'
         headers['Content-Type'] = self.content_type
         return headers, body
@@ -440,7 +508,7 @@ class TextPlainRendering(Rendering):
         headers = {}
         body = ''
         for item in entities:
-            body += 'X-OCCI-Location: ' + registry.HOST + item.identifier + '\n'
+            body += 'X-OCCI-Location: ' + _to_http_location(item) + '\n'
         headers['Content-Type'] = self.content_type
         return headers, body
 
@@ -461,15 +529,11 @@ class TextPlainRendering(Rendering):
         return headers, body
 
     def get_entities(self, headers, body):
+        data = self._get_data(body)
         ids = []
-        for entry in body.split('\n'):
-            if entry.find('X-OCCI-Location:') > -1:
-                tmp = entry[entry.find('X-OCCI-Location:') + 16:]
-                for item in tmp.split(','):
-                    if item.strip().find(registry.HOST) == 0:
-                        ids.append(item.strip()[len(registry.HOST):])
-                    else:
-                        ids.append(item.strip())
+        for item in data.locations:
+            ids.append(_from_http_location(item))
+
         if len(ids) > 0:
             return ids
         else:
@@ -477,11 +541,11 @@ class TextPlainRendering(Rendering):
                                    + ' pointing to resource instances.')
 
     def login_information(self):
-        html = 'Please do a POST operation with a name and pass attribute.'
+        text = 'Please do a POST operation with a name and pass attribute.'
 
         headers = {}
         headers['Content-Type'] = self.content_type
-        return headers, html
+        return headers, text
 
     def to_action(self, headers, body):
         data = self._get_data(body)
@@ -497,18 +561,20 @@ class TextPlainRendering(Rendering):
             for cat in categories:
                 action = Action()
                 action.kind = cat
-                action.attributes = _get_attributes(data.attributes)
+                for attr in data.attributes:
+                    key, value = _from_http_attribute(attr)
+                    action.attributes[key] = value
                 break
 
         del(data)
         return action
 
     def to_categories(self, headers, body):
+        data = self._get_data(body)
         categories = []
-        for entry in body.split('\n'):
-            if entry.find('Category:') > -1:
-                for item in entry[entry.find('Category:') + 9:].split(','):
-                    categories.append(_get_category(item))
+        for item in data.categories:
+            categories.append(_from_http_category(item))
+
         if len(categories) > 0:
             return categories
         else:
@@ -553,18 +619,21 @@ class TextHeaderRendering(Rendering):
         # split out the information
         data = HTTPData()
         if 'Category' in headers.keys():
-            data.categories.append(headers['Category'])
+            data.categories = headers['Category'].split(',')
         if 'X-OCCI-Attribute' in headers.keys():
-            data.attributes.append(headers['X-OCCI-Attribute'])
+            data.attributes = headers['X-OCCI-Attribute'].split(',')
+        if 'X-OCCI-Location' in headers.keys():
+            data.locations = headers['X-OCCI-Location'].split(',')
         if 'Link' in headers.keys():
-            data.links.append(headers['Link'])
+            data.links = headers['Link'].split(',')
         return data
 
     def from_categories(self, categories):
         headers = {}
         tmp = []
         for item in categories:
-            tmp.append(_from_category(item, extended = True))
+            tmp.append(_to_http_category(item, extended = True))
+
         if len(tmp) > 0:
             headers['Category'] = ','.join(tmp)
         headers['Content-Type'] = self.content_type
@@ -574,7 +643,7 @@ class TextHeaderRendering(Rendering):
         headers = {}
         tmp = []
         for item in entities:
-            tmp.append(registry.HOST + item.identifier)
+            tmp.append(_to_http_location(item))
         if len(tmp) > 0:
             headers['X-OCCI-Location'] = ','.join(tmp)
         headers['Content-Type'] = self.content_type
@@ -596,31 +665,28 @@ class TextHeaderRendering(Rendering):
         return headers, 'OK'
 
     def get_entities(self, headers, body):
+        data = self._get_data(headers)
         ids = []
-        if 'X-OCCI-Location' in headers.keys():
-            for item in headers['X-OCCI-Location'].split(','):
-                if item.strip().find(registry.HOST) == 0:
-                    ids.append(item.strip()[len(registry.HOST):])
-                else:
-                    ids.append(item.strip())
+        for item in data.locations:
+            ids.append(_from_http_location(item))
+
         if len(ids) > 0:
             return ids
         else:
             raise ParsingException('Header does not contain a location.')
 
     def login_information(self):
-        html = 'Please do a POST operation with a name and pass attribute.'
+        text = 'Please do a POST operation with a name and pass attribute.'
 
         headers = {}
         headers['Content-Type'] = self.content_type
-        return headers, html
+        return headers, text
 
     def to_action(self, headers, body):
         data = self._get_data(headers)
 
         # all data...
         kind, categories = _get_categories(data.categories)
-        attributes = _get_attributes(data.attributes)
 
         action = None
         if len(categories) == 0:
@@ -630,17 +696,21 @@ class TextHeaderRendering(Rendering):
             for cat in categories:
                 action = Action()
                 action.kind = cat
-                action.attributes = _get_attributes(data.attributes)
+                for attr in data.attributes:
+                    key, value = _from_http_attribute(attr)
+                    action.attributes[key] = value
                 break
 
         del(data)
         return action
 
     def to_categories(self, headers, body):
+        data = self._get_data(headers)
+
         categories = []
-        if 'Category' in headers.keys():
-            for item in headers['Category'].split(','):
-                categories.append(_get_category(item))
+        for item in data.categories:
+            categories.append(_from_http_category(item))
+
         if len(categories) > 0:
             return categories
         else:
@@ -938,36 +1008,41 @@ class TextHTMLRendering(Rendering):
 
         data = self._get_data(body)
 
+        entity = _to_entity(defined_kind, data, allow_incomplete)
+
         # all data...
-        kind, categories = _get_categories(data.categories)
-        attributes = _get_attributes(data.attributes)
-
-        if allow_incomplete:
-            kind = defined_kind
-
-        if Resource.category in kind.related:
-            entity = Resource()
-            if 'summary' in attributes.keys():
-                entity.summary = attributes['summary']
-                attributes.pop('summary')
-        elif Link.category in kind.related:
-            entity = Link()
-            if 'source' in attributes.keys():
-                source = attributes['source']
-                if source.find(registry.HOST) == 0:
-                    entity.source = source[len(registry.HOST):]
-                else:
-                    entity.source = attributes['source']
-                attributes.pop('source')
-            if 'target' in attributes.keys():
-                target = attributes['target']
-                if target.find(registry.HOST) == 0:
-                    entity.target = target[len(registry.HOST):]
-                else:
-                    entity.target = target
-                attributes.pop('target')
-        entity.kind = kind
-        entity.attributes = attributes
+#        kind, categories = _get_categories(data.categories)
+#        attributes = {}
+#        for item in data.attributes:
+#            key, value = _from_http_attribute(item)
+#            attributes[key] = value
+#
+#        if allow_incomplete:
+#            kind = defined_kind
+#
+#        if Resource.category in kind.related:
+#            entity = Resource()
+#            if 'summary' in attributes.keys():
+#                entity.summary = attributes['summary']
+#                attributes.pop('summary')
+#        elif Link.category in kind.related:
+#            entity = Link()
+#            if 'source' in attributes.keys():
+#                source = attributes['source']
+#                if source.find(registry.HOST) == 0:
+#                    entity.source = source[len(registry.HOST):]
+#                else:
+#                    entity.source = attributes['source']
+#                attributes.pop('source')
+#            if 'target' in attributes.keys():
+#                target = attributes['target']
+#                if target.find(registry.HOST) == 0:
+#                    entity.target = target[len(registry.HOST):]
+#                else:
+#                    entity.target = target
+#                attributes.pop('target')
+#        entity.kind = kind
+#        entity.attributes = attributes
 
         del(data)
         return entity

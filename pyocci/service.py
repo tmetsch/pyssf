@@ -51,8 +51,7 @@ class BaseHandler(tornado.web.RequestHandler):
     def __init__(self, application, request, transforms = None):
         if registry.HOST == '':
             registry.HOST = request.protocol + '://' + request.host
-        super(BaseHandler, self).__init__(application, request,
-                                          transforms = None)
+        super(BaseHandler, self).__init__(application, request, transforms = None)
 
     def extract_http_data(self):
         '''
@@ -166,7 +165,6 @@ class ResourceHandler(BaseHandler):
     #                                               (methods exists twice...)
     # pylint: disable=R0904,W0221
 
-    # XXX: What to do with links when creating a resource?
     @tornado.web.authenticated
     def post(self, key):
         headers, body = self.extract_http_data()
@@ -419,9 +417,6 @@ class QueryHandler(BaseHandler):
     '''
     This class represents the OCCI query interface.
     '''
-
-    # TODO: check for adding one location twice...
-    # TODO: filter categories...
 
     # disabling 'Too many public methods' pylint check (tornado's fault)
     # pylint: disable=R0904

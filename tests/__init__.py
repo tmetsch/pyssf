@@ -104,8 +104,8 @@ class DefunctBackend(Backend):
 
 # text/plain
 
-http_body = 'Category: ' + ComputeBackend.category.term + ';scheme="' + ComputeBackend.category.scheme + '#";class="kind"'
-http_body_with_attr = http_body + '\nX-OCCI-Attribute:foo=bar,summary=bar'
+http_body = 'Category: ' + ComputeBackend.category.term + '; scheme="' + ComputeBackend.category.scheme + '#"; class="kind"'
+http_body_with_attr = http_body + '\nX-OCCI-Attribute: foo=bar,summary=bar'
 http_body_only_attr = 'X-OCCI-Attribute:foo=bar'
 http_body_link = 'Category:' + NetworkLinkBackend.category.term + ';scheme="' + NetworkLinkBackend.category.scheme + '#"\nX-OCCI-Attribute:source=foo,target=bar'
 http_body_link_with_base_url = 'Category:' + NetworkLinkBackend.category.term + ';scheme="' + NetworkLinkBackend.category.scheme + '#"\nX-OCCI-Attribute:source=http://localhost:8080/foo,target=http://localhost:8080/bar'
