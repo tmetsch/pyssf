@@ -23,8 +23,8 @@ Created on Nov 17, 2010
 
 # pylint: disable-all
 
-from pyocci import registry, service
-from pyocci.core import Resource, Link, Mixin
+from pyocci import registry, service, rendering_parsers
+from pyocci.core import Resource, Link, Mixin, Category, Action
 from pyocci.my_exceptions import ParsingException
 from pyocci.rendering_parsers import TextPlainRendering, Rendering, HTTPData, \
     TextHTMLRendering, TextHeaderRendering, URIListRendering
@@ -67,6 +67,59 @@ class RenderingTest(unittest.TestCase):
         self.assertRaises(NotImplementedError, self.rendered.to_action, None, None)
         self.assertRaises(NotImplementedError, self.rendered.to_categories, None, None)
         self.assertRaises(NotImplementedError, self.rendered.to_entity, None, None)
+
+class OCCIRenderingTest(unittest.TestCase):
+
+    #===========================================================================
+    # Test for Sanity
+    #===========================================================================
+
+    def test_from_http_category_for_sanity(self):
+        category_string = 'storage; scheme="http://schemas.ogf.org/occi/infrastructure#"; class="kind"; title="Storage Resource"; rel="http://schemas.ogf.org/occi/core#resource"; location=/storage/; attributes="occi.storage.size occi.storage.state"; actions="http://schemas.ogf.org/occi/infrastructure/storage/action#resize";'
+        tmp = rendering_parsers._from_http_category(category_string)
+        result = rendering_parsers._to_http_category(tmp, extended = True)
+        print result
+        print category_string
+        #self.assertEquals(result, category_string)
+
+    def test_from_http_link_for_sanity(self):
+        link_string = 'Link: </network/123>; rel="http://schemas.ogf.org/occi/infrastructure#network"; self="/link/networkinterface/456"; category="http://schemas.ogf.org/occi/infrastructure#networkinterface"; occi.networkinterface.interface="eth0"; occi.networkinterface.mac="00:11:22:33:44:55"; occi.networkinterface.state="active";'
+        tmp = rendering_parsers._from_http_link(link_string)
+        #result = rendering_parsers._to_http_link(tmp)
+        #print result
+        print link_string
+        #self.assertEquals(result, link_string)
+
+        #action...
+        action_string = '</compute/123?action=start>; rel="http://schemas.ogf.org/occi/infrastructure/compute/action#start"'
+
+        entity = Resource()
+        entity.identifier = '/compute/123'
+        action = Action()
+        action_cat = Category()
+        action_cat.term = 'start'
+        action_cat.scheme = 'http://schemas.ogf.org/occi/infrastructure/compute/action'
+        action.kind = action_cat
+
+        result = rendering_parsers._to_http_link(entity, action, is_action = True)
+        self.assertEquals(result, action_string)
+
+    def test_from_http_attribute_for_sanity(self):
+        attr_string = 'occi.compute.desc="soem bla bla"'
+        key, value = rendering_parsers._from_http_attribute(attr_string)
+        result = rendering_parsers._to_http_attribute(key, value)
+        self.assertEquals(result, attr_string)
+
+        attr_string = 'occi.compute.cores=2'
+        key, value = rendering_parsers._from_http_attribute(attr_string)
+        result = rendering_parsers._to_http_attribute(key, value)
+        self.assertEquals(result, attr_string)
+
+    def test_from_http_location_for_sanity(self):
+        loc_string = 'http://example.com/compute/12'
+        tmp = rendering_parsers._from_http_location(loc_string)
+        result = rendering_parsers._to_http_location(tmp)
+        self.assertEquals(result, loc_string)
 
 class TextPlainRenderingTest(unittest.TestCase):
 

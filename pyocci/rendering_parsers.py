@@ -205,7 +205,7 @@ def _to_http_category(kind, extended = False):
     tmp += kind.term
     tmp += '; scheme="' + kind.scheme + '#"'
     tmp += '; class="' + kind.cls_str + '"'
-    if extended:
+    if extended is True:
         if hasattr(kind, 'title') and kind.title is not '':
             tmp += '; title="' + kind.title + '"'
         if hasattr(kind, 'related') and len(kind.related) > 0:
@@ -287,7 +287,7 @@ def _to_http_location(item):
     '''
     Creates a HTTP X - OCCI - Location rendering.
     '''
-    return registry.HOST + item.identifier
+    return registry.HOST + item
 
 def _strip_all(string):
     '''
@@ -508,7 +508,7 @@ class TextPlainRendering(Rendering):
         headers = {}
         body = ''
         for item in entities:
-            body += 'X-OCCI-Location: ' + _to_http_location(item) + '\n'
+            body += 'X-OCCI-Location: ' + _to_http_location(item.identifier) + '\n'
         headers['Content-Type'] = self.content_type
         return headers, body
 
@@ -643,7 +643,7 @@ class TextHeaderRendering(Rendering):
         headers = {}
         tmp = []
         for item in entities:
-            tmp.append(_to_http_location(item))
+            tmp.append(_to_http_location(item.identifier))
         if len(tmp) > 0:
             headers['X-OCCI-Location'] = ','.join(tmp)
         headers['Content-Type'] = self.content_type

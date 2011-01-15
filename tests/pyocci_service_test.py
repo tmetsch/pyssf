@@ -28,7 +28,8 @@ from pyocci.core import Link, Resource
 from pyocci.rendering_parsers import TextPlainRendering, TextHeaderRendering
 from pyocci.service import BaseHandler, LinkBackend, MixinBackend, LoginHandler
 from tests import http_body, http_body_action, http_body_mixin, \
-    NetworkLinkBackend, ComputeBackend, http_body_mixin2
+    NetworkLinkBackend, ComputeBackend, http_body_mixin2, http_body_with_link, \
+    http_head_with_link
 from tests.wrappers import Wrapper, ListWrapper, QueryWrapper, Login, Logout, \
     SecureWrapper, SecureQueryWrapper, SecureListWrapper
 from tornado.httpserver import HTTPRequest
@@ -256,7 +257,7 @@ class BasicLinkTest(unittest.TestCase):
         handler.get('/link_test/1')
         header, data = handler.get_output()
         base_url = request.protocol + '://' + request.host
-        self.assertTrue(header['Link'].find('<' + base_url + '/link_test/2>;self=' + base_url + '/my_links/12;') > -1)
+        self.assertTrue(header['Link'].find('<' + base_url + '/link_test/2>;') > -1)
 
         link_2_3 = 'Category:' + NetworkLinkBackend.category.term + ';scheme=' + NetworkLinkBackend.category.scheme + '\nX-OCCI-Attribute:source=/link_test/2,target=/link_test/3'
 
@@ -268,7 +269,7 @@ class BasicLinkTest(unittest.TestCase):
         handler = Wrapper(self.application, request)
         handler.get('/link_test/2')
         header, data = handler.get_output()
-        self.assertEqual(header['Link'], '<' + base_url + '/link_test/3>;self=' + base_url + '/my_links/12;')
+        self.assertEqual(header['Link'], '<http://127.0.0.1/link_test/3>; rel="http://schemas.ogf.org/occi/infrastructure#compute"; self="http://127.0.0.1/my_links/12"; category="http://schemas.ogf.org/occi/infrastructure#networklink"; ')
 
         link_2_1 = 'Category:' + NetworkLinkBackend.category.term + ';scheme=' + NetworkLinkBackend.category.scheme + '\nX-OCCI-Attribute:source=/link_test/2,target=/link_test/1'
         request = create_request('PUT', body = link_2_3)
@@ -279,7 +280,7 @@ class BasicLinkTest(unittest.TestCase):
         handler = Wrapper(self.application, request)
         handler.get('/link_test/2')
         header, data = handler.get_output()
-        self.assertEqual(header['Link'], '<' + base_url + '/link_test/3>;self=' + base_url + '/my_links/12;,<' + base_url + '/link_test/3>;self=' + base_url + '/my_links/21;')
+        self.assertEqual(header['Link'], '<http://127.0.0.1/link_test/3>; rel="http://schemas.ogf.org/occi/infrastructure#compute"; self="http://127.0.0.1/my_links/12"; category="http://schemas.ogf.org/occi/infrastructure#networklink"; ,<http://127.0.0.1/link_test/3>; rel="http://schemas.ogf.org/occi/infrastructure#compute"; self="http://127.0.0.1/my_links/21"; category="http://schemas.ogf.org/occi/infrastructure#networklink"; ')
 
         request = create_request('DELETE')
         handler = Wrapper(self.application, request)
@@ -289,7 +290,16 @@ class BasicLinkTest(unittest.TestCase):
         handler = Wrapper(self.application, request)
         handler.get('/link_test/2')
         header, data = handler.get_output()
-        self.assertEqual(header['Link'], '<' + base_url + '/link_test/3>;self=' + base_url + '/my_links/12;')
+        self.assertEqual(header['Link'], '<http://127.0.0.1/link_test/3>; rel="http://schemas.ogf.org/occi/infrastructure#compute"; self="http://127.0.0.1/my_links/12"; category="http://schemas.ogf.org/occi/infrastructure#networklink"; ')
+
+    def test_link_creation_during_resource_creation(self):
+        request = create_request('PUT', body = http_body_with_link)
+        handler = Wrapper(self.application, request)
+        handler.put('/link_test/4')
+
+        request = create_request('PUT', headers = http_head_with_link)
+        handler = Wrapper(self.application, request)
+        handler.put('/link_test/4')
 
 class ErrorResourceHandlerTest(unittest.TestCase):
 
@@ -898,7 +908,7 @@ class SecureQueryHandlerTest(unittest.TestCase):
         handler = SecureQueryWrapper(self.application, request)
         handler.get()
         heads, data = handler.get_output()
-        self.assertTrue(data.find('mine;scheme="http://mystuff.com/occi#";class="mixin";location=/foo/bar/') > -1)
+        self.assertTrue(data.find('mine; scheme="http://mystuff.com/occi#"; class="mixin"; location=/foo/bar/') > -1)
 
         # logout
         request = create_request('GET')
@@ -918,8 +928,8 @@ class SecureQueryHandlerTest(unittest.TestCase):
         handler = SecureQueryWrapper(self.application, request)
         handler.get()
         heads, data = handler.get_output()
-        self.assertFalse(data.find('mine;scheme="http://mystuff.com/occi#";class="mixin";location=/foo/bar/') > -1)
-        self.assertTrue(data.find('mine2;scheme="http://mystuff.com/occi#";class="mixin";location=/foo/bar/') > -1)
+        self.assertFalse(data.find('mine; scheme="http://mystuff.com/occi#"; class="mixin"; location=/foo/bar/') > -1)
+        self.assertTrue(data.find('mine2; scheme="http://mystuff.com/occi#"; class="mixin"; location=/foo/bar/') > -1)
 
     def test_delete_for_success(self):
         # login
