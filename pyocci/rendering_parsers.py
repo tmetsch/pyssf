@@ -228,7 +228,37 @@ def _from_http_link(link_string):
     '''
     Retrieve information rendered from HTTP Link definition.
     '''
-    pass
+    #target
+    target = link_string[1:link_string.find('>')]
+
+    # category...
+    begin = link_string.find('category=')
+    if begin is not - 1:
+        tmp = link_string[begin + 9:]
+        end = tmp.find(";")
+        if end > -1:
+            tmp = tmp[:end]
+        cat = _strip_all(tmp).split('#')
+        term = cat[1]
+        scheme = cat[0]
+    category = Category()
+    category.term = term
+    category.scheme = scheme
+
+    # attributes...
+    # TODO: use partition
+    tmp = link_string[begin + 12 + len(repr(category)):]
+    attributes = {}
+    for item in tmp.rstrip(';').split(';'):
+        key, value = _from_http_attribute(item)
+        attributes[key] = value
+
+    result = Link()
+    result.kind = category
+    result.attributes = attributes
+    result.target = target
+    result.source = '#'
+    return result
 
 def _to_http_link(entity, action = None, is_action = False):
     '''
@@ -255,10 +285,11 @@ def _from_http_attribute(attribute_string):
     Retrieve the attributes from the HTTP X - OCCI - Attribute rendering.
     '''
     try:
-        key = _strip_all(attribute_string.split('=')[0])
-        value = attribute_string.split('=')[1]
+        tmp = _strip_all(attribute_string)
+        key = tmp.split('=')[0]
+        value = tmp.split('=')[1]
         if value.find('"') is not - 1:
-            value = value.lstrip('"').rstrip('"')
+            value = _strip_all(value)
     except IndexError:
         raise ParsingException('Could not determine the given attributes')
 
@@ -333,6 +364,9 @@ def _get_categories(category_string_list):
 
     return kind, categories
 
+def _to_link(link):
+    pass
+
 def _to_entity(defined_kind, data, allow_incomplete):
     '''
     Helper routine for creating a new entity.
@@ -355,7 +389,6 @@ def _to_entity(defined_kind, data, allow_incomplete):
         links.append(_from_http_link(item))
 
     kind, categories = _get_categories(data.categories)
-
     if allow_incomplete:
         kind = defined_kind
     if kind is None:
@@ -370,7 +403,8 @@ def _to_entity(defined_kind, data, allow_incomplete):
             entity.title = attributes['title']
             attributes.pop('title')
         if len(links) > 0:
-            print data.links
+            for item in links:
+                print links
     elif Link.category in kind.related:
         entity = Link()
         if 'source' in attributes.keys():

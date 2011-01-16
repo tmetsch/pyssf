@@ -124,7 +124,7 @@ http_body_mixin2 = 'Category: mine2;scheme=http://mystuff.com/occi#;location=/fo
 
 # text/occi
 
-http_head = {'Category': ComputeBackend.category.term + ';scheme="' + ComputeBackend.category.scheme + '#"'}
+http_head = {'Category': ComputeBackend.category.term + '; scheme="' + ComputeBackend.category.scheme + '#"'}
 http_head_with_attr = {'Category': http_head['Category'], 'X-OCCI-Attribute':'foo=bar,summary=bar'}
 http_head_with_link = {'Category': http_head['Category'], 'Link':'</network/123>; rel="http://schemas.ogf.org/occi/infrastructure#network"; category="http://schemas.ogf.org/occi/infrastructure#networkinterface"; occi.networkinterface.interface="eth0"; occi.networkinterface.mac="00:11:22:33:44:55";'}
 http_head_only_attr = {'X-OCCI-Attribute':'foo=bar'}

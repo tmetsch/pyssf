@@ -78,15 +78,16 @@ class OCCIRenderingTest(unittest.TestCase):
         category_string = 'storage; scheme="http://schemas.ogf.org/occi/infrastructure#"; class="kind"; title="Storage Resource"; rel="http://schemas.ogf.org/occi/core#resource"; location=/storage/; attributes="occi.storage.size occi.storage.state"; actions="http://schemas.ogf.org/occi/infrastructure/storage/action#resize";'
         tmp = rendering_parsers._from_http_category(category_string)
         result = rendering_parsers._to_http_category(tmp, extended = True)
-        print result
-        print category_string
+        #print result
+        #print category_string
         #self.assertEquals(result, category_string)
 
     def test_from_http_link_for_sanity(self):
-        link_string = 'Link: </network/123>; rel="http://schemas.ogf.org/occi/infrastructure#network"; self="/link/networkinterface/456"; category="http://schemas.ogf.org/occi/infrastructure#networkinterface"; occi.networkinterface.interface="eth0"; occi.networkinterface.mac="00:11:22:33:44:55"; occi.networkinterface.state="active";'
+        link_string = '</network/123>; rel="http://schemas.ogf.org/occi/infrastructure#network"; category="http://schemas.ogf.org/occi/infrastructure#networkinterface"; occi.networkinterface.interface="eth0"; occi.networkinterface.mac="00:11:22:33:44:55"; occi.networkinterface.state="active";'
         tmp = rendering_parsers._from_http_link(link_string)
-        #result = rendering_parsers._to_http_link(tmp)
-        #print result
+        print tmp
+        result = rendering_parsers._to_http_link(tmp)
+        print result
         print link_string
         #self.assertEquals(result, link_string)
 

@@ -297,9 +297,11 @@ class BasicLinkTest(unittest.TestCase):
         handler = Wrapper(self.application, request)
         handler.put('/link_test/4')
 
-        request = create_request('PUT', headers = http_head_with_link)
+        heads = http_head_with_link.copy()
+        heads['Content-Type'] = 'text/occi'
+        request = create_request('POST', headers = heads)
         handler = Wrapper(self.application, request)
-        handler.put('/link_test/4')
+        handler.post('/')
 
 class ErrorResourceHandlerTest(unittest.TestCase):
 
