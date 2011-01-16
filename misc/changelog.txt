@@ -1,3 +1,10 @@
+
+Version 0.2.7
+-------------
+
+Changes version < 0.2.7:
+------------------------
+
 R,S30,Develop & Integrate RESTful Interface
 R,S30.1,Auth Autho Multiuser support (security)
 R,S30.2,Categories
