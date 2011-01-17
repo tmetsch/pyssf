@@ -2,6 +2,13 @@
 Version 0.2.7
 -------------
 
+R,S330,Add class attribute
+R,S340,add uri list parser
+R,S350,filtering on query interface
+R,S360,Update link rendering
+R,S370,Handle link creation on resource instantiation
+R,S380,Refactor the rendering parsers
+
 Changes version < 0.2.7:
 ------------------------
 
