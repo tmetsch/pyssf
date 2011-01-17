@@ -229,7 +229,8 @@ def _from_http_link(link_string):
     Retrieve information rendered from HTTP Link definition.
     '''
     #target
-    target = link_string[1:link_string.find('>')]
+    tmp = link_string[:link_string.find('>')].strip()
+    target = tmp[1:]
 
     # category...
     begin = link_string.find('category=')
@@ -239,11 +240,18 @@ def _from_http_link(link_string):
         if end > -1:
             tmp = tmp[:end]
         cat = _strip_all(tmp).split('#')
-        term = cat[1]
-        scheme = cat[0]
-    category = Category()
-    category.term = term
-    category.scheme = scheme
+        try:
+            term = cat[1]
+            scheme = cat[0]
+        except:
+            raise ParsingException('Syntax of the category definition seems'
+                                   + ' incorrect.')
+        else:
+            category = Category()
+            category.term = term
+            category.scheme = scheme
+    else:
+        raise ParsingException('Could not find a proper category definition')
 
     # attributes...
     # TODO: use partition
@@ -309,10 +317,10 @@ def _from_http_location(location_string):
     Retrieve the informations from HTTP X-OCCI-Location rendering.
     '''
     if location_string.strip().find(registry.HOST) == 0:
-        id = location_string.strip()[len(registry.HOST):]
+        identifier = location_string.strip()[len(registry.HOST):]
     else:
-        id = location_string.strip()
-    return id
+        identifier = location_string.strip()
+    return identifier
 
 def _to_http_location(item):
     '''
@@ -364,6 +372,30 @@ def _get_categories(category_string_list):
 
     return kind, categories
 
+def _to_link(link_string_list):
+    '''
+    Will create a link resource instance.
+    
+    @param link_string_list: A list of link renderings
+    @type link_string_list: list 
+    '''
+    links = []
+    for item in link_string_list:
+        found = False
+        link = _from_http_link(item)
+        for category in registry.BACKENDS.keys():
+            if link.kind == category:
+                link.kind = category
+                links.append(link)
+                found = True
+                break
+
+        if not found:
+            raise ParsingException('The given category for a link definition'
+                                   + ' was not registered in this service: '
+                                   + repr(link.kind))
+    return links
+
 def _to_entity(defined_kind, data, allow_incomplete):
     '''
     Helper routine for creating a new entity.
@@ -381,9 +413,7 @@ def _to_entity(defined_kind, data, allow_incomplete):
         key, value = _from_http_attribute(item)
         attributes[key] = value
 
-    links = []
-    for item in data.links:
-        links.append(_from_http_link(item))
+    links = _to_link(data.links)
 
     kind, categories = _get_categories(data.categories)
     if allow_incomplete:
@@ -399,9 +429,6 @@ def _to_entity(defined_kind, data, allow_incomplete):
         if 'title' in attributes.keys():
             entity.title = attributes['title']
             attributes.pop('title')
-        if len(links) > 0:
-            for item in links:
-                print links
     elif Link.category in kind.related:
         entity = Link()
         if 'source' in attributes.keys():
@@ -421,7 +448,7 @@ def _to_entity(defined_kind, data, allow_incomplete):
     entity.kind = kind
     entity.mixins = categories
     entity.attributes = attributes
-    return entity
+    return entity, links
 
 def _from_entity(entity):
     '''
@@ -537,7 +564,8 @@ class TextPlainRendering(Rendering):
         headers = {}
         body = ''
         for item in entities:
-            body += 'X-OCCI-Location: ' + _to_http_location(item.identifier) + '\n'
+            body += 'X-OCCI-Location: ' + _to_http_location(item.identifier)
+            body += '\n'
         headers['Content-Type'] = self.content_type
         return headers, body
 
@@ -619,10 +647,10 @@ class TextPlainRendering(Rendering):
 
         data = self._get_data(body)
 
-        entity = _to_entity(defined_kind, data, allow_incomplete)
+        entity, links = _to_entity(defined_kind, data, allow_incomplete)
 
         del(data)
-        return entity
+        return entity, links
 
 class TextHeaderRendering(Rendering):
     '''
@@ -754,10 +782,10 @@ class TextHeaderRendering(Rendering):
         # split out the information
         data = self._get_data(headers)
 
-        entity = _to_entity(defined_kind, data, allow_incomplete)
+        entity, links = _to_entity(defined_kind, data, allow_incomplete)
 
         del(data)
-        return entity
+        return entity, links
 
 class URIListRendering(Rendering):
     '''
@@ -1037,44 +1065,10 @@ class TextHTMLRendering(Rendering):
 
         data = self._get_data(body)
 
-        entity = _to_entity(defined_kind, data, allow_incomplete)
-
-        # all data...
-#        kind, categories = _get_categories(data.categories)
-#        attributes = {}
-#        for item in data.attributes:
-#            key, value = _from_http_attribute(item)
-#            attributes[key] = value
-#
-#        if allow_incomplete:
-#            kind = defined_kind
-#
-#        if Resource.category in kind.related:
-#            entity = Resource()
-#            if 'summary' in attributes.keys():
-#                entity.summary = attributes['summary']
-#                attributes.pop('summary')
-#        elif Link.category in kind.related:
-#            entity = Link()
-#            if 'source' in attributes.keys():
-#                source = attributes['source']
-#                if source.find(registry.HOST) == 0:
-#                    entity.source = source[len(registry.HOST):]
-#                else:
-#                    entity.source = attributes['source']
-#                attributes.pop('source')
-#            if 'target' in attributes.keys():
-#                target = attributes['target']
-#                if target.find(registry.HOST) == 0:
-#                    entity.target = target[len(registry.HOST):]
-#                else:
-#                    entity.target = target
-#                attributes.pop('target')
-#        entity.kind = kind
-#        entity.attributes = attributes
+        entity, links = _to_entity(defined_kind, data, allow_incomplete)
 
         del(data)
-        return entity
+        return entity, links
 
     #===========================================================================
     # Some routines for convenience

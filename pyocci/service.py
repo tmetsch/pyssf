@@ -51,7 +51,8 @@ class BaseHandler(tornado.web.RequestHandler):
     def __init__(self, application, request, transforms = None):
         if registry.HOST == '':
             registry.HOST = request.protocol + '://' + request.host
-        super(BaseHandler, self).__init__(application, request, transforms = None)
+        super(BaseHandler, self).__init__(application, request,
+                                          transforms = None)
 
     def extract_http_data(self):
         '''
@@ -183,15 +184,29 @@ class ResourceHandler(BaseHandler):
             # parse the request
             entity = None
             try:
-                entity = parser.to_entity(headers, body)
+                # create the entity
+                entity, links = parser.to_entity(headers, body)
+                entity.owner = self.get_current_user()
+                key = self._create_key(entity)
                 backend = registry.get_backend(entity.kind)
                 backend.create(entity)
+
+                RESOURCES[key] = entity
+
+                # handle the links...
+                for item in links:
+                    backend = registry.get_backend(item.kind)
+                    item.source = key
+                    backend.create(item)
+                    key = self._create_key(item)
+                    RESOURCES[key] = item
+                    item.idetifier = key
+                    item.owner = self.get_current_user()
+
             except (ParsingException, AttributeError) as pse:
+                # TODO: RESOURCES.pop(key)
                 raise HTTPError(400, str(pse))
 
-            entity.owner = self.get_current_user()
-            key = self._create_key(entity)
-            RESOURCES[key] = entity
         self._send_response({'Location': registry.HOST + key}, 'OK')
 
     @tornado.web.authenticated
@@ -203,7 +218,7 @@ class ResourceHandler(BaseHandler):
             old_entity = RESOURCES[key]
             new_entity = None
             try:
-                new_entity = parser.to_entity(headers, body,
+                new_entity, links = parser.to_entity(headers, body,
                                               allow_incomplete = True,
                                               defined_kind = old_entity.kind)
 
@@ -217,15 +232,29 @@ class ResourceHandler(BaseHandler):
                 raise HTTPError(400, str(pse))
         else:
             try:
-                new_entity = parser.to_entity(headers, body)
+                new_entity, links = parser.to_entity(headers, body)
+                new_entity.identifier = key
+                new_entity.owner = self.get_current_user()
 
                 backend = registry.get_backend(new_entity.kind)
                 backend.create(new_entity)
+
+                RESOURCES[key] = new_entity
+
+                # handle the links...
+                for item in links:
+                    backend = registry.get_backend(item.kind)
+                    item.source = key
+                    backend.create(item)
+                    key = self._create_key(item)
+                    RESOURCES[key] = item
+                    item.idetifier = key
+                    item.owner = self.get_current_user()
+
             except (ParsingException, AttributeError) as pse:
+                # TODO: RESOURCES.pop(key)
                 raise HTTPError(400, str(pse))
-            RESOURCES[key] = new_entity
-            new_entity.identifier = key
-            new_entity.owner = self.get_current_user()
+
         self._send_response(None, 'OK')
 
     @tornado.web.authenticated
@@ -586,11 +615,12 @@ class LinkBackend(Backend):
             raise AttributeError('A link needs to have a target.')
 
         try:
+            RESOURCES.has_key(link.target)
             src = RESOURCES[link.source]
-
             src.links.append(link)
-        except KeyError:
-            raise AttributeError('Source and target need to be valid Resources')
+        except KeyError as notfound:
+            raise AttributeError('Source and target need to be valid'
+                                 + ' Resources: ' + str(notfound))
 
     def retrieve(self, link):
         pass

@@ -69,6 +69,13 @@ class ComputeBackend(Backend):
     def action(self, entity, action):
         pass
 
+class NetworkInterfaceBackend(LinkBackend):
+
+    category = Kind()
+    category.term = 'networkinterface'
+    category.scheme = 'http://schemas.ogf.org/occi/infrastructure'
+    category.location = '/network_interfaces/'
+
 class NetworkLinkBackend(LinkBackend):
 
     category = Kind()
@@ -76,7 +83,7 @@ class NetworkLinkBackend(LinkBackend):
     category.scheme = 'http://schemas.ogf.org/occi/infrastructure'
     category.related = [Link.category]
     #category.location = '/ip_addr/'
-    category.attributes = []
+    category.attributes = ['']
 
 class MyMixinBackend(Backend):
 
@@ -162,6 +169,9 @@ html_action = 'Category=' + ComputeBackend.start_category.scheme + '#' + Compute
 http_body_mis_term = 'Category:scheme="example.com/occi/keyvalue"'
 http_body_mis_scheme = 'Category:123;'
 http_body_with_faulty_attr = http_body + '\nX-OCCI-Attribute:foo:bar,summary=bar'
+http_body_with_faulty_link = http_body + '\nLink: </network/123>; rel="http://schemas.ogf.org/occi/infrastructure#network"; categorie=""; occi.networkinterface.interface="eth0"; occi.networkinterface.mac="00:11:22:33:44:55";'
+http_body_with_faulty_link2 = http_body + '\nLink: </network/123>; rel="http://schemas.ogf.org/occi/infrastructure#network"; category="http://schemas.ogf.org/occi/infrastructure"; occi.networkinterface.interface="eth0"; occi.networkinterface.mac="00:11:22:33:44:55";'
+http_body_with_faulty_link3 = http_body + '\nLink: </network/123>; rel="http://schemas.ogf.org/occi/infrastructure#network"; category="http://schemas.ogf.org/occi/infrastructure#foo"; occi.networkinterface.interface="eth0"; occi.networkinterface.mac="00:11:22:33:44:55";'
 http_body_faulty_term = 'Category:123;scheme="example.com/occi/keyvalue"'
 http_body_faulty_scheme = 'Category:keyvalue;scheme="example.com/occi/keyvalue"'
 http_body_mis_keyword = 'keyvalue;scheme="example.com/occi/keyvalue"'

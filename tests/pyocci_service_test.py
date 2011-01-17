@@ -29,7 +29,7 @@ from pyocci.rendering_parsers import TextPlainRendering, TextHeaderRendering
 from pyocci.service import BaseHandler, LinkBackend, MixinBackend, LoginHandler
 from tests import http_body, http_body_action, http_body_mixin, \
     NetworkLinkBackend, ComputeBackend, http_body_mixin2, http_body_with_link, \
-    http_head_with_link
+    http_head_with_link, NetworkInterfaceBackend
 from tests.wrappers import Wrapper, ListWrapper, QueryWrapper, Login, Logout, \
     SecureWrapper, SecureQueryWrapper, SecureListWrapper
 from tornado.httpserver import HTTPRequest
@@ -214,7 +214,11 @@ class BasicLinkTest(unittest.TestCase):
         registry.register_parser('text/plain', TextPlainRendering())
         registry.register_parser('text/occi', TextHeaderRendering())
         registry.register_backend([NetworkLinkBackend.category], NetworkLinkBackend())
+        registry.register_backend([NetworkInterfaceBackend.category], NetworkInterfaceBackend())
         registry.register_backend([ComputeBackend.category], ComputeBackend())
+
+        resource = Resource()
+        service.RESOURCES['/network/123'] = resource
 
         try:
             request = create_request('PUT', body = http_body)
@@ -302,6 +306,21 @@ class BasicLinkTest(unittest.TestCase):
         request = create_request('POST', headers = heads)
         handler = Wrapper(self.application, request)
         handler.post('/')
+
+        heads['Accept'] = 'text/occi'
+        request = create_request('GET', headers = heads)
+        handler = Wrapper(self.application, request)
+        handler.get('/link_test/4')
+        header, data = handler.get_output()
+        self.assertTrue(header['Link'].find('<http://127.0.0.1/network/123>;') is not - 1)
+
+        tmp = header['Link']
+        tmp = tmp[tmp.find('self="') + 6:]
+        link_loc = tmp[16:tmp.find('"')]
+
+        handler.get(link_loc)
+        header, data = handler.get_output()
+        self.assertEquals('networkinterface; scheme="http://schemas.ogf.org/occi/infrastructure#"; class="kind"', header['Category'])
 
 class ErrorResourceHandlerTest(unittest.TestCase):
 
@@ -910,7 +929,6 @@ class SecureQueryHandlerTest(unittest.TestCase):
         handler = SecureQueryWrapper(self.application, request)
         handler.get()
         heads, data = handler.get_output()
-        print data
         self.assertTrue(data.find('mine; scheme="http://mystuff.com/occi#"; class="mixin"; location=/foo/bar/') > -1)
 
         # logout

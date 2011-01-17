@@ -45,7 +45,9 @@ from tests import http_body, http_body_add_info, http_body_faulty_scheme, \
     http_head_mis_scheme, http_head_mis_term, http_head_with_faulty_attr, \
     html_with_empty_attr, http_body_link_with_base_url, http_body_loc_with_base_url, \
     http_head_loc_with_base_url, http_head_link_with_base_url, \
-    html_create_link_with_base_url, http_body_with_link, http_head_with_link
+    html_create_link_with_base_url, http_body_with_link, http_head_with_link, \
+    NetworkInterfaceBackend, http_body_with_faulty_link, http_body_with_faulty_link2, \
+    http_body_with_faulty_link3
 import unittest
 import urllib
 
@@ -160,6 +162,7 @@ class TextPlainRenderingTest(unittest.TestCase):
         registry.HOST = 'http://localhost:8080'
         registry.register_backend([ComputeBackend.start_category, ComputeBackend.category], ComputeBackend())
         registry.register_backend([NetworkLinkBackend.category], NetworkLinkBackend())
+        registry.register_backend([NetworkInterfaceBackend.category], NetworkInterfaceBackend())
         registry.register_backend([MyMixinBackend.category], MyMixinBackend())
 
     def tearDown(self):
@@ -232,6 +235,10 @@ class TextPlainRenderingTest(unittest.TestCase):
         self.assertRaises(ParsingException, self.parser.to_entity, None, http_body_mis_term)
         self.assertRaises(ParsingException, self.parser.to_entity, None, http_body_with_faulty_attr)
 
+        self.assertRaises(ParsingException, self.parser.to_entity, None, http_body_with_faulty_link)
+        self.assertRaises(ParsingException, self.parser.to_entity, None, http_body_with_faulty_link2)
+        self.assertRaises(ParsingException, self.parser.to_entity, None, http_body_with_faulty_link3)
+
         # semantic errors
         self.assertRaises(ParsingException, self.parser.to_entity, None, http_body_non_existing_category)
 
@@ -282,26 +289,26 @@ class TextPlainRenderingTest(unittest.TestCase):
             self.assertTrue(isinstance(cat, Mixin))
 
     def test_to_entity_for_sanity(self):
-        resource = self.parser.to_entity(None, http_body_with_attr)
+        resource, links = self.parser.to_entity(None, http_body_with_attr)
         self.assertTrue(isinstance(resource, Resource))
         self.assertEquals(resource.summary, 'bar')
         self.assertEquals(resource.kind, ComputeBackend.category)
 
-        link = self.parser.to_entity(None, http_body_link)
+        link, links = self.parser.to_entity(None, http_body_link)
         self.assertTrue(isinstance(link, Link))
         self.assertEquals(link.source, 'foo')
         self.assertEquals(link.target, 'bar')
         self.assertEquals(link.kind, NetworkLinkBackend.category)
 
-        link = self.parser.to_entity(None, http_body_link_with_base_url)
+        link, links = self.parser.to_entity(None, http_body_link_with_base_url)
         self.assertTrue(isinstance(link, Link))
         self.assertEquals(link.source, '/foo')
         self.assertEquals(link.target, '/bar')
         self.assertEquals(link.kind, NetworkLinkBackend.category)
 
         multi_line = http_body + '\nCategory:' + http_body_mul_cats.split(',')[1]
-        resource1 = self.parser.to_entity(None, http_body_mul_cats)
-        resource2 = self.parser.to_entity(None, multi_line)
+        resource1, links = self.parser.to_entity(None, http_body_mul_cats)
+        resource2, links = self.parser.to_entity(None, multi_line)
         self.assertEquals(resource1.kind, resource2.kind)
         self.assertEquals(resource1.mixins, resource2.mixins)
 
@@ -327,6 +334,7 @@ class TextHeaderRenderingTest(unittest.TestCase):
         registry.HOST = 'http://localhost:8080'
         registry.register_backend([ComputeBackend.start_category, ComputeBackend.category], ComputeBackend())
         registry.register_backend([NetworkLinkBackend.category], NetworkLinkBackend())
+        registry.register_backend([NetworkInterfaceBackend.category], NetworkInterfaceBackend())
         registry.register_backend([MyMixinBackend.category], MyMixinBackend())
 
     def tearDown(self):
@@ -452,18 +460,18 @@ class TextHeaderRenderingTest(unittest.TestCase):
             self.assertTrue(isinstance(cat, Mixin))
 
     def test_to_entity_for_sanity(self):
-        resource = self.parser.to_entity(http_head_with_attr, None)
+        resource, links = self.parser.to_entity(http_head_with_attr, None)
         self.assertTrue(isinstance(resource, Resource))
         self.assertEquals(resource.summary, 'bar')
         self.assertEquals(resource.kind, ComputeBackend.category)
 
-        link = self.parser.to_entity(http_head_link, None)
+        link, links = self.parser.to_entity(http_head_link, None)
         self.assertTrue(isinstance(link, Link))
         self.assertEquals(link.source, 'foo')
         self.assertEquals(link.target, 'bar')
         self.assertEquals(link.kind, NetworkLinkBackend.category)
 
-        link = self.parser.to_entity(http_head_link_with_base_url, None)
+        link, links = self.parser.to_entity(http_head_link_with_base_url, None)
         self.assertTrue(isinstance(link, Link))
         self.assertEquals(link.source, '/foo')
         self.assertEquals(link.target, '/bar')
@@ -565,15 +573,15 @@ class TextHTMLRenderingTest(unittest.TestCase):
 
     def test_to_entity_for_sanity(self):
         data = urllib.quote(html_create_res)
-        resource = self.parser.to_entity(None, data)
+        resource, links = self.parser.to_entity(None, data)
         self.assertTrue(isinstance(resource, Resource))
 
         data = urllib.quote(html_create_link)
-        link = self.parser.to_entity(None, data)
+        link, links = self.parser.to_entity(None, data)
         self.assertTrue(isinstance(link, Link))
 
         data = urllib.quote(html_create_link_with_base_url)
-        link = self.parser.to_entity(None, data)
+        link, links = self.parser.to_entity(None, data)
         self.assertTrue(isinstance(link, Link))
 
     def test_from_categories_for_sanity(self):

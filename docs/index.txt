@@ -54,6 +54,8 @@ Contents:
 
 * `Coverage report <cover/index.html>`_
 
+* `Pylint report <lint/index.html>`_
+
 * :ref:`search`
 
 .. [OCCI] OCCI website - http://www.occi-wg.org
