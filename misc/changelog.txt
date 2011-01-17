@@ -2,7 +2,7 @@
 Version 0.2.8
 -------------
 
-
+R,S380,Fixed issue with newest tornado.web version
 
 Version 0.2.7
 -------------

@@ -32,6 +32,10 @@ class TestMixin(BaseHandler):
 
     current_user = 'default'
 
+    def __init__(self, application, request, **kwargs):
+        super(TestMixin, self).__init__(application, request, **kwargs)
+        self._transforms = []
+
     def get_output(self):
         heads, data = self._headers, self.body
         self.body = ''

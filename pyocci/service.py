@@ -48,11 +48,10 @@ class BaseHandler(tornado.web.RequestHandler):
 
     version = 'pyocci OCCI/1.1'
 
-    def __init__(self, application, request, transforms = None):
+    def __init__(self, application, request, **kwargs):
         if registry.HOST == '':
             registry.HOST = request.protocol + '://' + request.host
-        super(BaseHandler, self).__init__(application, request,
-                                          transforms = None)
+        super(BaseHandler, self).__init__(application, request, **kwargs)
 
     def extract_http_data(self):
         '''
