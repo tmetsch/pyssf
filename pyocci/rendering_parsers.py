@@ -276,7 +276,7 @@ def _to_http_link(entity, action = None, is_action = False):
         link_rendering += 'category="' + repr(entity.kind) + '"; '
 
         for attr in entity.attributes.keys():
-            link_rendering += attr + ' = "' + entity.attributes[attr]
+            link_rendering += attr + '="' + entity.attributes[attr]
             link_rendering += '";'
         return link_rendering
 
@@ -363,9 +363,6 @@ def _get_categories(category_string_list):
                                         + repr(cat))
 
     return kind, categories
-
-def _to_link(link):
-    pass
 
 def _to_entity(defined_kind, data, allow_incomplete):
     '''
@@ -517,9 +514,7 @@ class TextPlainRendering(Rendering):
                 tmp = entry[entry.find('Link:') + 5:]
                 if tmp.find(',') == -1:
                     data.links.append(tmp)
-                else:
-                    for item in tmp.split(','):
-                        data.links.append(item)
+                    # TODO: handle multiple link renderings...
             if entry.find('X-OCCI-Location:') > -1:
                 tmp = entry[entry.find('X-OCCI-Location:') + 16:]
                 if tmp.find(',') == -1:

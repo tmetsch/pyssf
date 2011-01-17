@@ -45,7 +45,7 @@ from tests import http_body, http_body_add_info, http_body_faulty_scheme, \
     http_head_mis_scheme, http_head_mis_term, http_head_with_faulty_attr, \
     html_with_empty_attr, http_body_link_with_base_url, http_body_loc_with_base_url, \
     http_head_loc_with_base_url, http_head_link_with_base_url, \
-    html_create_link_with_base_url
+    html_create_link_with_base_url, http_body_with_link, http_head_with_link
 import unittest
 import urllib
 
@@ -70,6 +70,16 @@ class RenderingTest(unittest.TestCase):
 
 class OCCIRenderingTest(unittest.TestCase):
 
+    resource = Resource()
+
+    def setUp(self):
+        self.resource.identifier = '/network/123'
+        self.resource.kind = NetworkLinkBackend.category
+        service.RESOURCES['/network/123'] = self.resource
+
+    def tearDown(self):
+        service.RESOURCES = {}
+
     #===========================================================================
     # Test for Sanity
     #===========================================================================
@@ -78,18 +88,26 @@ class OCCIRenderingTest(unittest.TestCase):
         category_string = 'storage; scheme="http://schemas.ogf.org/occi/infrastructure#"; class="kind"; title="Storage Resource"; rel="http://schemas.ogf.org/occi/core#resource"; location=/storage/; attributes="occi.storage.size occi.storage.state"; actions="http://schemas.ogf.org/occi/infrastructure/storage/action#resize";'
         tmp = rendering_parsers._from_http_category(category_string)
         result = rendering_parsers._to_http_category(tmp, extended = True)
-        #print result
-        #print category_string
-        #self.assertEquals(result, category_string)
+
+        self.assertTrue(result.find('storage') is not - 1)
+        self.assertTrue(result.find('scheme="http://schemas.ogf.org/occi/infrastructure#";') is not - 1)
 
     def test_from_http_link_for_sanity(self):
-        link_string = '</network/123>; rel="http://schemas.ogf.org/occi/infrastructure#network"; category="http://schemas.ogf.org/occi/infrastructure#networkinterface"; occi.networkinterface.interface="eth0"; occi.networkinterface.mac="00:11:22:33:44:55"; occi.networkinterface.state="active";'
+        link_string = '</network/123>; rel="http://schemas.ogf.org/occi/infrastructure#networklink"; category="http://schemas.ogf.org/occi/infrastructure#networkinterface"; occi.networkinterface.interface="eth0"; occi.networkinterface.mac="00:11:22:33:44:55"; occi.networkinterface.state="active";'
         tmp = rendering_parsers._from_http_link(link_string)
-        print tmp
+        tmp.identifier = '/foo/bar'
         result = rendering_parsers._to_http_link(tmp)
-        print result
-        print link_string
         #self.assertEquals(result, link_string)
+        for item1 in link_string.split(';'):
+            found = False
+            for item2 in result.split(';'):
+                if item2.strip().find(item1.strip()) is not - 1:
+                    found = True
+                    break
+            if found is not True:
+                self.fail('Could not find item: ' + item1)
+            else:
+                found = False
 
         #action...
         action_string = '</compute/123?action=start>; rel="http://schemas.ogf.org/occi/infrastructure/compute/action#start"'
@@ -137,6 +155,7 @@ class TextPlainRenderingTest(unittest.TestCase):
         self.entity.links = [self.link]
         self.entity.attributes['foo'] = 'bar'
         self.entity.summary = 'foo'
+        self.entity.title = 'My compute node...'
 
         registry.HOST = 'http://localhost:8080'
         registry.register_backend([ComputeBackend.start_category, ComputeBackend.category], ComputeBackend())
@@ -177,6 +196,7 @@ class TextPlainRenderingTest(unittest.TestCase):
     def test_to_entity_for_succes(self):
         self.parser.to_entity(None, http_body)
         self.parser.to_entity(None, http_body_with_attr)
+        self.parser.to_entity(None, http_body_with_link)
         self.parser.to_entity(None, http_body_add_info)
         self.parser.to_entity(None, http_body_mul_cats)
 
@@ -246,7 +266,7 @@ class TextPlainRenderingTest(unittest.TestCase):
         en_list = self.parser.get_entities(None, http_body_loc)
         self.assertTrue(len(en_list) == 1)
         en_list = self.parser.get_entities(None, http_body_loc_with_base_url)
-        self.assertTrue(len(en_list) == 1)
+        self.assertTrue(len(en_list) == 2)
 
     def test_login_information_for_sanity(self):
         heads, data = self.parser.login_information()
@@ -343,6 +363,7 @@ class TextHeaderRenderingTest(unittest.TestCase):
     def test_to_entity_for_succes(self):
         self.parser.to_entity(http_head, None)
         self.parser.to_entity(http_head_with_attr, None)
+        self.parser.to_entity(http_head_with_link, None)
         self.parser.to_entity(http_head_add_info, None)
         self.parser.to_entity(http_head_mul_cats, None)
 

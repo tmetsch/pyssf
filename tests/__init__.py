@@ -105,7 +105,7 @@ class DefunctBackend(Backend):
 # text/plain
 
 http_body = 'Category: ' + ComputeBackend.category.term + '; scheme="' + ComputeBackend.category.scheme + '#"; class="kind"'
-http_body_with_attr = http_body + '\nX-OCCI-Attribute: foo=bar,summary=bar'
+http_body_with_attr = http_body + '\nX-OCCI-Attribute: foo=bar,summary=bar,title="My compute node..."'
 http_body_with_link = http_body + '\nLink: </network/123>; rel="http://schemas.ogf.org/occi/infrastructure#network"; category="http://schemas.ogf.org/occi/infrastructure#networkinterface"; occi.networkinterface.interface="eth0"; occi.networkinterface.mac="00:11:22:33:44:55";'
 http_body_only_attr = 'X-OCCI-Attribute:foo=bar'
 http_body_link = 'Category:' + NetworkLinkBackend.category.term + ';scheme="' + NetworkLinkBackend.category.scheme + '#"\nX-OCCI-Attribute:source=foo,target=bar'
@@ -115,9 +115,9 @@ http_body_mul_cats = http_body + ',' + MyMixinBackend.category.term + ';scheme="
 http_body_add_info = http_body + ';term=foo'
 
 http_body_loc = 'X-OCCI-Location: /foo/bar1'
-http_body_loc_with_base_url = 'X-OCCI-Location: http://localhost:8080/foo/bar1'
+http_body_loc_with_base_url = 'X-OCCI-Location: http://localhost:8080/foo/bar1,http://localhost:8080/foo/bar2'
 
-http_body_action = 'Category: ' + ComputeBackend.start_category.term + ';scheme="' + ComputeBackend.start_category.scheme + '#"'
+http_body_action = 'Category: ' + ComputeBackend.start_category.term + ';scheme="' + ComputeBackend.start_category.scheme + '#";\nX-OCCI-Attribute: foo=bar'
 
 http_body_mixin = 'Category: mine;scheme=http://mystuff.com/occi#;location=/foo/bar/;'
 http_body_mixin2 = 'Category: mine2;scheme=http://mystuff.com/occi#;location=/foo/bar/;'

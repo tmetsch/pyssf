@@ -910,6 +910,7 @@ class SecureQueryHandlerTest(unittest.TestCase):
         handler = SecureQueryWrapper(self.application, request)
         handler.get()
         heads, data = handler.get_output()
+        print data
         self.assertTrue(data.find('mine; scheme="http://mystuff.com/occi#"; class="mixin"; location=/foo/bar/') > -1)
 
         # logout
