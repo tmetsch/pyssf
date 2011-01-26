@@ -185,6 +185,8 @@ http_body_faulty_mixin = ''
 
 # text/occi
 
+# TODO: faulty link requests...
+
 http_head_mis_term = {'Category': 'scheme="example.com/occi/keyvalue"'}
 http_head_mis_scheme = {'Category':'123;'}
 http_head_with_faulty_attr = http_head.copy()

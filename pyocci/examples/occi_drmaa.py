@@ -88,7 +88,7 @@ class DRMAABackend(Backend):
     kind.term = 'job'
 
     def create(self, entity):
-        if not 'remote_command' in entity.attributes and not 'args' in entity.attributes:
+        if not 'remote_command' in entity.attributes or not 'args' in entity.attributes:
             raise AttributeError('There needs to be an remote_command and args attributes.')
         entity.actions = [self.terminate_action]
         # create job...
