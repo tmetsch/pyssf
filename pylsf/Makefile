@@ -17,7 +17,7 @@
 # 
 
 CC = gcc
-LSF_LIBDIR = /opt/lsf/7.0/linux2.6-glibc2.3-x86/lib
+LSF_LIBDIR = /opt/platform/lsf/8.0/linux2.6-glibc2.3-x86_64/lib
 PYTHON_LIBDIR = /usr/include/python2.6
 
 PROJECT = _lsf.so
