@@ -24,8 +24,8 @@
 
 %{
 #define SWIG_FILE_WITH_INIT
-#include "/opt/lsf/7.0/include/lsf/lsf.h"
-#include "/opt/lsf/7.0/include/lsf/lsbatch.h"
+#include "/opt/platform/lsf/8.0/include/lsf/lsf.h"
+#include "/opt/platform/lsf/8.0/include/lsf/lsbatch.h"
 %}
 
 %ignore ls_placeoftype;
