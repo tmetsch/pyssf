@@ -1,6 +1,7 @@
 include README
 include demo.sh
 include setup_ssf.py
+include misc/style.css
 recursive-include pydrmaa/ *.py
 recursive-include pylsf/ *.py *.i Makefile README
 recursive-include pyocci/ *.py

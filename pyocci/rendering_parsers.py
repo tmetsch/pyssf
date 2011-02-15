@@ -88,8 +88,8 @@ class Rendering(object):
         
         @param headers: The HTTP headers.
         @type headers: dict
-        @param body: The HTTP body.
-        @type body: str
+        @param data: The HTTP body.
+        @type data: str
         '''
         raise NotImplementedError()
 
@@ -105,8 +105,8 @@ class Rendering(object):
         
         @param headers: The HTTP headers.
         @type headers: dict
-        @param body: The HTTP body.
-        @type body: str
+        @param data: The HTTP body.
+        @type data: str
         '''
         raise NotImplementedError()
 
@@ -116,8 +116,8 @@ class Rendering(object):
         
         @param headers: The HTTP headers.
         @type headers: dict
-        @param body: The HTTP body.
-        @type body: str
+        @param data: The HTTP body.
+        @type data: str
         '''
         raise NotImplementedError()
 
@@ -863,8 +863,8 @@ class TextHTMLRendering(Rendering):
         '''
         Simple method to split out the information from the HTTP HTML body.
 
-        @param headers: The HTML body.
-        @type headers: str
+        @param body: The HTML body.
+        @type body: str
         '''
         data = HTTPData()
         if body is not None:
@@ -1003,7 +1003,7 @@ class TextHTMLRendering(Rendering):
             html += '<h2>Attributes</h2><table>'
             for item in entity.attributes.keys():
                 html += '<tr><th>' + item + '</th><td>'
-                html += entity.attributes[item] + '</td></tr>'
+                html += str(entity.attributes[item]) + '</td></tr>'
             html += '</table>'
 
         html += '<h2>&nbsp;</h2>'
