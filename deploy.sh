@@ -20,13 +20,13 @@
 
 case "$1" in
   clean)
-    python setup.py clean --all
+    python setup_ssf.py clean --all
     rm -rf docs/_build sdist dist
 	;;
 
   build)
     $0 clean
-    python setup.py build
+    python setup_ssf.py build
     rc=$?
     if [[ $rc != 0 ]] ; then
         exit $rc
