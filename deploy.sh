@@ -36,9 +36,11 @@ case "$1" in
   coverage)
     export PYTHONPATH=build/lib.linux-x86_64-2.6/pylsf/
     export PYDRMAA_LIBRARY_PATH=/opt/lsf/7.0/linux2.6-glibc2.3-x86_64/lib/libdrmaa.so
-    nosetests --with-coverage --cover-html --cover-html-dir=docs/_build/html/cover --cover-erase --cover-package=pyocci -e "pylsf|pydrmaa|ssf"
+    nosetests --with-coverage --cover-html --cover-html-dir=docs/_build/html/cover --cover-erase --cover-package=pyocci,pydrmaa,ssf
+	# -e "pylsf|pydrmaa|ssf"
     export PYOCCI_STYLE_SHEET=`pwd`/misc/style.css
-    nosetests --with-coverage --cover-html --cover-html-dir=docs/_build/html/cover --cover-package=pyocci -e "pylsf|pydrmaa|ssf"
+    nosetests --with-coverage --cover-html --cover-html-dir=docs/_build/html/cover --cover-package=pyocci,pydrmaa,ssf
+	# -e "pylsf|pydrmaa|ssf"
     rc=$?
     if [[ $rc != 0 ]] ; then
         exit $rc
@@ -81,7 +83,7 @@ case "$1" in
 
   pypi)
     hg tag `cat setup.py | grep 'version =' | awk -F'version =' '{print $2}' | sed 's/,//'`
-	python setup.py clean sdist register upload
+    python setup.py clean sdist register upload
     ;;
 
   *)
