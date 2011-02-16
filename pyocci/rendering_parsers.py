@@ -121,8 +121,8 @@ class Rendering(object):
         '''
         raise NotImplementedError()
 
-    def to_entity(self, headers, body, allow_incomplete = False,
-                  defined_kind = None):
+    def to_entity(self, headers, body, allow_incomplete=False,
+                  defined_kind=None):
         '''
         Given the HTTP headers and the body this method will convert the HTTP
         data into an entity representation. Must return Resource or Link

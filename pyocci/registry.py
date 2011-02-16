@@ -99,7 +99,7 @@ def register_parser(content_type, parser):
     @param parser: The parser.
     @type parser: Parser
     '''
-    if RENDERINGS.has_key(content_type):
+    if content_type in RENDERINGS.keys():
         raise AlreadyRegisteredException('A Parser for this'
                                          + ' Content-type has already been'
                                          + ' registered.')

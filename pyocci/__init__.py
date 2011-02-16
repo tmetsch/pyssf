@@ -16,8 +16,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 '''
-The package holds an OCCI compliant Service which can be used for adding RESTful
-interface to your applications.
+The package holds an OCCI compliant Service which can be used for adding 
+RESTful interface to your applications.
 
 Created on Nov 18, 2010
 

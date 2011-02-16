@@ -24,6 +24,7 @@ Created on Nov 11, 2010
 @author: tmetsch
 '''
 
+
 class Backend(object):
     '''
     Backends are the integration point between the service and the resource
@@ -36,7 +37,7 @@ class Backend(object):
     def create(self, entity):
         '''
         Create a resource in the resource management layer.
-        
+
         @param entity: A complete entity representation in the OCCI framework.
         @type entity: Entity
         '''
