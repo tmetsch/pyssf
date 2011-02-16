@@ -37,10 +37,8 @@ case "$1" in
     export PYTHONPATH=build/lib.linux-x86_64-2.6/pylsf/
     export PYDRMAA_LIBRARY_PATH=/opt/platform/lsf/8.0/linux2.6-glibc2.3-x86_64/lib/libdrmaa.so
     nosetests --with-coverage --cover-html --cover-html-dir=docs/_build/html/cover --cover-erase --cover-package=pyocci,pydrmaa,ssf
-	# -e "pylsf|pydrmaa|ssf"
     export PYOCCI_STYLE_SHEET=`pwd`/misc/style.css
     nosetests --with-coverage --cover-html --cover-html-dir=docs/_build/html/cover --cover-package=pyocci,pydrmaa,ssf
-	# -e "pylsf|pydrmaa|ssf"
     rc=$?
     if [[ $rc != 0 ]] ; then
         exit $rc
