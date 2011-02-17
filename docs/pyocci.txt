@@ -55,7 +55,7 @@ API. All state changes for actions and all needed backends are implemented.
 If you have installed pyocci with the easy_install method go to the
 dist-packages directory of your python installation and enter the
 pyocci/examples directory. You'll find all the source files there. Now you can
-start each of the demos by running the corresponding *_main.py script.
+start each of the demos by running demo.sh script.
 
 .. note::
     When setting the environmental variable PYOCCI_STYLE_SHEET to an absolute
