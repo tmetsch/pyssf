@@ -121,8 +121,8 @@ class Rendering(object):
         '''
         raise NotImplementedError()
 
-    def to_entity(self, headers, body, allow_incomplete=False,
-                  defined_kind=None):
+    def to_entity(self, headers, body, allow_incomplete = False,
+                  defined_kind = None):
         '''
         Given the HTTP headers and the body this method will convert the HTTP
         data into an entity representation. Must return Resource or Link
@@ -906,7 +906,7 @@ class TextHTMLRendering(Rendering):
         if len(categories) > 0:
             for cat in categories:
                 tmp = self._create_category_table(cat)
-                if sorted_cats.has_key(cat.scheme):
+                if cat.scheme in sorted_cats.keys():
                     sorted_cats[cat.scheme] = sorted_cats[cat.scheme] + tmp
                 else:
                     sorted_cats[cat.scheme] = tmp

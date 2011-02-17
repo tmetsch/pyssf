@@ -28,10 +28,10 @@ Created on Nov 11, 2010
 class Backend(object):
     '''
     Backends are the integration point between the service and the resource
-    management framework (aka your application). The following methods therefore
-    need to be implemented. Backends can not only be defined for Kinds and their
-    resource instances, but also for Mixins. Doing this Mixins can be used as
-    templates.
+    management framework (aka your application). The following methods
+    therefore need to be implemented. Backends can not only be defined for
+    Kinds and their resource instances, but also for Mixins. Doing this Mixins
+    can be used as templates.
     '''
 
     def create(self, entity):
@@ -48,7 +48,7 @@ class Backend(object):
         '''
         Retrieve a resource in the resource management layer. This is used to
         update the entity representation before it is send to the client.
-        
+
         @param entity: A complete entity representation in the OCCI framework.
         @type entity: Entity
         '''
@@ -60,7 +60,7 @@ class Backend(object):
         Update a resource in the resource management layer. The backends should
         decide which information is passed from the new representation to the
         old one.
-        
+
         @param old_entity: A entity representation in the OCCI framework.
         @type old_entity: Entity
         @param new_entity: A entity representation in the OCCI framework.
@@ -73,7 +73,7 @@ class Backend(object):
         '''
         Delete a resource in the resource management layer. This is used to
         delete the entity representation in the underlying application.
-        
+
         @param entity: A entity representation in the OCCI framework.
         @type entity: Entity
         '''
@@ -83,7 +83,7 @@ class Backend(object):
     def action(self, entity, action):
         '''
         Perform an action on an resource or link.
-        
+
         @param entity: The resource or link the action should be performed on.
         @type entity: Entity
         @param action: Action which should be performed

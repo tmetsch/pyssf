@@ -118,7 +118,7 @@ def get_parser(content_type):
             # dropping those ;q=x.x values...
             type_str = type_str[:type_str.find(';q=')]
 
-        if RENDERINGS.has_key(type_str):
+        if type_str in RENDERINGS.keys():
             parser = RENDERINGS[type_str]
             break
         elif type_str == '*/*':

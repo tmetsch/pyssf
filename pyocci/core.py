@@ -28,6 +28,7 @@ Created on Nov 10, 2010
 # disabling 'Too many instance attributes' pyling check Ro902 (All okay)
 # pylint: disable=R0903,C0111,R0902
 
+
 class Category(object):
 
     def __init__(self):
