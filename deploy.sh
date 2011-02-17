@@ -80,6 +80,7 @@ case "$1" in
     ;;
 
   pypi)
+    $0 deploy
     hg tag `cat setup.py | grep 'version =' | awk -F'version =' '{print $2}' | sed 's/,//'`
     python setup.py clean sdist register upload
     ;;
