@@ -69,6 +69,9 @@ Either run nosetests or the testsuite.py file in the tests/ directory. You
 might need to add the build _lsf.so file to the PYTHONPATH (In most cases: 
 build/lib.linux-i686-2.6/pylsf)
 
+  * When running nosetests it might happen that you run into concurrency
+    issues. If so try running again with the --process-timeout option set.
+
 LICENSE
 -------
 Please review the file LICENSE in the root directory. Everything published
