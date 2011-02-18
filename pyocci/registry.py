@@ -113,7 +113,8 @@ def get_parser(content_type):
     @type content_type: str (can be: comma separated list)
     '''
     parser = None
-    for type_str in content_type.split(','):
+    for tmp in content_type.split(','):
+        type_str = tmp.strip()
         if type_str.find(';q=') > -1:
             # dropping those ;q=x.x values...
             type_str = type_str[:type_str.find(';q=')]

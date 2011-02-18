@@ -60,6 +60,7 @@ h1 {
     width: 20em;
 }
 h2 {
+    clear: left;
     font-size: 1.0em;    
     border-bottom: 1px solid #73c167;
     width: 30em;
