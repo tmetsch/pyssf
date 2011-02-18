@@ -411,7 +411,7 @@ class ListHandler(BaseHandler):
                 category = locations[key]
                 entities = parser.get_entities(headers, body)
                 for item in entities:
-                    if item in RESOURCES.keys():
+                    if item in RESOURCES:
                         res = RESOURCES[item]
                         if category not in res.mixins:
                             res.mixins.append(category)
@@ -434,7 +434,7 @@ class ListHandler(BaseHandler):
                 category = locations[key]
                 entities = parser.get_entities(headers, body)
                 for item in entities:
-                    if item in RESOURCES.keys():
+                    if item in RESOURCES:
                         RESOURCES[item].mixins.remove(category)
             except ParsingException as pse:
                 raise HTTPError(400, log_message = str(pse))
