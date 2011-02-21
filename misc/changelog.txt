@@ -8,7 +8,7 @@ Version 0.2.9
 -------------
 
 R,S400,PEP8 compliance
-R,S419,Switch to Platform LSF 8.0
+R,S410,Switch to Platform LSF 8.0
 
 Version 0.2.8
 -------------

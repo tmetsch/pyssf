@@ -316,10 +316,10 @@ class ResourceHandler(BaseHandler):
         @type entity: Entity
         '''
         if entity.kind.location is not '':
-            key = '/users/' + self.get_current_user() + entity.kind.location
+            key = entity.kind.location
             key += str(uuid.uuid4())
         else:
-            key = '/users/' + self.get_current_user() + '/' + str(uuid.uuid4())
+            key = '/' + str(uuid.uuid4())
         entity.identifier = key
         return key
 

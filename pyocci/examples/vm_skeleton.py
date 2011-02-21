@@ -33,7 +33,7 @@ class Compute(Backend):
 
     start_action = Action()
     start_action_cat = Category()
-    start_action_cat.attributes = ['graceful', 'acpioff', 'poweroff']
+    start_action_cat.attributes = []
     start_action_cat.scheme = 'http://schemas.ogf.org/occi/infrastructure/compute/action'
     start_action_cat.term = 'start'
     start_action_cat.title = 'Start a compute instance'
@@ -41,7 +41,7 @@ class Compute(Backend):
 
     stop_action = Action()
     stop_action_cat = Category()
-    stop_action_cat.attributes = []
+    stop_action_cat.attributes = ['graceful', 'acpioff', 'poweroff']
     stop_action_cat.scheme = 'http://schemas.ogf.org/occi/infrastructure/compute/action'
     stop_action_cat.term = 'stop'
     stop_action_cat.title = 'Stop a compute instance'
