@@ -148,8 +148,7 @@ class BaseHandler(tornado.web.RequestHandler):
         Returns a list of all resources belonging to the current user.
         '''
         my_resources = []
-        for tmp in RESOURCES.keys():
-            item = RESOURCES[tmp]
+        for item in RESOURCES.values():
             if item.owner == self.get_current_user():
                 my_resources.append(item)
         return my_resources
@@ -411,7 +410,7 @@ class ListHandler(BaseHandler):
                 category = locations[key]
                 entities = parser.get_entities(headers, body)
                 for item in entities:
-                    if item in RESOURCES.keys():
+                    if RESOURCES.has_key(item):
                         res = RESOURCES[item]
                         if category not in res.mixins:
                             res.mixins.append(category)
@@ -434,7 +433,7 @@ class ListHandler(BaseHandler):
                 category = locations[key]
                 entities = parser.get_entities(headers, body)
                 for item in entities:
-                    if item in RESOURCES.keys():
+                    if RESOURCES.has_key(item):
                         RESOURCES[item].mixins.remove(category)
             except ParsingException as pse:
                 raise HTTPError(400, log_message = str(pse))

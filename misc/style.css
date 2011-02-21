@@ -1,6 +1,6 @@
 html, body, #container {
-    margin:0;
-    padding:0;
+    margin: 0;
+    padding: 0;
     height: 100%;
 }
 body > #container {
@@ -10,7 +10,7 @@ body > #container {
     background: #efefea;
 }
 body {
-    font: .8em/normal "Lucida Sans", "Lucida Grande", sans-serif;
+    font: .8em/normal 'Ubuntubeta', 'Ubuntu', 'Bitstream Vera Sans', 'DejaVu Sans', Tahoma, sans-serif;
     color: #444;
     background: #efefea;
 }
@@ -31,6 +31,7 @@ body {
 }
 #header {
     height: 80px;
+    color: #fff;
     background: #444;
     padding: 0 15%;
     border-top: 5px solid #73c167;
@@ -59,17 +60,17 @@ h1 {
     width: 20em;
 }
 h2 {
-    clear: all;
+    clear: left;
     font-size: 1.0em;    
     border-bottom: 1px solid #73c167;
-    width: 20em;
+    width: 30em;
 }
 p {
     margin-bottom: 1em;
 }
 strong {
-    color:#444;
-    font-style: bold;
+    color: #444;
+    font-weight: bold;
 }
 ul {
     margin: 0.2em;
@@ -91,9 +92,14 @@ th {
 td {
     padding: 0.4em;
     background: #fafafa;
-    color: #73c167:
+    color: #444;
 }
-
+form input {
+    margin: 2px;
+    padding: 2px;
+    background: #fafafa;
+    border: 1px solid #73c167;
+} 
 fieldset {
     background: #ddd;
     float: right;

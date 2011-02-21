@@ -75,10 +75,10 @@ Therefore do a **ln -s <path to lsf>/conf/lsf.conf /etc/**
 
 Some variables need to be added to the lsf.conf file::
 
-    LSF_BINDIR=<path to lsf>/7.0/linux2.6-glibc2.3-x86_64/bin
+    LSF_BINDIR=<path to lsf>/8.0/linux2.6-glibc2.3-x86_64/bin
     LSF_ENVDIR=<path to lsf>/conf
-    LSF_LIBDIR=<path to lsf>/7.0/linux2.6-glibc2.3-x86_64/lib
-    LSF_SERVERDIR=<path to lsf>/7.0/linux2.6-glibc2.3-x86_64/etc
+    LSF_LIBDIR=<path to lsf>/8.0/linux2.6-glibc2.3-x86_64/lib
+    LSF_SERVERDIR=<path to lsf>/8.0/linux2.6-glibc2.3-x86_64/etc
 
 .. note::
     Make sure that you update the paths according to the platform architecture
