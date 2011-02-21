@@ -19,13 +19,13 @@
 # 
 
 case "$1" in
-  keyvalues)
+  keys)
     export PYOCCI_STYLE_SHEET=`pwd`/misc/style.css
     export PYTHONPATH=`pwd`
     python pyocci/examples/keyvalue_main.py
     ;;
 
-  infrastructure)
+  vms)
     export PYOCCI_STYLE_SHEET=`pwd`/misc/style.css
     export PYTHONPATH=`pwd`
     python pyocci/examples/vms_main.py
@@ -40,7 +40,7 @@ case "$1" in
     echo "Demoes the pyocci framework - will start service on localhost on port"
     echo "8888. Feel free to test the service using the URL http://localhost:8888"
     echo ""
-    echo "Usage: $N {keyvalues,infrastructure,jobs}"
+    echo "Usage: $N {keys,vms,jobs}"
     exit 1
     ;;
 esac

@@ -27,7 +27,7 @@ Created on Nov 10, 2010
 
 from pyocci import registry, service
 from pyocci.examples.vm_skeleton import Compute, Network, IPNetworking, Storage, \
-    NetworkInterface, StorageLink
+    NetworkInterface, StorageLink, IPNetworkingLink
 from pyocci.rendering_parsers import TextPlainRendering, TextHeaderRendering, \
     TextHTMLRendering, URIListRendering
 from pyocci.service import ResourceHandler, ListHandler, QueryHandler, \
@@ -111,6 +111,7 @@ if __name__ == '__main__':
                                   Storage())
         registry.register_backend([NetworkInterface.kind], NetworkInterface())
         registry.register_backend([StorageLink.kind], StorageLink())
+        registry.register_backend([IPNetworkingLink.kind], IPNetworkingLink())
 
     except:
         pass

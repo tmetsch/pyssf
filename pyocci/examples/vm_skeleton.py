@@ -317,12 +317,14 @@ class StorageLink(LinkBackend):
     kind.term = 'storagelink'
     kind.title = 'A storage link'
 
-#class IPNetworkingLink(Backend):
-#
-#    pass
-#
-## http://schemas.ogf.org/occi/infrastructure/networkinterface# and the value ipnetworkinterface
-##occi.networkinterface.allocation 
-##occi.networkinterface.gateway 
-##occi.networkinterface.ip 
+class IPNetworkingLink(LinkBackend):
+
+    kind = Mixin()
+    kind.actions = []
+    kind.attributes = ['occi.networkinterface.allocation', 'occi.networkinterface.gateway', 'occi.networkinterface.ip']
+    kind.location = '/ipnetwork/'
+    kind.related = [Link.category]
+    kind.scheme = 'http://schemas.ogf.org/occi/infrastructure'
+    kind.term = 'ipnetworkinterface'
+    kind.title = 'A ip network interface'
 
