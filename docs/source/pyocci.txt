@@ -43,7 +43,7 @@ package is installed. This can be done by:
 Demos
 -----
 If you are using the source distribution the demos can be run by using the
-demo.sh script. 2 demos are available: One for keyvalues, a simple job
+demo.sh script. Three demos are available: One for keyvalues, a simple job
 submission and a skeleton for the infrastructure model. After starting the
 service you can point you're browser to http://localhost:8888 or use any
 programming language or device which understands HTTP to interact with this

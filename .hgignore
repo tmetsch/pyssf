@@ -1,16 +1,14 @@
 syntax: glob
 
-docs/_build
-docs/cover
+docs/build
 build/*
 dist/*
-*html/*
 .coverage
 .settings/*
 MANIFEST
-web*
 pylsf/lsf.py
 pylsf/lsf_wrap.c
 *.pyc
+*.png
 *~
 
