@@ -84,7 +84,7 @@ class Compute(Backend):
 
         # trigger your hypervisor to start...
         entity.attributes['occi.compute.state'] = 'inactive'
-        print 'Creating the virtual maching'
+        print 'Creating the virtual machine'
 
     def retrieve(self, entity):
         # trigger your hypervisor to get most up to date information
