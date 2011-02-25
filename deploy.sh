@@ -46,7 +46,8 @@ case "$1" in
     ;;
 
   doc)
-    cd docs
+    $0 build
+	cd docs
     make clean
     cd ..
     $0 coverage
@@ -64,7 +65,6 @@ case "$1" in
     ;;
 
   test)
-    $0 clean
     $0 build
     $0 coverage
     ;;
