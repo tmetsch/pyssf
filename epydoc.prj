@@ -22,9 +22,9 @@ p9
 p10
 S'pylsf'
 p11
-S'ssf'
-p12
 S'pyocci'
+p12
+S'ssf'
 p13
 tp14
 sS'private'
@@ -47,6 +47,6 @@ S'default'
 p22
 sS'target'
 p23
-S'docs/_build/html/api'
+S'docs/build/html/api'
 p24
 s.
