@@ -22,6 +22,7 @@ case "$1" in
   clean)
     python setup_ssf.py clean --all
     rm -rf docs/build sdist dist
+	rm -rf MANIFEST pycallgraph.png
 	;;
 
   build)
@@ -60,8 +61,8 @@ case "$1" in
 
   big-doc)
     $0 doc
-    mkdir docs/_build/html/api/
-    epydocgui epydoc.prj
+    mkdir docs/build/html/api/
+    epydocgui misc/epydoc.prj
     ;;
 
   test)
@@ -76,7 +77,7 @@ case "$1" in
     xmessage "Password required"
     hg push
     xmessage "Password required"
-    scp -r docs/_build/html/* $USER,pyssf@web.sf.net:/home/groups/p/py/pyssf/htdocs
+    scp -r docs/build/html/* $USER,pyssf@web.sf.net:/home/groups/p/py/pyssf/htdocs
     ;;
 
   pypi)
