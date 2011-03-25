@@ -178,7 +178,7 @@ class ResourceHandlerTest(unittest.TestCase):
         handler = Wrapper(self.application, request)
         handler.get(url)
         heads, data = handler.get_output()
-        self.assertTrue(data.find('X-OCCI-Attribute: occi.compute.cores=3') > -1)
+        self.assertTrue(data.find('X-OCCI-Attribute: occi.compute.cores="3"') > -1)
 
     def test_delete_resource_instance(self):
         request = create_request('POST', body = http_body)

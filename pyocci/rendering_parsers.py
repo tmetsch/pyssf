@@ -212,7 +212,7 @@ def _to_http_category(kind, extended = False):
             rel_list = []
             for item in kind.related:
                 rel_list.append(repr(item))
-            tmp += '; rel=' + ' '.join(rel_list)
+            tmp += '; rel="' + ' '.join(rel_list) + '"'
         if hasattr(kind, 'location') and kind.location is not '':
             tmp += '; location=' + kind.location
         if hasattr(kind, 'attributes') and len(kind.attributes) > 0:
@@ -307,10 +307,7 @@ def _to_http_attribute(key, value):
     '''
     Creates a HTTP X-OCCI-Attribute rendering.
     '''
-    if value.find(' ') == -1:
-        return key + '=' + value
-    else:
-        return key + '="' + value + '"'
+    return key + '="' + value + '"'
 
 def _from_http_location(location_string):
     '''

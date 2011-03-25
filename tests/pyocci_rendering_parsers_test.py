@@ -131,7 +131,7 @@ class OCCIRenderingTest(unittest.TestCase):
         result = rendering_parsers._to_http_attribute(key, value)
         self.assertEquals(result, attr_string)
 
-        attr_string = 'occi.compute.cores=2'
+        attr_string = 'occi.compute.cores="2"'
         key, value = rendering_parsers._from_http_attribute(attr_string)
         result = rendering_parsers._to_http_attribute(key, value)
         self.assertEquals(result, attr_string)
@@ -266,8 +266,8 @@ class TextPlainRenderingTest(unittest.TestCase):
         self.assertEquals(heads['Content-Type'], 'text/plain')
         self.assertTrue(data.find('Category: compute;') > -1)
         self.assertTrue(data.find('Category: my_stuff;') > -1)
-        self.assertTrue(data.find('summary=foo') > -1)
-        self.assertTrue(data.find('foo=bar') > -1)
+        self.assertTrue(data.find('summary="foo"') > -1)
+        self.assertTrue(data.find('foo="bar"') > -1)
 
     def test_get_entities_for_sanity(self):
         en_list = self.parser.get_entities(None, http_body_loc)
@@ -438,7 +438,7 @@ class TextHeaderRenderingTest(unittest.TestCase):
         self.assertTrue(body == 'OK')
         self.assertTrue(heads['Category'].find('compute;') > -1)
         self.assertTrue(heads['Category'].find('my_stuff;') > -1)
-        self.assertTrue(heads['X-OCCI-Attribute'].find('foo=bar') > -1)
+        self.assertTrue(heads['X-OCCI-Attribute'].find('foo="bar"') > -1)
 
     def test_get_entities_for_sanity(self):
         en_list = self.parser.get_entities(http_head_loc, None)

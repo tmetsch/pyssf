@@ -2,7 +2,9 @@
 Version 0.3.0
 -------------
 
-
+Fixed Bug Id: 3240542 - OCCI Inframodel is broken
+Fixed Bug Id: 3240523 - Quoted Attributes
+Fixed Bug Id: 3240522 - expecting QUOTED_VALUE
 
 Version 0.2.9
 -------------

@@ -41,7 +41,7 @@ class Compute(Backend):
 
     stop_action = Action()
     stop_action_cat = Category()
-    stop_action_cat.attributes = ['graceful', 'acpioff', 'poweroff']
+    stop_action_cat.attributes = ['method']
     stop_action_cat.scheme = 'http://schemas.ogf.org/occi/infrastructure/compute/action'
     stop_action_cat.term = 'stop'
     stop_action_cat.title = 'Stop a compute instance'
@@ -49,7 +49,7 @@ class Compute(Backend):
 
     restart_action = Action()
     restart_action_cat = Category()
-    restart_action_cat.attributes = ['graceful', 'warm', 'cold']
+    restart_action_cat.attributes = ['method']
     restart_action_cat.scheme = 'http://schemas.ogf.org/occi/infrastructure/compute/action'
     restart_action_cat.term = 'restart'
     restart_action_cat.title = 'Restart a compute instance'
@@ -57,7 +57,7 @@ class Compute(Backend):
 
     suspend_action = Action()
     suspend_action_cat = Category()
-    suspend_action_cat.attributes = ['hibernate', 'suspend']
+    suspend_action_cat.attributes = ['method']
     suspend_action_cat.scheme = 'http://schemas.ogf.org/occi/infrastructure/compute/action'
     suspend_action_cat.term = 'suspend'
     suspend_action_cat.title = 'Suspend a compute instance'
