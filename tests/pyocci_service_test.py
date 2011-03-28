@@ -29,7 +29,7 @@ from pyocci.rendering_parsers import TextPlainRendering, TextHeaderRendering
 from pyocci.service import BaseHandler, LinkBackend, MixinBackend, LoginHandler
 from tests import http_body, http_body_action, http_body_mixin, \
     NetworkLinkBackend, ComputeBackend, http_body_mixin2, http_body_with_link, \
-    http_head_with_link, NetworkInterfaceBackend
+    http_head_with_link, NetworkInterfaceBackend, http_body_faulty_term
 from tests.wrappers import Wrapper, ListWrapper, QueryWrapper, Login, Logout, \
     SecureWrapper, SecureQueryWrapper, SecureListWrapper
 from tornado.httpserver import HTTPRequest
@@ -254,7 +254,7 @@ class BasicLinkTest(unittest.TestCase):
 
         request = create_request('POST', body = link_1_2)
         handler = Wrapper(self.application, request)
-        handler.post('/sdf')
+        handler.post('/')
 
         request = create_request('GET', headers = {'Accept':'text/occi'})
         handler = Wrapper(self.application, request)
@@ -345,6 +345,11 @@ class ErrorResourceHandlerTest(unittest.TestCase):
         request = create_request('POST', headers = {'Content-Type':'text/json'}, body = http_body)
         handler = Wrapper(self.application, request)
         self.assertRaises(HTTPError, handler.post, '/')
+
+    def test_post_faulty_path(self):
+        request = create_request('POST', body = http_body)
+        handler = Wrapper(self.application, request)
+        self.assertRaises(HTTPError, handler.post, '/blafo/')
 
     def test_post_faulty_category(self):
         request = create_request('POST', body = 'Category=bla;http://ogf.org')
@@ -444,6 +449,7 @@ class ListHandlerTest(unittest.TestCase):
         registry.register_parser('text/plain', TextPlainRendering())
         registry.register_parser('text/occi', TextHeaderRendering())
         registry.register_backend([ComputeBackend.category], ComputeBackend())
+        registry.register_backend([NetworkInterfaceBackend.category], NetworkInterfaceBackend())
 
         try:
             request = create_request('PUT', body = http_body_mixin)
@@ -476,6 +482,11 @@ class ListHandlerTest(unittest.TestCase):
     # Test for success
     #===========================================================================
 
+    def test_post_for_succes(self):
+        request = create_request('POST', body = http_body_with_link)
+        handler = ListWrapper(self.application, request)
+        handler.post('compute')
+
     def test_get_for_success(self):
 #        request = create_request('GET')
 #        handler = ListWrapper(self.application, request)
@@ -496,6 +507,22 @@ class ListHandlerTest(unittest.TestCase):
     #===========================================================================
     # Test for failure
     #===========================================================================
+
+    def test_post_for_failure(self):
+        # non existing path
+        request = create_request('POST', body = http_body_with_link)
+        handler = ListWrapper(self.application, request)
+        self.assertRaises(HTTPError, handler.post, 'blubber')
+
+        # wrong path
+        request = create_request('POST', body = http_body_with_link)
+        handler = ListWrapper(self.application, request)
+        self.assertRaises(HTTPError, handler.post, 'network_interfaces')
+
+        # faulty request...
+        request = create_request('POST', body = http_body_faulty_term)
+        handler = ListWrapper(self.application, request)
+        self.assertRaises(HTTPError, handler.post, 'compute')
 
     def test_get_for_failure(self):
         request = create_request('GET')

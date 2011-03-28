@@ -854,7 +854,9 @@ class TextHTMLRendering(Rendering):
         css_string = 'body {font: .8em/normal sans-serif;}'
         css_string += 'div {padding: 1em; margin: 1em;'
         css_string += 'border: 1px solid #73c167;}'
-        css_string += 'table {margin: 1em; border: 1px solid #444;}'
+        css_string += "table {margin: 0.5em;}"
+        css_string += 'td {padding: 0.5em; background: #eee;}'
+        css_string += 'th {padding: 0.5em; background: #ccc;}'
 
     def _get_data(self, body):
         '''

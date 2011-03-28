@@ -29,7 +29,7 @@ from pyocci import registry, service
 from pyocci.examples.keyvalue import KeyValueBackend, KeyValueLink
 from pyocci.rendering_parsers import TextPlainRendering, TextHeaderRendering, \
     TextHTMLRendering, URIListRendering
-from pyocci.service import ResourceHandler, ListHandler, QueryHandler, \
+from pyocci.service import ResourceHandler, CollectionHandler, QueryHandler, \
     LoginHandler, LogoutHandler
 import tornado.httpserver
 import tornado.web
@@ -51,7 +51,7 @@ class MyService():
 
     application = None
 
-    service.AUTHENTICATION = True
+    service.AUTHENTICATION = False
 
     def __init__(self):
         settings = {
@@ -62,7 +62,7 @@ class MyService():
             (r"/-/", QueryHandler),
             (r"/login", Login),
             (r"/logout", LogoutHandler),
-            (r"/(.*)/", ListHandler),
+            (r"/(.*)/", CollectionHandler),
             (r"(.*)", ResourceHandler),
         ], **settings)
 

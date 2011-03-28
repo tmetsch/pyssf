@@ -30,7 +30,7 @@ from pyocci.examples.vm_skeleton import Compute, Network, IPNetworking, Storage,
     NetworkInterface, StorageLink, IPNetworkingLink
 from pyocci.rendering_parsers import TextPlainRendering, TextHeaderRendering, \
     TextHTMLRendering, URIListRendering
-from pyocci.service import ResourceHandler, ListHandler, QueryHandler, \
+from pyocci.service import ResourceHandler, CollectionHandler, QueryHandler, \
     LogoutHandler, LoginHandler
 import tornado.httpserver
 import tornado.web
@@ -63,7 +63,7 @@ class MyService():
             (r"/-/", QueryHandler),
             (r"/login", Login),
             (r"/logout", LogoutHandler),
-            (r"/(.*)/", ListHandler),
+            (r"/(.*)/", CollectionHandler),
             (r"(.*)", ResourceHandler),
         ], **settings)
 

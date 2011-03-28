@@ -23,7 +23,7 @@ Created on Dec 2, 2010
 
 # pylint: disable-all
 
-from pyocci.service import ResourceHandler, ListHandler, QueryHandler, \
+from pyocci.service import ResourceHandler, CollectionHandler, QueryHandler, \
     LoginHandler, LogoutHandler, BaseHandler
 
 class TestMixin(BaseHandler):
@@ -48,7 +48,7 @@ class TestMixin(BaseHandler):
 class Wrapper(ResourceHandler, TestMixin):
     pass
 
-class ListWrapper(ListHandler, TestMixin):
+class ListWrapper(CollectionHandler, TestMixin):
     pass
 
 class QueryWrapper(QueryHandler, TestMixin):

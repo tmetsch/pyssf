@@ -111,6 +111,21 @@ class BaseHandler(tornado.web.RequestHandler):
                 self._headers[item] = heads[item]
         self.write(data)
 
+    def _create_key(self, entity):
+        '''
+        Create a key with the hierarchy of the entity encapsulated.
+        
+        @param entity: The entity to create the key for.
+        @type entity: Entity
+        '''
+        if entity.kind.location is not '':
+            key = entity.kind.location
+            key += str(uuid.uuid4())
+        else:
+            key = '/' + str(uuid.uuid4())
+        entity.identifier = key
+        return key
+
     def get_current_user(self):
         if AUTHENTICATION is True:
             return self.get_secure_cookie("pyocci_user")
@@ -176,15 +191,17 @@ class ResourceHandler(BaseHandler):
                 action = parser.to_action(headers, body)
                 backend = registry.get_backend(action.kind)
                 backend.action(entity, action)
+
+                self._send_response(None, 'OK')
             except (ParsingException, AttributeError) as pse:
                 raise HTTPError(400, str(pse))
-        else:
-            # parse the request
+        elif key == '/':
             entity = None
             try:
                 # create the entity
                 entity, links = parser.to_entity(headers, body)
                 entity.owner = self.get_current_user()
+
                 key = self._create_key(entity)
                 backend = registry.get_backend(entity.kind)
                 backend.create(entity)
@@ -201,11 +218,13 @@ class ResourceHandler(BaseHandler):
                     item.idetifier = key
                     item.owner = self.get_current_user()
 
+                self._send_response({'Location': registry.HOST + key}, 'OK')
+
             except (ParsingException, AttributeError) as pse:
                 # TODO: RESOURCES.pop(key)
                 raise HTTPError(400, str(pse))
-
-        self._send_response({'Location': registry.HOST + key}, 'OK')
+        else:
+            raise HTTPError(405)
 
     @tornado.web.authenticated
     def put(self, key):
@@ -308,22 +327,7 @@ class ResourceHandler(BaseHandler):
         else:
             raise HTTPError(404)
 
-    def _create_key(self, entity):
-        '''
-        Create a key with the hierarchy of the entity encapsulated.
-        
-        @param entity: The entity to create the key for.
-        @type entity: Entity
-        '''
-        if entity.kind.location is not '':
-            key = entity.kind.location
-            key += str(uuid.uuid4())
-        else:
-            key = '/' + str(uuid.uuid4())
-        entity.identifier = key
-        return key
-
-class ListHandler(BaseHandler):
+class CollectionHandler(BaseHandler):
     '''
     This class handles listing of resources in REST resource hierarchy and
     listing, adding and removing resource intstance from mixins.
@@ -334,6 +338,8 @@ class ListHandler(BaseHandler):
     #                                               (methods exists twice...)
     # disabling 'Method could be a function' pylint check (I want it here)
     # pylint: disable=R0904,W0221,R0201 
+
+    # TODO: actions on collections
 
     def get_locations(self):
         '''
@@ -365,6 +371,49 @@ class ListHandler(BaseHandler):
             elif category in res.mixins:
                 tmp.append(res)
         return tmp
+
+    @tornado.web.authenticated
+    def post(self, key):
+        key = '/' + key + '/'
+        headers, body = self.extract_http_data()
+        parser = self.get_pyocci_parser('Content-Type')
+
+        if key not in self.get_locations():
+            raise HTTPError(406, 'This path is not registered - Please check '
+                            + 'the query interface')
+
+        # parse the request
+        entity = None
+        try:
+            # create the entity
+            entity, links = parser.to_entity(headers, body)
+            entity.owner = self.get_current_user()
+
+            if not key == entity.kind.location:
+                raise HTTPError(406, 'Unable to create a resource instance '
+                                + 'with this kind information at this path.')
+
+            key = self._create_key(entity)
+            backend = registry.get_backend(entity.kind)
+            backend.create(entity)
+
+            RESOURCES[key] = entity
+
+            # handle the links...
+            for item in links:
+                backend = registry.get_backend(item.kind)
+                item.source = key
+                backend.create(item)
+                key = self._create_key(item)
+                RESOURCES[key] = item
+                item.idetifier = key
+                item.owner = self.get_current_user()
+
+            self._send_response({'Location': registry.HOST + key}, 'OK')
+
+        except (ParsingException, AttributeError) as pse:
+            # TODO: RESOURCES.pop(key)
+            raise HTTPError(400, str(pse))
 
     @tornado.web.authenticated
     def get(self, key):
