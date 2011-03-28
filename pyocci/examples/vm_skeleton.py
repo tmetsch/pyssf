@@ -189,7 +189,7 @@ class IPNetworking(Backend):
     mixin = Mixin()
     mixin.actions = []
     mixin.attributes = ['occi.network.address', 'occi.network.gateway', 'occi.network.allocation']
-    mixin.location = '/network/'
+    mixin.location = '/network/ip/'
     mixin.related = []
     mixin.scheme = 'http://schemas.ogf.org/occi/infrastructure/network'
     mixin.term = 'ipnetwork'
@@ -300,7 +300,7 @@ class NetworkInterface(LinkBackend):
     kind = Kind()
     kind.actions = []
     kind.attributes = ['occi.networkinterface.state', 'occi.networkinterface.mac', 'occi.networkinterface.interface']
-    kind.location = '/network/'
+    kind.location = '/network/link/'
     kind.related = [Link.category]
     kind.scheme = 'http://schemas.ogf.org/occi/infrastructure'
     kind.term = 'networkinterface'
@@ -311,7 +311,7 @@ class StorageLink(LinkBackend):
     kind = Kind()
     kind.actions = []
     kind.attributes = ['occi.storagelink.deviceid', 'occi.storagelink.mountpoint', 'occi.storagelink.state']
-    kind.location = '/storage/'
+    kind.location = '/storage/link/'
     kind.related = [Link.category]
     kind.scheme = 'http://schemas.ogf.org/occi/infrastructure'
     kind.term = 'storagelink'
@@ -322,7 +322,7 @@ class IPNetworkingLink(LinkBackend):
     kind = Mixin()
     kind.actions = []
     kind.attributes = ['occi.networkinterface.allocation', 'occi.networkinterface.gateway', 'occi.networkinterface.ip']
-    kind.location = '/ipnetwork/'
+    kind.location = '/network/ip/link/'
     kind.related = [Link.category]
     kind.scheme = 'http://schemas.ogf.org/occi/infrastructure'
     kind.term = 'ipnetworkinterface'
