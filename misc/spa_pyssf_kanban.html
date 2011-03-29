@@ -1,6 +1,5 @@
 <html>
-  <head>
-    <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+  <head><meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
     <!-- This software application is Twitter-Ware. If you like it,
     use it, or have something to say, follow and tell me on Twitter
     at @codemonkeyism
@@ -14,34 +13,38 @@
   <body>
     <!-- only the next part will be replaced during the save operation;
     please note that the start and end comments are necessary!-->
-    <!-- The data for the stories -->
-    <textarea rows="1" id="stories" style="visibility: hidden;">
-      S_Q,S420,Document 'how to develop backend'
-      S_Q,S430,Code optimizations
-      S,S440,Develop & Integrate a LSF 'Proxy' Interface
-      S,S450,handle long running tasks
-      S,S460,Pre-Scheduling & negotiation policies
-      D_Q,S470,Develop & Integrate a BES Interface
-      D_Q,S480,Integrate WS-Agreement (WSAG4j)
-      D_Q,S490,Implement DRMAAv2
-      D_Q,S500,Let DMRMAAv2 interface with SSF
-      D,S510,Optimize HTML rendering so links and locations can be provided
-      D,S540,Strip out wsgi app and create a adapter for tornado for easier integration with other frameworks
-      D,S550,Integrate python antlr grammar into the rendering parser
-      T,S520,Optimize VM skeleton
-      T,S530,Test pyLSF Interface
-    </textarea>
-    <!-- end -->
+<!-- The data for the stories -->
+<textarea rows="1" id="stories" style="visibility: hidden;">
+S_Q,S420,Document 'how to develop backend'
+S_Q,S430,Code optimizations
+S,S440,Develop & Integrate a LSF 'Proxy' Interface
+S,S450,handle long running tasks
+S,S460,Pre-Scheduling & negotiation policies
+D_Q,S470,Develop & Integrate a BES Interface
+D_Q,S480,Integrate WS-Agreement (WSAG4j)
+D_Q,S490,Implement DRMAAv2
+D_Q,S500,Let DMRMAAv2 interface with SSF
+D,S510,Optimize HTML rendering so links and locations can be provided
+D,S540,Strip out wsgi app and create a adapter for tornado for easier integration with other frameworks
+D,S550,Integrate python antlr grammar into the rendering parser
+T,S520,Optimize VM skeleton
+T,S530,Test pyLSF Interface
+T,S560,Actions on collections
+T,S570,Ensure that all backends including mixins and links are called
+T,S580,Add features to the VM skeleton
+R,S590,CSS improvements
+</textarea>
+<!-- end -->
     <!-- Names and shortcuts for the different states:
     Shortcut,Name
     They will be displayed in this order
     -->
     <textarea rows="1"  id="states" style="visibility: hidden;">
-      S,Stories
-      D,Design
-      DE,Development
-      T,Test
-      R,Release
+S,Stories
+D,Design
+DE,Development
+T,Test
+R,Release
     </textarea>
     <img style="float:right;" src="data:image/png;base64,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" alt="Simple Kanban Logo"/>
     <!-- The HTML starts here -->
@@ -3118,328 +3121,328 @@
         var app_data = { board: init_board($("#stories").text().split("\n")), states: state_data.states, states_order: state_data.states_order}
         $("#output").empty();
         $("#output").append(create_board(app_data));
-      </script>
-      <div class="clear"></div>
-      <div class="footer">
-      Written by Stephan Schmidt, who can be found on Twitter <a href="http://twitter.com/codemonkeyism">http://twitter.com/codemonkeyism</a>,
-      Blog at <a href="http://www.codemonkeyism.com">http://www.codemonkeyism.com</a>,  using
-      JQuery with the DragSort plugin<br>
-      This software application is Twitter-Ware. If you like it, use it, or have something to say, <b>follow me</b> and
-      tell me on Twitter at @codemonkeyism<br/>
-      The newest version can be found on <a href="http://www.simple-kanban.com">www.simple-kanban.com</a><br />
-      Updated by Thijs Metsch, who can be found on Twitter <a href="http://twitter.com/befreax">http://twitter.com/befreax</a>, with functionalities described <a href="http://softwareas.com/towards-a-single-page-application-framework#more-590">here</a>.
-      The <em>jQuery.twFile.js</em> feature is used to make it a single page application - it is licensed under a BSD, MIT and GPL license.
-      </div>
-      <!--
-      Copyright (c) 2009 Stephan Schmidt
-      Permission is hereby granted, free of charge, to any person
-      obtaining a copy of this software and associated documentation
-      files (the "Software"), to deal in the Software without
-      restriction, including without limitation the rights to use,
-      copy, modify, merge, publish, distribute, sublicense, and/or sell
-      copies of the Software, and to permit persons to whom the
-      Software is furnished to do so, subject to the following
-      conditions:
-      The above copyright notice and this permission notice shall be
-      included in all copies or substantial portions of the Software.
-      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-      EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-      OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-      NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-      HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-      WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-      FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-      OTHER DEALINGS IN THE SOFTWARE
-      -->
-      <script type="text/javascript">
-        /*
-         jQuery.twFile.js
-         jQuery plugin for loading a file and saving data to a file
-         Copyright (c) UnaMesa Association 2009
-         Triple licensed under the BSD, MIT and GPL licenses:
-         http://www.opensource.org/licenses/bsd-license.php
-         http://www.opensource.org/licenses/mit-license.php
-         http://www.gnu.org/licenses/gpl.html
-         */
-        (function($) {
-            if(!$.twFile) {
-                $.twFile = {};
-            }
-            $.extend($.twFile,{
-                currentDriver: null,
-                driverList: ["activeX", "mozilla", "tiddlySaver", "javaLiveConnect"],
-                // Loads the contents of a text file from the local file system
-                // filePath is the path to the file in these formats:
-                //    x:\path\path\path\filename - PC local file
-                //    \\server\share\path\path\path\filename - PC network file
-                //    /path/path/path/filename - Mac/Unix local file
-                // returns the text of the file, or null if the operation cannot be performed or false if there was an error
-                load: function(filePath) {
-                    return this.getDriver().loadFile(filePath);
-                },
-                // Saves a string to a text file on the local file system
-                // filePath is the path to the file in the format described above
-                // content is the string to save
-                // returns true if the file was saved successfully, or null if the operation cannot be performed or false if there was an error
-                save: function(filePath,content) {
-                    return this.getDriver().saveFile(filePath,content);
-                },
-                // Copies a file on the local file system
-                // dest is the path to the destination file in the format described above
-                // source is the path to the source file in the format described above
-                // returns true if the file was copied successfully, or null if the operation cannot be performed or false if there was an error
-                copy: function(dest,source) {
-                    if(this.getDriver().copyFile)
-                        return this.currentDriver.copyFile(dest,source);
-                    else
-                        return null;
-                },
-                // Converts a local file path from the format returned by document.location into the format expected by this plugin
-                // url is the original URL of the file
-                // returns the equivalent local file path
-                convertUriToLocalPath: function (url) {
-                    // Remove any location or query part of the URL
-                    var originalPath = url.split("#")[0].split("?")[0];
-                    // Convert file://localhost/ to file:///
-                    if(originalPath.indexOf("file://localhost/") == 0)
-                        originalPath = "file://" + originalPath.substr(16);
-                    // Convert to a native file format
-                    //# "file:///x:/path/path/path..." - pc local file --> "x:\path\path\path..."
-                    //# "file://///server/share/path/path/path..." - FireFox pc network file --> "\\server\share\path\path\path..."
-                    //# "file:///path/path/path..." - mac/unix local file --> "/path/path/path..."
-                    //# "file://server/share/path/path/path..." - pc network file --> "\\server\share\path\path\path..."
-                    var localPath;
-                    if(originalPath.charAt(9) == ":") // PC local file
-                        localPath = unescape(originalPath.substr(8)).replace(new RegExp("/","g"),"\\");
-                    else if(originalPath.indexOf("file://///") == 0) // Firefox PC network file
-                        localPath = "\\\\" + unescape(originalPath.substr(10)).replace(new RegExp("/","g"),"\\");
-                    else if(originalPath.indexOf("file:///") == 0) // Mac/UNIX local file
-                        localPath = unescape(originalPath.substr(7));
-                    else if(originalPath.indexOf("file:/") == 0) // Mac/UNIX local file
-                        localPath = unescape(originalPath.substr(5));
-                    else if(originalPath.indexOf("//") == 0) // PC network file
-                        localPath = "\\\\" + unescape(originalPath.substr(7)).replace(new RegExp("/","g"),"\\");
-                    return localPath || originalPath;
-                },
-                // Private functions
-                // Returns a reference to the current driver
-                getDriver: function() {
-                    if(this.currentDriver === null) {
-                        for(var t=0; t<this.driverList.length; t++) {
-                            if(this.currentDriver === null && drivers[this.driverList[t]].isAvailable && drivers[this.driverList[t]].isAvailable())
-                                this.currentDriver = drivers[this.driverList[t]];
-                        }
+</script>
+<div class="clear"></div>
+<div class="footer">
+Written by Stephan Schmidt, who can be found on Twitter <a href="http://twitter.com/codemonkeyism">http://twitter.com/codemonkeyism</a>,
+Blog at <a href="http://www.codemonkeyism.com">http://www.codemonkeyism.com</a>,  using
+JQuery with the DragSort plugin<br>
+This software application is Twitter-Ware. If you like it, use it, or have something to say, <b>follow me</b> and
+tell me on Twitter at @codemonkeyism<br/>
+The newest version can be found on <a href="http://www.simple-kanban.com">www.simple-kanban.com</a><br />
+Updated by Thijs Metsch, who can be found on Twitter <a href="http://twitter.com/befreax">http://twitter.com/befreax</a>, with functionalities described <a href="http://softwareas.com/towards-a-single-page-application-framework#more-590">here</a>.
+The <em>jQuery.twFile.js</em> feature is used to make it a single page application - it is licensed under a BSD, MIT and GPL license.
+</div>
+<!--
+Copyright (c) 2009 Stephan Schmidt
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE
+-->
+<script type="text/javascript">
+    /*
+     jQuery.twFile.js
+     jQuery plugin for loading a file and saving data to a file
+     Copyright (c) UnaMesa Association 2009
+     Triple licensed under the BSD, MIT and GPL licenses:
+     http://www.opensource.org/licenses/bsd-license.php
+     http://www.opensource.org/licenses/mit-license.php
+     http://www.gnu.org/licenses/gpl.html
+     */
+    (function($) {
+        if(!$.twFile) {
+            $.twFile = {};
+        }
+        $.extend($.twFile,{
+            currentDriver: null,
+            driverList: ["activeX", "mozilla", "tiddlySaver", "javaLiveConnect"],
+            // Loads the contents of a text file from the local file system
+            // filePath is the path to the file in these formats:
+            //    x:\path\path\path\filename - PC local file
+            //    \\server\share\path\path\path\filename - PC network file
+            //    /path/path/path/filename - Mac/Unix local file
+            // returns the text of the file, or null if the operation cannot be performed or false if there was an error
+            load: function(filePath) {
+                return this.getDriver().loadFile(filePath);
+            },
+            // Saves a string to a text file on the local file system
+            // filePath is the path to the file in the format described above
+            // content is the string to save
+            // returns true if the file was saved successfully, or null if the operation cannot be performed or false if there was an error
+            save: function(filePath,content) {
+                return this.getDriver().saveFile(filePath,content);
+            },
+            // Copies a file on the local file system
+            // dest is the path to the destination file in the format described above
+            // source is the path to the source file in the format described above
+            // returns true if the file was copied successfully, or null if the operation cannot be performed or false if there was an error
+            copy: function(dest,source) {
+                if(this.getDriver().copyFile)
+                    return this.currentDriver.copyFile(dest,source);
+                else
+                    return null;
+            },
+            // Converts a local file path from the format returned by document.location into the format expected by this plugin
+            // url is the original URL of the file
+            // returns the equivalent local file path
+            convertUriToLocalPath: function (url) {
+                // Remove any location or query part of the URL
+                var originalPath = url.split("#")[0].split("?")[0];
+                // Convert file://localhost/ to file:///
+                if(originalPath.indexOf("file://localhost/") == 0)
+                    originalPath = "file://" + originalPath.substr(16);
+                // Convert to a native file format
+                //# "file:///x:/path/path/path..." - pc local file --> "x:\path\path\path..."
+                //# "file://///server/share/path/path/path..." - FireFox pc network file --> "\\server\share\path\path\path..."
+                //# "file:///path/path/path..." - mac/unix local file --> "/path/path/path..."
+                //# "file://server/share/path/path/path..." - pc network file --> "\\server\share\path\path\path..."
+                var localPath;
+                if(originalPath.charAt(9) == ":") // PC local file
+                    localPath = unescape(originalPath.substr(8)).replace(new RegExp("/","g"),"\\");
+                else if(originalPath.indexOf("file://///") == 0) // Firefox PC network file
+                    localPath = "\\\\" + unescape(originalPath.substr(10)).replace(new RegExp("/","g"),"\\");
+                else if(originalPath.indexOf("file:///") == 0) // Mac/UNIX local file
+                    localPath = unescape(originalPath.substr(7));
+                else if(originalPath.indexOf("file:/") == 0) // Mac/UNIX local file
+                    localPath = unescape(originalPath.substr(5));
+                else if(originalPath.indexOf("//") == 0) // PC network file
+                    localPath = "\\\\" + unescape(originalPath.substr(7)).replace(new RegExp("/","g"),"\\");
+                return localPath || originalPath;
+            },
+            // Private functions
+            // Returns a reference to the current driver
+            getDriver: function() {
+                if(this.currentDriver === null) {
+                    for(var t=0; t<this.driverList.length; t++) {
+                        if(this.currentDriver === null && drivers[this.driverList[t]].isAvailable && drivers[this.driverList[t]].isAvailable())
+                            this.currentDriver = drivers[this.driverList[t]];
                     }
-                    return this.currentDriver;
                 }
-            });
-            // Deferred initialisation for any drivers that need it
-            $( function() {
-                for(var t in drivers) {
-                    if(drivers[t].deferredInit)
-                        drivers[t].deferredInit();
+                return this.currentDriver;
+            }
+        });
+        // Deferred initialisation for any drivers that need it
+        $( function() {
+            for(var t in drivers) {
+                if(drivers[t].deferredInit)
+                    drivers[t].deferredInit();
+            }
+        });
+        // Private driver implementations for each browser
+        var drivers = {};
+        // Internet Explorer driver
+        drivers.activeX = {
+            name: "activeX",
+            isAvailable: function() {
+                try {
+                    var fso = new ActiveXObject("Scripting.FileSystemObject");
+                } catch(ex) {
+                    return false;
                 }
-            });
-            // Private driver implementations for each browser
-            var drivers = {};
-            // Internet Explorer driver
-            drivers.activeX = {
-                name: "activeX",
-                isAvailable: function() {
-                    try {
-                        var fso = new ActiveXObject("Scripting.FileSystemObject");
-                    } catch(ex) {
-                        return false;
+                return true;
+            },
+            loadFile: function(filePath) {
+                // Returns null if it can't do it, false if there's an error, or a string of the content if successful
+                try {
+                    var fso = new ActiveXObject("Scripting.FileSystemObject");
+                    var file = fso.OpenTextFile(filePath,1);
+                    var content = file.ReadAll();
+                    file.Close();
+                } catch(ex) {
+                    //# alert("Exception while attempting to load\n\n" + ex.toString());
+                    return null;
+                }
+                return content;
+            },
+            createPath: function(path) {
+                //# Remove the filename, if present. Use trailing slash (i.e. "foo\bar\") if no filename.
+                var pos = path.lastIndexOf("\\");
+                if(pos!=-1)
+                    path = path.substring(0,pos+1);
+                //# Walk up the path until we find a folder that exists
+                var scan = [path];
+                try {
+                    var fso = new ActiveXObject("Scripting.FileSystemObject");
+                    var parent = fso.GetParentFolderName(path);
+                    while(parent && !fso.FolderExists(parent)) {
+                        scan.push(parent);
+                        parent = fso.GetParentFolderName(parent);
+                    }
+                    //# Walk back down the path, creating folders
+                    for(i=scan.length-1;i>=0;i--) {
+                        if(!fso.FolderExists(scan[i])) {
+                            fso.CreateFolder(scan[i]);
+                        }
                     }
                     return true;
-                },
-                loadFile: function(filePath) {
-                    // Returns null if it can't do it, false if there's an error, or a string of the content if successful
+                } catch(ex) {
+                }
+                return false;
+            },
+            copyFile: function(dest,source) {
+                drivers.activeX.createPath(dest);
+                try {
+                    var fso = new ActiveXObject("Scripting.FileSystemObject");
+                    fso.GetFile(source).Copy(dest);
+                } catch(ex) {
+                    return false;
+                }
+                return true;
+            },
+            saveFile: function(filePath,content) {
+                // Returns null if it can't do it, false if there's an error, true if it saved OK
+                drivers.activeX.createPath(filePath);
+                try {
+                    var fso = new ActiveXObject("Scripting.FileSystemObject");
+                    var file = fso.OpenTextFile(filePath,2,-1,0);
+                    file.Write(content);
+                    file.Close();
+                } catch (ex) {
+                    return null;
+                }
+                return true;
+            }
+        };
+        // Mozilla driver
+        drivers.mozilla = {
+            name: "mozilla",
+            isAvailable: function() {
+                return !!window.Components;
+            },
+            loadFile: function(filePath) {
+                // Returns null if it can't do it, false if there's an error, or a string of the content if successful
+                if(window.Components) {
                     try {
-                        var fso = new ActiveXObject("Scripting.FileSystemObject");
-                        var file = fso.OpenTextFile(filePath,1);
-                        var content = file.ReadAll();
-                        file.Close();
+                        netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+                        var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
+                        file.initWithPath(filePath);
+                        if(!file.exists())
+                            return null;
+                        var inputStream = Components.classes["@mozilla.org/network/file-input-stream;1"].createInstance(Components.interfaces.nsIFileInputStream);
+                        inputStream.init(file,0x01,00004,null);
+                        var sInputStream = Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(Components.interfaces.nsIScriptableInputStream);
+                        sInputStream.init(inputStream);
+                        var contents = sInputStream.read(sInputStream.available());
+                        sInputStream.close();
+                        inputStream.close();
+                        return contents;
                     } catch(ex) {
-                        //# alert("Exception while attempting to load\n\n" + ex.toString());
-                        return null;
+                        //# alert("Exception while attempting to load\n\n" + ex);
+                        return false;
                     }
-                    return content;
-                },
-                createPath: function(path) {
-                    //# Remove the filename, if present. Use trailing slash (i.e. "foo\bar\") if no filename.
-                    var pos = path.lastIndexOf("\\");
-                    if(pos!=-1)
-                        path = path.substring(0,pos+1);
-                    //# Walk up the path until we find a folder that exists
-                    var scan = [path];
+                }
+                return null;
+            },
+            saveFile: function(filePath,content) {
+                // Returns null if it can't do it, false if there's an error, true if it saved OK
+                if(window.Components) {
                     try {
-                        var fso = new ActiveXObject("Scripting.FileSystemObject");
-                        var parent = fso.GetParentFolderName(path);
-                        while(parent && !fso.FolderExists(parent)) {
-                            scan.push(parent);
-                            parent = fso.GetParentFolderName(parent);
-                        }
-                        //# Walk back down the path, creating folders
-                        for(i=scan.length-1;i>=0;i--) {
-                            if(!fso.FolderExists(scan[i])) {
-                                fso.CreateFolder(scan[i]);
-                            }
-                        }
+                        netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+                        var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
+                        file.initWithPath(filePath);
+                        if(!file.exists())
+                            file.create(0,0664);
+                        var out = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
+                        out.init(file,0x20|0x02,00004,null);
+                        out.write(content,content.length);
+                        out.flush();
+                        out.close();
                         return true;
                     } catch(ex) {
-                    }
-                    return false;
-                },
-                copyFile: function(dest,source) {
-                    drivers.activeX.createPath(dest);
-                    try {
-                        var fso = new ActiveXObject("Scripting.FileSystemObject");
-                        fso.GetFile(source).Copy(dest);
-                    } catch(ex) {
+                        alert("Exception while attempting to save\n\n" + ex);
                         return false;
                     }
-                    return true;
-                },
-                saveFile: function(filePath,content) {
-                    // Returns null if it can't do it, false if there's an error, true if it saved OK
-                    drivers.activeX.createPath(filePath);
-                    try {
-                        var fso = new ActiveXObject("Scripting.FileSystemObject");
-                        var file = fso.OpenTextFile(filePath,2,-1,0);
-                        file.Write(content);
-                        file.Close();
-                    } catch (ex) {
-                        return null;
-                    }
-                    return true;
                 }
-            };
-            // Mozilla driver
-            drivers.mozilla = {
-                name: "mozilla",
-                isAvailable: function() {
-                    return !!window.Components;
-                },
-                loadFile: function(filePath) {
-                    // Returns null if it can't do it, false if there's an error, or a string of the content if successful
-                    if(window.Components) {
-                        try {
-                            netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
-                            var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
-                            file.initWithPath(filePath);
-                            if(!file.exists())
-                                return null;
-                            var inputStream = Components.classes["@mozilla.org/network/file-input-stream;1"].createInstance(Components.interfaces.nsIFileInputStream);
-                            inputStream.init(file,0x01,00004,null);
-                            var sInputStream = Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(Components.interfaces.nsIScriptableInputStream);
-                            sInputStream.init(inputStream);
-                            var contents = sInputStream.read(sInputStream.available());
-                            sInputStream.close();
-                            inputStream.close();
-                            return contents;
-                        } catch(ex) {
-                            //# alert("Exception while attempting to load\n\n" + ex);
-                            return false;
-                        }
-                    }
-                    return null;
-                },
-                saveFile: function(filePath,content) {
-                    // Returns null if it can't do it, false if there's an error, true if it saved OK
-                    if(window.Components) {
-                        try {
-                            netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
-                            var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
-                            file.initWithPath(filePath);
-                            if(!file.exists())
-                                file.create(0,0664);
-                            var out = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
-                            out.init(file,0x20|0x02,00004,null);
-                            out.write(content,content.length);
-                            out.flush();
-                            out.close();
-                            return true;
-                        } catch(ex) {
-                            alert("Exception while attempting to save\n\n" + ex);
-                            return false;
-                        }
-                    }
-                    return null;
-                }
-            };
-            // TiddlySaver driver
-            drivers.tiddlySaver = {
-                name: "tiddlySaver",
-                deferredInit: function() {
-                    if(!document.applets["TiddlySaver"] && !$.browser.mozilla && !$.browser.msie && document.location.toString().substr(0,5) == "file:") {
-                        $(document.body).append("<applet style='position:absolute;left:-1px' name='TiddlySaver' code='TiddlySaver.class' archive='TiddlySaver.jar' width='1'height='1'></applet>");
-                    }
-                },
-                isAvailable: function() {
-                    return !!document.applets["TiddlySaver"];
-                },
-                loadFile: function(filePath) {
-                    var r;
-                    try {
-                        if(document.applets["TiddlySaver"]) {
-                            r = document.applets["TiddlySaver"].loadFile(javaUrlToFilename(filePath),"UTF-8");
-                            return (r === undefined || r === null) ? null : String(r);
-                        }
-                    } catch(ex) {
-                    }
-                    return null;
-                },
-                saveFile: function(filePath,content) {
-                    try {
-                        if(document.applets["TiddlySaver"])
-                            return document.applets["TiddlySaver"].saveFile(javaUrlToFilename(filePath),"UTF-8",content);
-                    } catch(ex) {
-                    }
-                    return null;
-                }
+                return null;
             }
-            // Java LiveConnect driver
-            drivers.javaLiveConnect = {
-                name: "javaLiveConnect",
-                isAvailable: function() {
-                    return !!window.java && !!window.java.io && !!window.java.io.FileReader;
-                },
-                loadFile: function(filePath) {
-                    var r;
-                    var content = [];
-                    try {
-                        r = new java.io.BufferedReader(new java.io.FileReader(javaUrlToFilename(filePath)));
-                        var line;
-                        while((line = r.readLine()) != null)
-                            content.push(new String(line));
-                        r.close();
-                    } catch(ex) {
-                        return null;
-                    }
-                    return content.join("\n") + "\n";
-                },
-                saveFile: function(filePath,content) {
-                    try {
-                        var s = new java.io.PrintStream(new java.io.FileOutputStream(javaUrlToFilename(filePath)));
-                        s.print(content);
-                        s.close();
-                    } catch(ex) {
-                        return null;
-                    }
-                    return true;
+        };
+        // TiddlySaver driver
+        drivers.tiddlySaver = {
+            name: "tiddlySaver",
+            deferredInit: function() {
+                if(!document.applets["TiddlySaver"] && !$.browser.mozilla && !$.browser.msie && document.location.toString().substr(0,5) == "file:") {
+                    $(document.body).append("<applet style='position:absolute;left:-1px' name='TiddlySaver' code='TiddlySaver.class' archive='TiddlySaver.jar' width='1'height='1'></applet>");
                 }
+            },
+            isAvailable: function() {
+                return !!document.applets["TiddlySaver"];
+            },
+            loadFile: function(filePath) {
+                var r;
+                try {
+                    if(document.applets["TiddlySaver"]) {
+                        r = document.applets["TiddlySaver"].loadFile(javaUrlToFilename(filePath),"UTF-8");
+                        return (r === undefined || r === null) ? null : String(r);
+                    }
+                } catch(ex) {
+                }
+                return null;
+            },
+            saveFile: function(filePath,content) {
+                try {
+                    if(document.applets["TiddlySaver"])
+                        return document.applets["TiddlySaver"].saveFile(javaUrlToFilename(filePath),"UTF-8",content);
+                } catch(ex) {
+                }
+                return null;
             }
-            // Private utilities
-            function javaUrlToFilename(url) {
-                var f = "//localhost";
-                if(url.indexOf(f) == 0)
-                    return url.substring(f.length);
-                var i = url.indexOf(":");
-                return i > 0 ? url.substring(i-1) : url;
+        }
+        // Java LiveConnect driver
+        drivers.javaLiveConnect = {
+            name: "javaLiveConnect",
+            isAvailable: function() {
+                return !!window.java && !!window.java.io && !!window.java.io.FileReader;
+            },
+            loadFile: function(filePath) {
+                var r;
+                var content = [];
+                try {
+                    r = new java.io.BufferedReader(new java.io.FileReader(javaUrlToFilename(filePath)));
+                    var line;
+                    while((line = r.readLine()) != null)
+                        content.push(new String(line));
+                    r.close();
+                } catch(ex) {
+                    return null;
+                }
+                return content.join("\n") + "\n";
+            },
+            saveFile: function(filePath,content) {
+                try {
+                    var s = new java.io.PrintStream(new java.io.FileOutputStream(javaUrlToFilename(filePath)));
+                    s.print(content);
+                    s.close();
+                } catch(ex) {
+                    return null;
+                }
+                return true;
             }
+        }
+        // Private utilities
+        function javaUrlToFilename(url) {
+            var f = "//localhost";
+            if(url.indexOf(f) == 0)
+                return url.substring(f.length);
+            var i = url.indexOf(":");
+            return i > 0 ? url.substring(i-1) : url;
+        }
 
-        })(jQuery);
+    })(jQuery);
     </script>
     <!-- SPA plugin -->
     <script type="text/javascript">
