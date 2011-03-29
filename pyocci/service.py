@@ -348,8 +348,6 @@ class CollectionHandler(BaseHandler):
     # disabling 'Method could be a function' pylint check (I want it here)
     # pylint: disable=R0904,W0221,R0201 
 
-    # TODO: actions on collections
-
     def get_locations(self):
         '''
         Returns a dict with all categories which have locations.
