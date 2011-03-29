@@ -75,7 +75,7 @@ class Compute(Backend):
     def create(self, entity):
         # e.g. check if all needed attributes are defined...
 
-        # adding some defautl dummy values:
+        # adding some default dummy values:
         entity.attributes['occi.compute.architecture'] = 'x86'
         entity.attributes['occi.compute.cores'] = '2'
         entity.attributes['occi.compute.hostname'] = 'dummy'
@@ -84,6 +84,7 @@ class Compute(Backend):
 
         # trigger your hypervisor to start...
         entity.attributes['occi.compute.state'] = 'inactive'
+        entity.actions = [self.start_action]
         print 'Creating the virtual machine'
 
     def retrieve(self, entity):
@@ -157,19 +158,25 @@ class Network(Backend):
 
     def create(self, entity):
         # create a VNIC...
+        entity.attributes['occi.network.vlan'] = '1'
+        entity.attributes['occi.network.label'] = 'dummy interface'
         entity.attributes['occi.network.state'] = 'inactive'
+        entity.actions = [self.up_action]
         print 'Creating a VNIC'
 
     def retrieve(self, entity):
+        # update a VNIC
         if entity.attributes['occi.network.state'] == 'active':
             entity.actions = [self.down_action]
         elif entity.attributes['occi.network.state'] == 'inactive':
             entity.actions = [self.up_action]
 
     def update(self, old_entity, new_entity):
+        # implement if needed :-)
         pass
 
     def delete(self, entity):
+        # and deactivate it
         print 'removing a representation of a VNIC with id:' + entity.identifier
 
     def action(self, entity, action):
@@ -196,7 +203,12 @@ class IPNetworking(Backend):
     mixin.title = 'An IP network instance'
 
     def create(self, entity):
-        pass
+        # TODO: check that the kind of the entity is so that this mixin can be added...
+
+        # assign the ip!
+        entity.attributes['occi.network.address'] = '10.0.0.11'
+        entity.attributes['occi.network.gateway'] = '10.0.0.1'
+        entity.attributes['occi.network.allocation'] = 'a'
 
     def retrieve(self, entity):
         pass
@@ -262,16 +274,23 @@ class Storage(Backend):
     kind.title = 'A storage instance'
 
     def create(self, entity):
+        # create a storage container here!
+
+        entity.attributes['occi.storage.size'] = '1'
         entity.attributes['occi.storage.state'] = 'offline'
+        entity.actions = [self.online_action]
         print 'Creating a storage device'
 
     def retrieve(self, entity):
+        # check the state and return it!
+
         if entity.attributes['occi.storage.state'] == 'offline':
             entity.actions = [self.online_action]
         if entity.attributes['occi.storage.state'] == 'online':
             entity.actions = [self.backup_action, self.snapshot_action, self.resize_action]
 
     def update(self, old_entity, new_entity):
+        # might be needed...
         pass
 
     def delete(self, entity):
@@ -306,6 +325,19 @@ class NetworkInterface(LinkBackend):
     kind.term = 'networkinterface'
     kind.title = 'A network interface'
 
+    def create(self, link):
+        super(NetworkInterface, self).create(link)
+        link.attributes['occi.networkinterface.state'] = 'up'
+        link.attributes['occi.networkinterface.mac'] = 'aa:bb:cc:dd:ee:ff'
+        link.attributes['occi.networkinterface.interface'] = 'eth0'
+
+    def delete(self, link):
+        super(NetworkInterface, self).delete(link)
+        link.attributes.pop('occi.networkinterface.state')
+        link.attributes.pop('occi.networkinterface.mac')
+        link.attributes.pop('occi.networkinterface.interface')
+
+
 class StorageLink(LinkBackend):
 
     kind = Kind()
@@ -317,7 +349,19 @@ class StorageLink(LinkBackend):
     kind.term = 'storagelink'
     kind.title = 'A storage link'
 
-class IPNetworkingLink(LinkBackend):
+    def create(self, link):
+        super(StorageLink, self).create(link)
+        link.attributes['occi.storagelink.deviceid'] = 'sda1'
+        link.attributes['occi.storagelink.mountpoint'] = '/'
+        link.attributes['occi.storagelink.state'] = 'mounted'
+
+    def delete(self, link):
+        super(StorageLink, self).delete(link)
+        link.attributes.pop('occi.storagelink.deviceid')
+        link.attributes.pop('occi.storagelink.mountpoint')
+        link.attributes.pop('occi.storagelink.state')
+
+class IPNetworkingLink(Backend):
 
     kind = Mixin()
     kind.actions = []
@@ -328,3 +372,23 @@ class IPNetworkingLink(LinkBackend):
     kind.term = 'ipnetworkinterface'
     kind.title = 'A ip network interface'
 
+    def create(self, entity):
+        # TODO: check is parent resource has the right kind so that thie mixin can be added...
+
+        entity.attributes['occi.networkinterface.allocation'] = 'a'
+        entity.attributes['occi.networkinterface.gateway'] = '10.0.0.11'
+        entity.attributes['occi.networkinterface.ip'] = '10.0.0.1'
+
+    def retrieve(self, entity):
+        pass
+
+    def update(self, old_entity, new_entity):
+        pass
+
+    def delete(self, entity):
+        entity.attributes.pop('occi.networkinterface.allocation')
+        entity.attributes.pop('occi.networkinterface.gateway')
+        entity.attributes.pop('occi.networkinterface.ip')
+
+    def action(self, entity, action):
+        pass
