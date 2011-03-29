@@ -394,7 +394,6 @@ class CollectionHandler(BaseHandler):
             try:
                 # get the action
                 action = parser.to_action(headers, body)
-                categories = parser.to_categories(headers, body)
                 backend = registry.get_backend(action.kind)
 
                 # find all appropiate resources:
