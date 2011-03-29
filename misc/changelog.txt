@@ -2,7 +2,11 @@
 Version 0.3.1
 -------------
 
-
+R,S520,Optimize VM skeleton
+R,S560,Actions on collections
+R,S570,Ensure that all backends including mixins and links are called
+R,S580,Add features to the VM skeleton
+R,S590,CSS improvements
 
 Version 0.3.0
 -------------
