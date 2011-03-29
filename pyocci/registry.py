@@ -75,6 +75,18 @@ def unregister_backend(categories):
                 BACKENDS.pop(item)
                 break
 
+def get_all_backends(entity):
+    """
+    Retrieve all backends associated with on resource instance
+    
+    entity -- The resource instance
+    """
+    res = []
+    res.append(get_backend(entity.kind))
+    for mixin in entity.mixins:
+        res.append(get_backend(mixin))
+    return res
+
 def get_backend(category):
     """
     Retrieve a backend which is able to deal with the given category.

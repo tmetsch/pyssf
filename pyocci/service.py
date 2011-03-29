@@ -126,12 +126,6 @@ class BaseHandler(tornado.web.RequestHandler):
         entity.identifier = key
         return key
 
-    def get_current_user(self):
-        if AUTHENTICATION is True:
-            return self.get_secure_cookie("pyocci_user")
-        else:
-            return 'default'
-
     def filter_childs(self, key, resources, categories):
         '''
         Retrieve childs in a hierachy and use categories to filter the result.
@@ -158,13 +152,19 @@ class BaseHandler(tornado.web.RequestHandler):
                             tmp.append(name)
         return tmp
 
+    def get_current_user(self):
+        if AUTHENTICATION is True:
+            return self.get_secure_cookie("pyocci_user")
+        else:
+            return 'default'
+
     def get_my_resources(self):
         '''
         Returns a list of all resources belonging to the current user.
         '''
         my_resources = []
         for item in RESOURCES.values():
-            if item.owner == self.get_current_user():
+            if item.owner == self.get_current_user() or item.owner == '':
                 my_resources.append(item)
         return my_resources
 
@@ -203,8 +203,10 @@ class ResourceHandler(BaseHandler):
                 entity.owner = self.get_current_user()
 
                 key = self._create_key(entity)
-                backend = registry.get_backend(entity.kind)
-                backend.create(entity)
+                # call all backends!
+                backends = registry.get_all_backends(entity)
+                for backend in backends:
+                    backend.create(entity)
 
                 RESOURCES[key] = entity
 
@@ -242,9 +244,10 @@ class ResourceHandler(BaseHandler):
                 if self.get_current_user() != old_entity.owner:
                     raise HTTPError(401)
 
-                backend = registry.get_backend(old_entity.kind)
-
-                backend.update(old_entity, new_entity)
+                # call all backends!
+                backends = registry.get_all_backends(old_entity)
+                for backend in backends:
+                    backend.update(old_entity, new_entity)
             except (ParsingException, AttributeError) as pse:
                 raise HTTPError(400, str(pse))
         else:
@@ -253,8 +256,10 @@ class ResourceHandler(BaseHandler):
                 new_entity.identifier = key
                 new_entity.owner = self.get_current_user()
 
-                backend = registry.get_backend(new_entity.kind)
-                backend.create(new_entity)
+                # call all backends!
+                backends = registry.get_all_backends(new_entity)
+                for backend in backends:
+                    backend.create(new_entity)
 
                 RESOURCES[key] = new_entity
 
@@ -286,8 +291,10 @@ class ResourceHandler(BaseHandler):
                 raise HTTPError(401)
 
             # trigger backend to get the freshest results
-            backend = registry.get_backend(entity.kind)
-            backend.retrieve(entity)
+            # call all backends!
+            backends = registry.get_all_backends(entity)
+            for backend in backends:
+                backend.retrieve(entity)
 
             # get a rendering of this entity...
             heads, data = parser.from_entity(entity)
@@ -319,8 +326,10 @@ class ResourceHandler(BaseHandler):
                 raise HTTPError(401)
 
             # trigger backend to delete the resource
-            backend = registry.get_backend(entity.kind)
-            backend.delete(entity)
+            # call all backends!
+            backends = registry.get_all_backends(entity)
+            for backend in backends:
+                backend.delete(entity)
 
             RESOURCES.pop(key)
             self._send_response(None, 'OK')
@@ -351,8 +360,8 @@ class CollectionHandler(BaseHandler):
                 if hasattr(cat, 'owner') and cat.owner is not '':
                     if cat.owner is self.get_current_user():
                         locations[cat.location] = cat
-                        break
-                locations[cat.location] = cat
+                else:
+                    locations[cat.location] = cat
         return locations
 
     def get_all_resources_of_category(self, category, resources):
@@ -379,72 +388,66 @@ class CollectionHandler(BaseHandler):
         parser = self.get_pyocci_parser('Content-Type')
 
         if key not in self.get_locations():
-            raise HTTPError(406, 'This path is not registered - Please check '
-                            + 'the query interface')
+            raise HTTPError(406, 'This path is not registered - Please '
+                            + 'check the query interface')
 
-        # parse the request
-        entity = None
-        try:
-            # create the entity
-            entity, links = parser.to_entity(headers, body)
-            entity.owner = self.get_current_user()
+        if self.request.uri.find('?action=') > -1:
+            try:
+                # get the action
+                action = parser.to_action(headers, body)
+                categories = parser.to_categories(headers, body)
+                backend = registry.get_backend(action.kind)
 
-            if not key == entity.kind.location:
-                raise HTTPError(406, 'Unable to create a resource instance '
-                                + 'with this kind information at this path.')
+                # find all appropiate resources:
+                locations = self.get_locations()
+                resources = []
 
-            key = self._create_key(entity)
-            backend = registry.get_backend(entity.kind)
-            backend.create(entity)
+                # TODO: check if we wanna filter here
+                my_resources = self.get_my_resources()
+                resources = self.get_all_resources_of_category(locations[key],
+                                                             my_resources)
 
-            RESOURCES[key] = entity
-
-            # handle the links...
-            for item in links:
-                backend = registry.get_backend(item.kind)
-                item.source = key
-                backend.create(item)
-                key = self._create_key(item)
-                RESOURCES[key] = item
-                item.idetifier = key
-                item.owner = self.get_current_user()
-
-            self._send_response({'Location': registry.HOST + key}, 'OK')
-
-        except (ParsingException, AttributeError) as pse:
-            # TODO: RESOURCES.pop(key)
-            raise HTTPError(400, str(pse))
-
-    @tornado.web.authenticated
-    def get(self, key):
-        key = '/' + key + '/'
-        headers, body = self.extract_http_data()
-
-        return_parser = self.get_pyocci_parser('Accept')
-        categories = None
-        try:
-            data_parser = self.get_pyocci_parser('Content-Type')
-            categories = data_parser.to_categories(headers, body)
-        except (KeyError, ParsingException):
-            pass
-
-        locations = self.get_locations()
-        resources = []
-
-        my_resources = self.get_my_resources()
-
-        if key in locations:
-            tmp = self.get_all_resources_of_category(locations[key],
-                                                     my_resources)
-            resources = self.filter_childs('/', tmp, categories)
-        elif key.endswith('/'):
-            resources = self.filter_childs(key, my_resources, categories)
-
-        if len(resources) > 0:
-            heads, data = return_parser.from_entities(resources)
-            return self._send_response(heads, data)
+                for item in resources:
+                    backend.action(item, action)
+                self._send_response(None, 'OK')
+            except (ParsingException, AttributeError) as pse:
+                raise HTTPError(400, str(pse))
         else:
-            raise HTTPError(404)
+            # parse the request
+            entity = None
+            try:
+                # create the entity
+                entity, links = parser.to_entity(headers, body)
+                entity.owner = self.get_current_user()
+
+                if not key == entity.kind.location:
+                    raise HTTPError(406, 'Unable to create a resource '
+                                    + 'instance with this kind information at '
+                                    + 'this path.')
+
+                key = self._create_key(entity)
+                # call all backends!
+                backends = registry.get_all_backends(entity)
+                for backend in backends:
+                    backend.create(entity)
+
+                RESOURCES[key] = entity
+
+                # handle the links...
+                for item in links:
+                    backend = registry.get_backend(item.kind)
+                    item.source = key
+                    backend.create(item)
+                    key = self._create_key(item)
+                    RESOURCES[key] = item
+                    item.idetifier = key
+                    item.owner = self.get_current_user()
+
+                self._send_response({'Location': registry.HOST + key}, 'OK')
+
+            except (ParsingException, AttributeError) as pse:
+                # TODO: RESOURCES.pop(key)
+                raise HTTPError(400, str(pse))
 
     @tornado.web.authenticated
     def put(self, key):
@@ -463,10 +466,44 @@ class CollectionHandler(BaseHandler):
                         res = RESOURCES[item]
                         if category not in res.mixins:
                             res.mixins.append(category)
-            except ParsingException as pse:
+                            # trigger backend to add the attr etc from the res.
+                            backend = registry.get_backend(category)
+                            backend.create(res)
+            except (ParsingException, AttributeError) as pse:
                 raise HTTPError(400, log_message = str(pse))
         else:
             raise HTTPError(400, 'Put is only allowed on a location path.')
+
+    @tornado.web.authenticated
+    def get(self, key):
+        key = '/' + key + '/'
+        headers, body = self.extract_http_data()
+
+        return_parser = self.get_pyocci_parser('Accept')
+        categories = None
+        try:
+            data_parser = self.get_pyocci_parser('Content-Type')
+            categories = data_parser.to_categories(headers, body)
+        except (KeyError, ParsingException):
+            pass
+
+        locations = self.get_locations()
+        resources = []
+
+        my_resources = self.get_my_resources()
+        if key in locations:
+            tmp = self.get_all_resources_of_category(locations[key],
+                                                     my_resources)
+            resources = self.filter_childs('/', tmp, categories)
+        elif key.endswith('/'):
+            # path not in location :-)
+            resources = self.filter_childs(key, my_resources, categories)
+
+        if len(resources) > 0:
+            heads, data = return_parser.from_entities(resources)
+            return self._send_response(heads, data)
+        else:
+            raise HTTPError(404)
 
     @tornado.web.authenticated
     def delete(self, key):
@@ -484,6 +521,9 @@ class CollectionHandler(BaseHandler):
                 for item in entities:
                     if RESOURCES.has_key(item):
                         RESOURCES[item].mixins.remove(category)
+                        # trigger backend to remove the attr etc from the res.
+                        backend = registry.get_backend(category)
+                        backend.delete(RESOURCES[item])
             except ParsingException as pse:
                 raise HTTPError(400, log_message = str(pse))
         else:
@@ -673,7 +713,7 @@ class LinkBackend(Backend):
         pass
 
     def update(self, old, new):
-        if new.source is not '':
+        if new.source is not None:
             try:
                 old_src = RESOURCES[old.source]
                 new_src = RESOURCES[new.source]
@@ -686,7 +726,7 @@ class LinkBackend(Backend):
             except KeyError:
                 raise AttributeError('Source and target need to be valid'
                                      + ' Resources')
-        if new.target is not '':
+        if new.target is not None:
             old.target = new.target
         if len(new.attributes.keys()) > 0:
             old.attributes = new.attributes

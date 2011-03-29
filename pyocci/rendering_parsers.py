@@ -930,13 +930,16 @@ class TextHTMLRendering(Rendering):
         html += '<h1>Your Resources</h1>'
 
         if len(entities) > 0:
-            html += '<ul>'
+            html += '<table><tr><th>Link</th><th>Type</th></tr>'
             for entity in entities:
-                html += '<li><a href="' + entity.identifier + '">'
-                html += entity.identifier + '</a>'
-                html += ' (<strong>Kind: </strong>' + entity.kind.term + ')'
-                html += '</li>'
-            html += '</ul>'
+                html += '<tr><td><a href="' + entity.identifier + '">'
+                html += entity.identifier + '</a></td>'
+                html += '<td>' + entity.kind.term
+                for item in entity.mixins:
+                    html += ',' + item.term
+                html += '</td></tr>'
+            html += '</table>'
+
         else:
             html += '<p>No Resources found.</p>'
 
@@ -982,9 +985,10 @@ class TextHTMLRendering(Rendering):
 
             if len(entity.links) > 0:
                 html += '<h2>Links</h2><table>'
-                html += '<tr><th>Link</th><th>Target</th></tr>'
+                html += '<tr><th>Kind</th><th>Link</th><th>Target</th></tr>'
                 for item in entity.links:
-                    html += '<tr><td><a href="' + item.identifier + '">'
+                    html += '<tr><td>' + item.kind.term + '</td>'
+                    html += '<td><a href="' + item.identifier + '">'
                     html += item.identifier + '</a></td>'
                     html += '<td><a href="' + item.target + '">'
                     html += item.target + '</a></td>'

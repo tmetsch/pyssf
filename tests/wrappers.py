@@ -48,7 +48,7 @@ class TestMixin(BaseHandler):
 class Wrapper(ResourceHandler, TestMixin):
     pass
 
-class ListWrapper(CollectionHandler, TestMixin):
+class CollectionWrapper(CollectionHandler, TestMixin):
     pass
 
 class QueryWrapper(QueryHandler, TestMixin):
@@ -72,7 +72,7 @@ class SecureQueryWrapper(QueryWrapper):
     def get_secure_cookie(self, key):
         return self.current_user
 
-class SecureListWrapper(ListWrapper):
+class SecureCollectionWrapper(CollectionWrapper):
 
     current_user = ''
 
@@ -94,11 +94,11 @@ class Login(LoginHandler, TestMixin):
     def set_secure_cookie(self, key, value):
         SecureWrapper.current_user = value
         SecureQueryWrapper.current_user = value
-        SecureListWrapper.current_user = value
+        SecureCollectionWrapper.current_user = value
 
 class Logout(LogoutHandler, TestMixin):
 
     def clear_cookie(self, key):
         SecureWrapper.current_user = ''
         SecureQueryWrapper.current_user = ''
-        SecureListWrapper.current_user = ''
+        SecureCollectionWrapper.current_user = ''

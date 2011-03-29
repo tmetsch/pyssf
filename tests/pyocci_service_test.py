@@ -30,8 +30,8 @@ from pyocci.service import BaseHandler, LinkBackend, MixinBackend, LoginHandler
 from tests import http_body, http_body_action, http_body_mixin, \
     NetworkLinkBackend, ComputeBackend, http_body_mixin2, http_body_with_link, \
     http_head_with_link, NetworkInterfaceBackend, http_body_faulty_term
-from tests.wrappers import Wrapper, ListWrapper, QueryWrapper, Login, Logout, \
-    SecureWrapper, SecureQueryWrapper, SecureListWrapper
+from tests.wrappers import Wrapper, CollectionWrapper, QueryWrapper, Login, Logout, \
+    SecureWrapper, SecureQueryWrapper, SecureCollectionWrapper
 from tornado.httpserver import HTTPRequest
 from tornado.web import Application, HTTPError
 import cgi
@@ -439,16 +439,16 @@ class ErrorResourceHandlerTest(unittest.TestCase):
         handler = Wrapper(self.application, request)
         self.assertRaises(HTTPError, handler.delete, '/foo/bar')
 
-class ListHandlerTest(unittest.TestCase):
+class CollectionHandlerTest(unittest.TestCase):
 
     application = None
 
     def setUp(self):
-        self.application = Application([(r"/-/", QueryWrapper), (r"/(.*)/", ListWrapper), (r"(.*)", Wrapper)])
+        self.application = Application([(r"/-/", QueryWrapper), (r"/(.*)/", CollectionWrapper), (r"(.*)", Wrapper)])
 
         registry.register_parser('text/plain', TextPlainRendering())
         registry.register_parser('text/occi', TextHeaderRendering())
-        registry.register_backend([ComputeBackend.category], ComputeBackend())
+        registry.register_backend([ComputeBackend.category, ComputeBackend.start_category], ComputeBackend())
         registry.register_backend([NetworkInterfaceBackend.category], NetworkInterfaceBackend())
 
         try:
@@ -484,68 +484,93 @@ class ListHandlerTest(unittest.TestCase):
 
     def test_post_for_succes(self):
         request = create_request('POST', body = http_body_with_link)
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         handler.post('compute')
 
     def test_get_for_success(self):
 #        request = create_request('GET')
-#        handler = ListWrapper(self.application, request)
+#        handler = CollectionWrapper(self.application, request)
 #        handler.get('foo/bar')
 
         request = create_request('GET')
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         handler.get('compute')
 
         request = create_request('GET')
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         handler.get('list_test')
 
         request = create_request('GET')
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         handler.get('list_test/foo')
+
+    def test_trigger_action_for_success(self):
+        request = create_request('POST', body = http_body_action, uri = '/compute/?action=start')
+        handler = CollectionWrapper(self.application, request)
+        handler.post('compute')
 
     #===========================================================================
     # Test for failure
     #===========================================================================
 
+    def get_locations(self):
+        '''
+        Returns a dict with all categories which have locations.
+        '''
+        locations = {}
+        for cat in registry.BACKENDS.keys():
+            if hasattr(cat, 'location') and cat.location is not '':
+                if hasattr(cat, 'owner') and cat.owner is not '':
+                    if cat.owner is 'default':
+                        locations[cat.location] = cat
+                else:
+                    locations[cat.location] = cat
+        return locations
+
+
     def test_post_for_failure(self):
         # non existing path
         request = create_request('POST', body = http_body_with_link)
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         self.assertRaises(HTTPError, handler.post, 'blubber')
 
         # wrong path
         request = create_request('POST', body = http_body_with_link)
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         self.assertRaises(HTTPError, handler.post, 'network_interfaces')
 
         # faulty request...
         request = create_request('POST', body = http_body_faulty_term)
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         self.assertRaises(HTTPError, handler.post, 'compute')
 
     def test_get_for_failure(self):
         request = create_request('GET')
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         self.assertRaises(HTTPError, handler.get, 'blubber')
 
     def test_put_for_failure(self):
         request = create_request('PUT', body = 'X-OCCI-Location: /list_test/1,/list_test/foo/1')
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         self.assertRaises(HTTPError, handler.put, 'foo')
 
         request = create_request('PUT', body = 'bla')
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         self.assertRaises(HTTPError, handler.put, 'foo/bar')
 
     def test_delete_for_failure(self):
         request = create_request('DELETE', body = 'X-OCCI-Location: /list_test/1,/list_test/foo/1')
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         self.assertRaises(HTTPError, handler.delete, 'foo')
 
         request = create_request('DELETE', body = '/list_test/1,/list_test/foo/1')
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         self.assertRaises(HTTPError, handler.delete, 'foo/bar')
+
+    def test_trigger_action_for_failure(self):
+        request = create_request('POST', body = http_body, uri = '/compute/?action=start')
+        handler = CollectionWrapper(self.application, request)
+        self.assertRaises(HTTPError, handler.post, 'compute')
 
     #===========================================================================
     # Test for sanity
@@ -553,7 +578,7 @@ class ListHandlerTest(unittest.TestCase):
 
     def test_get_for_sanity(self):
         request = create_request('GET')
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         handler.get('compute')
         heads, data = handler.get_output()
         self.assertTrue(data.find('/list_test/1') > -1)
@@ -561,7 +586,7 @@ class ListHandlerTest(unittest.TestCase):
         self.assertTrue(data.find('/list_test/foo/2') > -1)
 
         request = create_request('GET')
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         handler.get('list_test')
         heads, data = handler.get_output()
         self.assertTrue(data.find('/list_test/1') > -1)
@@ -569,7 +594,7 @@ class ListHandlerTest(unittest.TestCase):
         self.assertTrue(data.find('/list_test/foo/2') > -1)
 
         request = create_request('GET')
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         handler.get('list_test/foo')
         heads, data = handler.get_output()
         self.assertTrue(data.find('/list_test/foo/1') > -1)
@@ -577,18 +602,18 @@ class ListHandlerTest(unittest.TestCase):
 
     def test_get_filter_for_sanity(self):
         request = create_request('PUT', headers = {'X-Occi-Location': '/list_test/1,/list_test/foo/1', 'Content-Type':'text/occi'})
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         handler.put('foo/bar')
 
         request = create_request('GET', body = http_body_mixin)
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         handler.get('list_test')
         heads, data = handler.get_output()
         self.assertTrue(data.find('/list_test/1') > -1)
         self.assertTrue(data.find('/list_test/foo/1') > -1)
 
         request = create_request('GET', body = http_body)
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         handler.get('list_test')
         heads, data = handler.get_output()
         self.assertTrue(data.find('/list_test/1') > -1)
@@ -596,7 +621,7 @@ class ListHandlerTest(unittest.TestCase):
         self.assertTrue(data.find('/list_test/foo/2') > -1)
 
         request = create_request('GET', body = 'Category: resource;scheme="http://schemas.ogf.org/occi/core"')
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         handler.get('list_test')
         heads, data = handler.get_output()
         self.assertTrue(data.find('/list_test/1') > -1)
@@ -605,17 +630,17 @@ class ListHandlerTest(unittest.TestCase):
 
     def test_put_for_sanity(self):
         request = create_request('PUT', headers = {'X-Occi-Location': '/list_test/1,/list_test/foo/1', 'Content-Type':'text/occi'})
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         handler.put('foo/bar')
         heads, data = handler.get_output()
 
         request = create_request('PUT', body = 'X-OCCI-Location: /list_test/1,/list_test/foo/1')
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         handler.put('foo/bar')
         heads, data = handler.get_output()
 
         request = create_request('GET')
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         handler.get('foo/bar')
         heads, data = handler.get_output()
         self.assertTrue(data.find('/list_test/1') > -1)
@@ -623,18 +648,23 @@ class ListHandlerTest(unittest.TestCase):
 
     def test_delete_for_sanity(self):
         request = create_request('PUT', body = 'X-OCCI-Location: /list_test/1,/list_test/foo/1,/list_test/foo/2')
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         handler.put('foo/bar')
 
         request = create_request('DELETE', body = 'X-OCCI-Location: /list_test/foo/2')
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         handler.delete('foo/bar')
 
         request = create_request('GET')
-        handler = ListWrapper(self.application, request)
+        handler = CollectionWrapper(self.application, request)
         handler.get('foo/bar')
         heads, data = handler.get_output()
         self.assertTrue(data.find('/list_test/foo/2') == -1)
+
+    def test_trigger_action_for_sanity(self):
+        request = create_request('POST', body = http_body_action, uri = '/compute/?action=start')
+        handler = CollectionWrapper(self.application, request)
+        handler.post('compute')
 
 class QueryHandlerTest(unittest.TestCase):
 
@@ -911,7 +941,7 @@ class SecureQueryHandlerTest(unittest.TestCase):
     def tearDown(self):
         SecureWrapper.current_user = ''
         SecureQueryWrapper.current_user = ''
-        SecureListWrapper.current_user = ''
+        SecureCollectionWrapper.current_user = ''
         service.AUTHENTICATION = False
         service.RESOURCES = {}
         registry.RENDERINGS = {}
@@ -1019,7 +1049,7 @@ class SecureQueryHandlerTest(unittest.TestCase):
         self.assertFalse(data.find('mine;scheme=http://mystuff.com/occi;location=/foo/bar/') > -1)
         self.assertFalse(data.find('mine2;scheme=http://mystuff.com/occi;location=/foo/bar/') > -1)
 
-class SecureListHandlerTest(unittest.TestCase):
+class SecureCollectionHandlerTest(unittest.TestCase):
 
     application = None
 
@@ -1034,7 +1064,7 @@ class SecureListHandlerTest(unittest.TestCase):
                                         (r"/login", Login),
                                         (r"/logout", Logout),
                                         (r"/-/", SecureQueryWrapper),
-                                        (r"/.*/", SecureListWrapper),
+                                        (r"/.*/", SecureCollectionWrapper),
                                         ], **settings)
 
         registry.register_parser('text/plain', TextPlainRendering())
@@ -1058,7 +1088,7 @@ class SecureListHandlerTest(unittest.TestCase):
     def tearDown(self):
         SecureWrapper.current_user = ''
         SecureQueryWrapper.current_user = ''
-        SecureListWrapper.current_user = ''
+        SecureCollectionWrapper.current_user = ''
         service.AUTHENTICATION = False
         service.RESOURCES = {}
         registry.RENDERINGS = {}
@@ -1071,7 +1101,7 @@ class SecureListHandlerTest(unittest.TestCase):
     def test_login(self):
         # should not be okay
         request = create_request('GET')
-        handler = SecureListWrapper(self.application, request)
+        handler = SecureCollectionWrapper(self.application, request)
         handler.get('/compute/')
         heads, data = handler.get_output()
         self.assertTrue(heads['Location'].find('/login') != -1)
@@ -1098,7 +1128,7 @@ class SecureListHandlerTest(unittest.TestCase):
         handler.post()
 
         request = create_request('GET')
-        handler = SecureListWrapper(self.application, request)
+        handler = SecureCollectionWrapper(self.application, request)
         self.assertRaises(HTTPError, handler.get, 'foo/bar')
 
 #===============================================================================

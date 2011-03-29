@@ -24,10 +24,12 @@ Created on Nov 18, 2010
 # pylint: disable-all
 
 from pyocci import registry
+from pyocci.core import Resource
 from pyocci.examples.keyvalue import KeyValueBackend, Backend
 from pyocci.my_exceptions import AlreadyRegisteredException, \
     NoEntryFoundException
 from pyocci.rendering_parsers import TextHTMLRendering, TextPlainRendering
+from tests import MyMixinBackend
 import unittest
 
 class BackendTest(unittest.TestCase):
@@ -82,6 +84,17 @@ class BackendTest(unittest.TestCase):
         registry.register_backend([KeyValueBackend.kind], backend)
         registry.unregister_backend([KeyValueBackend.kind])
         self.assertTrue(len(registry.BACKENDS) == 0)
+
+    def test_get_all_backends_for_sanity(self):
+        backend = KeyValueBackend()
+        registry.register_backend([KeyValueBackend.kind], backend)
+        second_backend = MyMixinBackend()
+        registry.register_backend([MyMixinBackend.category], second_backend)
+
+        entity = Resource()
+        entity.kind = KeyValueBackend.kind
+        entity.mixins = [MyMixinBackend.category]
+        self.assertTrue(len(registry.get_all_backends(entity)), 2)
 
 class RenderingTest(unittest.TestCase):
 
