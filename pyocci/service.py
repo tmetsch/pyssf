@@ -358,7 +358,8 @@ class CollectionHandler(BaseHandler):
         for cat in registry.BACKENDS.keys():
             if hasattr(cat, 'location') and cat.location is not '':
                 if hasattr(cat, 'owner') and cat.owner is not '':
-                    if cat.owner is self.get_current_user():
+                    print cat.location
+                    if cat.owner == self.get_current_user():
                         locations[cat.location] = cat
                 else:
                     locations[cat.location] = cat
@@ -457,6 +458,7 @@ class CollectionHandler(BaseHandler):
         parser = self.get_pyocci_parser('Content-Type')
 
         locations = self.get_locations()
+        print key, locations
         if key in locations:
             try:
                 category = locations[key]
