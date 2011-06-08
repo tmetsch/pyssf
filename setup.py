@@ -19,18 +19,18 @@
 # 
 from distutils.core import setup
 
-setup(name = 'pyssf',
-      version = '0.3.2',
-      description = 'Service Sharing Facility',
-      license = 'LGPL',
-      keywords = 'REST,RESTful,OCCI,LSF,Platform,Cloud,Grid,Cluster,HPC',
-      url = 'http://pyssf.sourceforge.net',
-      packages = ['pyocci', 'pyocci.examples'],
-      long_description = 'A set of Python modules to integrate you existing or'
+setup(name='pyssf',
+      version='0.4.0',
+      description='Service Sharing Facility',
+      license='LGPL',
+      keywords='REST,RESTful,OCCI,LSF,Platform,Cloud,Grid,Cluster,HPC',
+      url='http://pyssf.sourceforge.net',
+      packages=['pyocci', 'pyocci.examples'],
+      long_description='A set of Python modules to integrate you existing or'
       + ' future applications with Clouds, Grids and Clusters. Includes an'
       + ' implementation of the OCCI specification.',
-      requires = ['tornado'],
-      classifiers = ["Development Status :: 2 - Pre-Alpha",
+      requires=['tornado'],
+      classifiers=["Development Status :: 2 - Pre-Alpha",
                      "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
                      "Operating System :: OS Independent",
                      "Programming Language :: Python",
