@@ -1,3 +1,5 @@
+#!/bin/python 
+
 # 
 # Copyright (C) 2010-2011 Platform Computing
 # 
@@ -52,7 +54,7 @@ class MyService():
 
     application = None
 
-    service.AUTHENTICATION = True
+    service.AUTHENTICATION = False
 
     def __init__(self):
         settings = {
@@ -60,7 +62,7 @@ class MyService():
                     "login_url": "/login",
         }
         self.application = tornado.web.Application([
-            (r"/-/", QueryHandler),
+            (r"/.well-known/org/ogf/occi/", QueryHandler),
             (r"/login", Login),
             (r"/logout", LogoutHandler),
             (r"/(.*)/", CollectionHandler),

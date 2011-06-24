@@ -1,8 +1,16 @@
 
-Version 0.3.2
+Version 0.4.0
 -------------
 
+R,S600,Remove pylsf and pydrmaa package
 
+Obsoletes:
+
+R,S440,Develop & Integrate a LSF 'Proxy' Interface
+R,S450,handle long running tasks
+R,S490,Implement DRMAAv2
+R,S500,Let DMRMAAv2 interface with SSF
+R,S530,Test pyLSF Interface
 
 Version 0.3.1
 -------------

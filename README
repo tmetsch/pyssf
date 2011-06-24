@@ -1,80 +1,10 @@
-Service Sharing Facility (SSF)
-==============================
 
-INSTALLING THE PYOCCI MODULE
-----------------------------
-Simply running 'python setup.py install' Should do. Prerequisites for the
-pyocci module are pretty low - You just need to ensure that you have the
-tornado web part installed. 
+README
+======
 
-RUNNING EXAMPLES
-----------------
-Simply use the 'demo.sh' script in the root directory.
-
-BUILDING ALL SSF MODULES
-------------------------
-Normally a 'python setup_ssf.py build' should do. The 'dist' target will also 
-work and build all modules including the SWIG and GCC runs needed for pyLSF. 
-There is no need to run make. Although you can build the pyLSF module using the 
-Makefile if you want. 
-
-PREREQUISITES
--------------
-Needed to build and install SSF:
-
-  * Swig
-  * Python (> 2.6) with distutils
-  * GCC
-  * Platform LSF (>= 7.0.6) (with lsf-drmaa (>=1.0.3 installed)) or 
-    Oracle Grid Engine (>= 6.2u5)
-  * drmaa-python
-  * tornado web
-
-For developing with SSF you can use:
-
-  * Sphinx for building documents (python-sphinx)
-  * python-coverage for creating coverage reports
-  * epydoc for generation of API documentation
-  * Eclipse with PyDev for coding or Aptana Studio
-  * Nosetest for easy unit testing (python-nose)
-  * Firefox to view the kanban board (misc/spa_pyssf_kanban.html)
-  * make to build standalone documentation and pylsf shared library
-
-TECHNICAL NOTES
----------------
-The following paths are configured and you might need to take a look at them
-if you encounter any problems:
-
-  * library_dirs in setup.py which should point to the lib dir of the Platform
-    LSF installation (Default set to
-    /opt/platform/lsf/8.0/linux2.6-glibc2.3-x86_64/lib)
-
-  * include statements in lsf.i in the pylsf module - Should point to the
-    concrete files in the Platform LSF installation. (Defaults set to 
-    /opt/platform/lsf/8.0/include/lsf/lsf.h and
-    /opt/platform/lsf/8.0/include/lsf/lsbatch.h)
-
-  * The library directory in the Makefile of the pyLSF module if you want to 
-    build it stand alone. No need to change it when building using setup.py 
-    script. Default is set to
-    /opt/platform/lsf/8.0/linux2.6-glibc2.3-x86_64/lib. 
-
-  * The unittest expect that there are no jobs pending in the queue of LSF.
-    Overall this system is best test on a single machine cluster with an empty
-    queue.
-
-TESTING
--------
-Either run nosetests or the testsuite.py file in the tests/ directory. You 
-might need to add the build _lsf.so file to the PYTHONPATH (In most cases: 
-build/lib.linux-i686-2.6/pylsf)
-
-  * When running nosetests it might happen that you run into concurrency
-    issues. If so try running again with the --process-timeout option set.
-
-LICENSE
--------
-Please review the file LICENSE in the root directory. Everything published
-within this project is licensed under a GNU LESSER GENERAL PUBLIC LICENSE.
+This is a set of python modules developed by Platform Computing. For the
+complete documentation please see either the website http://pyssf.sf.net or 
+create you own offline version by running 'bin/deploy.sh doc' in this 
+directory (Please make sure that you meet the package requirements).
 
 (c) 2010-2011 Platform Computing

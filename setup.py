@@ -20,7 +20,7 @@
 from distutils.core import setup
 
 setup(name = 'pyssf',
-      version = '0.3.2',
+      version = '0.4.0',
       description = 'Service Sharing Facility',
       license = 'LGPL',
       keywords = 'REST,RESTful,OCCI,LSF,Platform,Cloud,Grid,Cluster,HPC',

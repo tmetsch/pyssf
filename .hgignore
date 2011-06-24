@@ -6,8 +6,6 @@ dist/*
 .coverage
 .settings/*
 MANIFEST
-pylsf/lsf.py
-pylsf/lsf_wrap.c
 *.pyc
 *.png
 *~

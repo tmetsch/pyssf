@@ -13,7 +13,7 @@
    
    You should have received a copy of the GNU Lesser General Public
    License along with this library; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
    
 
 Welcome to Service Sharing Facility's documentation!
@@ -23,23 +23,10 @@ Welcome to Service Sharing Facility's documentation!
     This is still work in progress. For more information and tracking the
     ongoing development go to http://sourceforge.net/projects/pyssf/
 
-This software package is a collection of modules which form an uniform
-integration point for Grid/Cloud/Cluster products. If provides several
-front-ends which can easily be used to build complete Services or integrate
-products with your products. It aims to deliver an distributed ecosystem where
-multiple Grid/Cloud/Clusters sites can federate. It is developed under a LGPL
-license.
+This software package is a collection of modules which can be used stand alone
+or all together.
 
-Features:
- * Access multiple Distributed Resource Managers (DRM) systems
- * Provides simple Cloud interfaces for (Infrastructure|Platform) as a Service
-   (Job submission, VM management, and many more...)
- * Negotiation and federation of services between Grids/Clouds/Clusters
- * Integration point to integrate your products with Grids/Clouds/Clusters
-
-.. note::
-    The [OCCI]_ implementation has moved from pyrest to pyocci. Documentation
-    can be found in the corresponding section.
+Some bla bla...todo
 
 Contents:
 
@@ -47,10 +34,8 @@ Contents:
    :maxdepth: 2
    :numbered:
    
-   pydrmaa.txt
-   pylsf.txt
    pyocci.txt
-   pyssf.txt
+   ssf.txt
 
 * `Coverage report <cover/index.html>`_
 
@@ -58,4 +43,3 @@ Contents:
 
 * :ref:`search`
 
-.. [OCCI] OCCI website - http://www.occi-wg.org

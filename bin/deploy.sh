@@ -20,14 +20,14 @@
 
 case "$1" in
   clean)
-    python setup_ssf.py clean --all
-    rm -rf docs/build sdist dist
-	rm -rf MANIFEST pycallgraph.png
-	;;
+    python setup.py clean --all
+    rm -rf docs/build sdist dist build
+    rm -rf MANIFEST pycallgraph.png
+    ;;
 
   build)
     $0 clean
-    python setup_ssf.py build
+    python setup.py build
     rc=$?
     if [[ $rc != 0 ]] ; then
         exit $rc
@@ -54,6 +54,7 @@ case "$1" in
     $0 coverage
     mkdir docs/build/html/lint/
     pylint -i y -f html pyocci &> docs/build/html/lint/index.html
+    pep8 --show-source --show-pep8 --statistics --count ssf pyocci
     cd docs
     make html
     cd ..
@@ -88,6 +89,7 @@ case "$1" in
 
   *)
     echo "Usage: $N {clean,build,coverage,doc,big-doc,test,deploy,pypi}"
+    echo "run this from the main code directory..."
     exit 1
     ;;
 esac
