@@ -359,7 +359,6 @@ class CollectionHandler(BaseHandler):
         for cat in registry.BACKENDS.keys():
             if hasattr(cat, 'location') and cat.location is not '':
                 if hasattr(cat, 'owner') and cat.owner is not '':
-                    print cat.location
                     if cat.owner == self.get_current_user():
                         locations[cat.location] = cat
                 else:
@@ -458,7 +457,6 @@ class CollectionHandler(BaseHandler):
         parser = self.get_pyocci_parser('Content-Type')
 
         locations = self.get_locations()
-        print key, locations
         if key in locations:
             try:
                 category = locations[key]
@@ -709,8 +707,6 @@ class LinkBackend(Backend):
             raise AttributeError('A link needs to have a target.')
 
         try:
-            if link.target not in RESOURCES:
-                raise KeyError
             src = RESOURCES[link.source]
             src.links.append(link)
         except KeyError as notfound:
