@@ -1,20 +1,20 @@
-# 
+#
 # Copyright (C) 2010-2011 Platform Computing
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
 # version 2.1 of the License, or (at your option) any later version.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-# 
+#
 '''
 Implementation of an HTTP RESTful rendering of the OCCI model.
 
@@ -28,6 +28,7 @@ from pyocci.core import Category, Kind, Resource, Link, Action, Mixin
 from pyocci.my_exceptions import ParsingException
 import re
 import urllib
+
 
 class HTTPData(object):
     '''
@@ -44,6 +45,7 @@ class HTTPData(object):
         self.attributes = []
         self.locations = []
 
+
 class Rendering(object):
     '''
     All renderings should derive from this class.
@@ -55,8 +57,8 @@ class Rendering(object):
 
     def from_categories(self, categories):
         '''
-        Render a set of categories. 
-        
+        Render a set of categories.
+
         @param categories: The set of categories to render.
         @type categories: list
         '''
@@ -66,7 +68,7 @@ class Rendering(object):
         '''
         Given an set of entities this method will create an HTTP representation
         of those.
-        
+
         @param entities: A set of entities.
         @type entities: list
         '''
@@ -76,7 +78,7 @@ class Rendering(object):
         '''
         Given an entity this method will convert it into an HTTP representation
         consisting of HTTP headers and body.
-        
+
         @param entity: The entity which needs to rendered.
         @type entity: Entity
         '''
@@ -85,7 +87,7 @@ class Rendering(object):
     def get_entities(self, headers, data):
         '''
         Retrieve a list of IDs for resource instances.
-        
+
         @param headers: The HTTP headers.
         @type headers: dict
         @param data: The HTTP body.
@@ -102,7 +104,7 @@ class Rendering(object):
     def to_action(self, headers, data):
         '''
         Create an action instance.
-        
+
         @param headers: The HTTP headers.
         @type headers: dict
         @param data: The HTTP body.
@@ -113,7 +115,7 @@ class Rendering(object):
     def to_categories(self, headers, data):
         '''
         Create a set of categories (for the query interface).
-        
+
         @param headers: The HTTP headers.
         @type headers: dict
         @param data: The HTTP body.
@@ -121,13 +123,13 @@ class Rendering(object):
         '''
         raise NotImplementedError()
 
-    def to_entity(self, headers, body, allow_incomplete = False,
-                  defined_kind = None):
+    def to_entity(self, headers, body, allow_incomplete=False,
+                  defined_kind=None):
         '''
         Given the HTTP headers and the body this method will convert the HTTP
         data into an entity representation. Must return Resource or Link
         instances.
-        
+
         @param headers: The HTTP headers.
         @type headers: dict
         @param body: The HTTP body.
@@ -138,9 +140,10 @@ class Rendering(object):
         '''
         raise NotImplementedError()
 
-#===============================================================================
+#==============================================================================
 # Convenient routines for the syntax defined in the spec
-#===============================================================================
+#==============================================================================
+
 
 def _from_http_category(category_string):
     '''
@@ -191,7 +194,8 @@ def _from_http_category(category_string):
 
     return cat
 
-def _to_http_category(kind, extended = False):
+
+def _to_http_category(kind, extended=False):
     '''
     Create a category rendering for a kind or mixin. If extended it will try to
     put in as much information as possible.
@@ -223,6 +227,7 @@ def _to_http_category(kind, extended = False):
                 action_list.append(repr(item))
             tmp += '; actions="' + ' '.join(action_list) + '"'
     return tmp
+
 
 def _from_http_link(link_string):
     '''
@@ -268,7 +273,8 @@ def _from_http_link(link_string):
     result.source = '#'
     return result
 
-def _to_http_link(entity, action = None, is_action = False):
+
+def _to_http_link(entity, action=None, is_action=False):
     '''
     Creates a HTTP Link rendering.
     '''
@@ -288,6 +294,7 @@ def _to_http_link(entity, action = None, is_action = False):
             link_rendering += '";'
         return link_rendering
 
+
 def _from_http_attribute(attribute_string):
     '''
     Retrieve the attributes from the HTTP X - OCCI - Attribute rendering.
@@ -303,11 +310,13 @@ def _from_http_attribute(attribute_string):
 
     return key, value
 
+
 def _to_http_attribute(key, value):
     '''
     Creates a HTTP X-OCCI-Attribute rendering.
     '''
     return key + '="' + value + '"'
+
 
 def _from_http_location(location_string):
     '''
@@ -319,11 +328,13 @@ def _from_http_location(location_string):
         identifier = location_string.strip()
     return identifier
 
+
 def _to_http_location(item):
     '''
     Creates a HTTP X - OCCI - Location rendering.
     '''
     return registry.HOST + item
+
 
 def _strip_all(string):
     '''
@@ -331,16 +342,17 @@ def _strip_all(string):
     '''
     return string.lstrip().lstrip('"').rstrip().rstrip('"')
 
-#===============================================================================
+#==============================================================================
 # Convenient routines
-#===============================================================================
+#==============================================================================
+
 
 def _get_categories(category_string_list):
     '''
-    Retrieve the Kind and a list of categories. Will only return those which are
-    eventually registered in this service.
-    
-    @param category_string_list: list with OCCI compliant renderings of 
+    Retrieve the Kind and a list of categories. Will only return those which
+    are eventually registered in this service.
+
+    @param category_string_list: list with OCCI compliant renderings of
        categories
     @type category_string_list: list
     '''
@@ -352,7 +364,7 @@ def _get_categories(category_string_list):
 
             # TODO: make use of the class attribute
 
-            # now that we have a category try to look it up and use that objects
+            # now that we have a ctg try to look it up and use that objects
             for category in registry.BACKENDS.keys():
                 if cat == category:
                     if isinstance(category, Kind) and kind is None:
@@ -369,12 +381,13 @@ def _get_categories(category_string_list):
 
     return kind, categories
 
+
 def _to_link(link_string_list):
     '''
     Will create a link resource instance.
-    
+
     @param link_string_list: A list of link renderings
-    @type link_string_list: list 
+    @type link_string_list: list
     '''
     links = []
     for item in link_string_list:
@@ -393,10 +406,11 @@ def _to_link(link_string_list):
                                    + repr(link.kind))
     return links
 
+
 def _to_entity(defined_kind, data, allow_incomplete):
     '''
     Helper routine for creating a new entity.
-    
+
     @param defined_kind: A previsously defined kind.
     @type defined_kind: Kind
     @param data: A HTTPData object.
@@ -447,10 +461,11 @@ def _to_entity(defined_kind, data, allow_incomplete):
     entity.attributes = attributes
     return entity, links
 
+
 def _from_entity(entity):
     '''
     Helper routine for rendering an entity.
-    
+
     @param entity: The entity to create a rendering for.
     @type entity: Entity
     '''
@@ -473,8 +488,8 @@ def _from_entity(entity):
 
         if len(entity.actions) > 0:
             for action in entity.actions:
-                result.links.append(_to_http_link(entity, action = action,
-                                                  is_action = True))
+                result.links.append(_to_http_link(entity, action=action,
+                                                  is_action=True))
 
         if len(entity.links) > 0:
             for item in entity.links:
@@ -494,17 +509,18 @@ def _from_entity(entity):
 
     return result
 
-#===============================================================================
+#==============================================================================
 # text/plain, text/occi, text/uri-list and text/html rendering parsers
-#===============================================================================
+#==============================================================================
+
 
 class TextPlainRendering(Rendering):
     '''
-    This is a rendering which will use the HTTP body to place the information in
-    an syntax and semantics as defined in the OCCI specification.
+    This is a rendering which will use the HTTP body to place the information
+    in an syntax and semantics as defined in the OCCI specification.
     '''
 
-    # disabling 'Unused variable' pylint check (categories are not used all 
+    # disabling 'Unused variable' pylint check (categories are not used all
     #                                          the time)
     # disabling 'Method could be a function' pylint check (I want it here)
     # pylint: disable=W0612,R0201
@@ -552,7 +568,7 @@ class TextPlainRendering(Rendering):
         headers = {}
         body = ''
         for item in categories:
-            body += 'Category: ' + _to_http_category(item, extended = True)
+            body += 'Category: ' + _to_http_category(item, extended=True)
             body += '\n'
         headers['Content-Type'] = self.content_type
         return headers, body
@@ -634,8 +650,8 @@ class TextPlainRendering(Rendering):
         else:
             raise ParsingException('Body does not contain any categories.')
 
-    def to_entity(self, headers, body, allow_incomplete = False,
-                  defined_kind = None):
+    def to_entity(self, headers, body, allow_incomplete=False,
+                  defined_kind=None):
         # create a resource or link
         if allow_incomplete and defined_kind is None:
             raise ParsingException('When allowing an incomplete requests'
@@ -649,13 +665,14 @@ class TextPlainRendering(Rendering):
         del(data)
         return entity, links
 
+
 class TextHeaderRendering(Rendering):
     '''
     This is a rendering which will use the HTTP header to place the information
     in an syntax and semantics as defined in the OCCI specification.
     '''
 
-    # disabling 'Unused variable' pylint check (categories are not used all 
+    # disabling 'Unused variable' pylint check (categories are not used all
     #                                          the time)
     # disabling 'Unused argument' pylint check (No need for body here)
     # disabling 'Method could be a function' pylint check (I want it here)
@@ -686,7 +703,7 @@ class TextHeaderRendering(Rendering):
         headers = {}
         tmp = []
         for item in categories:
-            tmp.append(_to_http_category(item, extended = True))
+            tmp.append(_to_http_category(item, extended=True))
 
         if len(tmp) > 0:
             headers['Category'] = ','.join(tmp)
@@ -770,8 +787,8 @@ class TextHeaderRendering(Rendering):
         else:
             raise ParsingException('Header does not contain a category.')
 
-    def to_entity(self, headers, body, allow_incomplete = False,
-                  defined_kind = None):
+    def to_entity(self, headers, body, allow_incomplete=False,
+                  defined_kind=None):
         if allow_incomplete and defined_kind is None:
             raise ParsingException('When allowing an incomplete requests the'
                                    + ' kind must be predefined!')
@@ -783,6 +800,7 @@ class TextHeaderRendering(Rendering):
 
         del(data)
         return entity, links
+
 
 class URIListRendering(Rendering):
     '''
@@ -826,21 +844,22 @@ class URIListRendering(Rendering):
     def to_categories(self, headers, data):
         raise NotImplementedError(self.err_msg)
 
-    def to_entity(self, headers, body, allow_incomplete = False,
-                  defined_kind = None):
+    def to_entity(self, headers, body, allow_incomplete=False,
+                  defined_kind=None):
         raise NotImplementedError(self.err_msg)
+
 
 class TextHTMLRendering(Rendering):
     '''
-    This rendering will use a generic HTML rendering to represent the resources.
+    This rendering will use a generic HTML rendering to represent resources.
     '''
 
-    # disabling 'Unused variable' pylint check (categories are not used all 
+    # disabling 'Unused variable' pylint check (categories are not used all
     #                                          the time)
     # disabling 'Method could be a function' pylint check (I want it here)
     # pylint: disable=W0612,R0201
 
-    # FIXME: check if it wouldn't be better to do term;scheme=scheme instead 
+    # FIXME: check if it wouldn't be better to do term;scheme=scheme instead
     # of scheme#term
 
     content_type = 'text/html'
@@ -1060,8 +1079,8 @@ class TextHTMLRendering(Rendering):
         # This is something HTML rendering cannot do...
         raise NotImplementedError('HTML rendering does not support this.')
 
-    def to_entity(self, headers, body, allow_incomplete = False,
-                  defined_kind = None):
+    def to_entity(self, headers, body, allow_incomplete=False,
+                  defined_kind=None):
         if allow_incomplete and defined_kind is None:
             raise ParsingException('When allowing an incomplete requests'
                                    + ' the kind must be predefined!')
@@ -1073,9 +1092,9 @@ class TextHTMLRendering(Rendering):
         del(data)
         return entity, links
 
-    #===========================================================================
+    #==========================================================================
     # Some routines for convenience
-    #===========================================================================
+    #==========================================================================
 
     # disabling 'Method could be a function' pylint check (these belong here!)
     # pylint: disable=R0201

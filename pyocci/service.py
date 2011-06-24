@@ -1,20 +1,20 @@
-# 
+#
 # Copyright (C) 2010-2011 Platform Computing
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
 # version 2.1 of the License, or (at your option) any later version.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-# 
+#
 '''
 Implementation for an OCCI compliant service.
 
@@ -35,10 +35,11 @@ import uuid
 RESOURCES = {}
 AUTHENTICATION = False
 
+
 class BaseHandler(tornado.web.RequestHandler):
     '''
-    Handler derived from an handler in the tornado framework. Extended with some
-    convenient routines.
+    Handler derived from an handler in the tornado framework. Extended with
+    some convenient routines.
     '''
 
     # disabling 'Unused argument' pylint check (overwritten methods)
@@ -79,7 +80,7 @@ class BaseHandler(tornado.web.RequestHandler):
     def get_pyocci_parser(self, content_type):
         '''
         Returns the proper pyocci rendering parser.
-        
+
         @param content_type: Either Content-Type or Accept
         @type content_type: str
         '''
@@ -89,7 +90,7 @@ class BaseHandler(tornado.web.RequestHandler):
         except KeyError:
             return registry.get_parser(registry.DEFAULT_CONTENT_TYPE)
         except NoEntryFoundException as nefe:
-            raise HTTPError(400, log_message = str(nefe))
+            raise HTTPError(400, log_message=str(nefe))
 
     def get_error_html(self, code, **kwargs):
         exception = sys.exc_info()[1]
@@ -99,7 +100,7 @@ class BaseHandler(tornado.web.RequestHandler):
     def _send_response(self, heads, data):
         '''
         Prepares all information to send a response to the client.
-        
+
         @param heads: Data which should go in the header.
         @type heads: dict
         @param data: The body of the HTTP message.
@@ -114,7 +115,7 @@ class BaseHandler(tornado.web.RequestHandler):
     def _create_key(self, entity):
         '''
         Create a key with the hierarchy of the entity encapsulated.
-        
+
         @param entity: The entity to create the key for.
         @type entity: Entity
         '''
@@ -129,7 +130,7 @@ class BaseHandler(tornado.web.RequestHandler):
     def filter_childs(self, key, resources, categories):
         '''
         Retrieve childs in a hierachy and use categories to filter the result.
-        
+
         @param key: A key.
         @type key: str
         @param resources: A list of resources.
@@ -168,6 +169,7 @@ class BaseHandler(tornado.web.RequestHandler):
                 my_resources.append(item)
         return my_resources
 
+
 class ResourceHandler(BaseHandler):
     '''
     Handles basic HTTP operations. To achieve this it will make use of WSGI and
@@ -175,7 +177,7 @@ class ResourceHandler(BaseHandler):
     '''
 
     # disabling 'Too many public methods' pylint check (tornado's fault)
-    # disabling 'Arguments number differs from ...' pylint check 
+    # disabling 'Arguments number differs from ...' pylint check
     #                                               (methods exists twice...)
     # pylint: disable=R0904,W0221
 
@@ -238,8 +240,8 @@ class ResourceHandler(BaseHandler):
             new_entity = None
             try:
                 new_entity, links = parser.to_entity(headers, body,
-                                              allow_incomplete = True,
-                                              defined_kind = old_entity.kind)
+                                              allow_incomplete=True,
+                                              defined_kind=old_entity.kind)
 
                 if self.get_current_user() != old_entity.owner:
                     raise HTTPError(401)
@@ -336,6 +338,7 @@ class ResourceHandler(BaseHandler):
         else:
             raise HTTPError(404)
 
+
 class CollectionHandler(BaseHandler):
     '''
     This class handles listing of resources in REST resource hierarchy and
@@ -343,10 +346,10 @@ class CollectionHandler(BaseHandler):
     '''
 
     # disabling 'Too many public methods' pylint check (tornado's fault)
-    # disabling 'Arguments number differs from ...' pylint check 
+    # disabling 'Arguments number differs from ...' pylint check
     #                                               (methods exists twice...)
     # disabling 'Method could be a function' pylint check (I want it here)
-    # pylint: disable=R0904,W0221,R0201 
+    # pylint: disable=R0904,W0221,R0201
 
     def get_locations(self):
         '''
@@ -366,7 +369,7 @@ class CollectionHandler(BaseHandler):
     def get_all_resources_of_category(self, category, resources):
         '''
         Return all resources belonging to one category.
-        
+
         @param category: A category
         @type category: Category
         @param resources: List of resources
@@ -461,7 +464,7 @@ class CollectionHandler(BaseHandler):
                 category = locations[key]
                 entities = parser.get_entities(headers, body)
                 for item in entities:
-                    if RESOURCES.has_key(item):
+                    if item in RESOURCES:
                         res = RESOURCES[item]
                         if category not in res.mixins:
                             res.mixins.append(category)
@@ -469,7 +472,7 @@ class CollectionHandler(BaseHandler):
                             backend = registry.get_backend(category)
                             backend.create(res)
             except (ParsingException, AttributeError) as pse:
-                raise HTTPError(400, log_message = str(pse))
+                raise HTTPError(400, log_message=str(pse))
         else:
             raise HTTPError(400, 'Put is only allowed on a location path.')
 
@@ -518,15 +521,16 @@ class CollectionHandler(BaseHandler):
                 category = locations[key]
                 entities = parser.get_entities(headers, body)
                 for item in entities:
-                    if RESOURCES.has_key(item):
+                    if item in RESOURCES:
                         RESOURCES[item].mixins.remove(category)
                         # trigger backend to remove the attr etc from the res.
                         backend = registry.get_backend(category)
                         backend.delete(RESOURCES[item])
             except ParsingException as pse:
-                raise HTTPError(400, log_message = str(pse))
+                raise HTTPError(400, log_message=str(pse))
         else:
             raise HTTPError(400, 'Put is only allowed on a location path.')
+
 
 class QueryHandler(BaseHandler):
     '''
@@ -582,7 +586,7 @@ class QueryHandler(BaseHandler):
                 else:
                     raise ParsingException('Not a valid mixin.')
         except (ParsingException, AttributeError) as pse:
-            raise HTTPError(400, log_message = str(pse))
+            raise HTTPError(400, log_message=str(pse))
 
     @tornado.web.authenticated
     def delete(self):
@@ -592,7 +596,7 @@ class QueryHandler(BaseHandler):
         try:
             del_categories = parser.to_categories(headers, body)
         except ParsingException as pse:
-            raise HTTPError(400, log_message = str(pse))
+            raise HTTPError(400, log_message=str(pse))
 
         for cat in registry.BACKENDS.keys():
             if cat in del_categories:
@@ -604,12 +608,13 @@ class QueryHandler(BaseHandler):
                         raise HTTPError(401)
 
         if len(del_categories) > 0:
-            raise HTTPError(400, log_message = 'Cannot delete these'
+            raise HTTPError(400, log_message='Cannot delete these'
                             + ' categories.')
 
-#===============================================================================
+#==============================================================================
 # Basic Security handlers
-#===============================================================================
+#==============================================================================
+
 
 class LoginHandler(BaseHandler):
     '''
@@ -634,21 +639,22 @@ class LoginHandler(BaseHandler):
             raise HTTPError(401)
 
     # disabling 'Unused argument' pylint check (method should be overwritten)
-    # disabling 'Method could be a function' pylint check (method should be 
-    #                                                      overwritten) 
+    # disabling 'Method could be a function' pylint check (method should be
+    #                                                      overwritten)
     # pylint: disable=R0201,W0613
 
     def authenticate(self, username, password):
         '''
         Authenticates a user by username and password. Should be overwritten by
         any real implementation. This one will return False as default.
-        
+
         @param username: The name of the user.
         @type username: str
         @param password: The password.
         @type password: str
         '''
         return False
+
 
 class LogoutHandler(BaseHandler):
     '''
@@ -664,9 +670,10 @@ class LogoutHandler(BaseHandler):
         self.clear_cookie('pyocci_user')
         self.redirect('/')
 
-#===============================================================================
+#==============================================================================
 # Some Basic Backends
-#===============================================================================
+#==============================================================================
+
 
 class MixinBackend(Backend):
     '''
@@ -688,6 +695,7 @@ class MixinBackend(Backend):
     def action(self, entity, action):
         pass
 
+
 class LinkBackend(Backend):
     '''
     This class will be handling the basic Links. If the user defines a kind
@@ -701,7 +709,8 @@ class LinkBackend(Backend):
             raise AttributeError('A link needs to have a target.')
 
         try:
-            RESOURCES.has_key(link.target)
+            if link.target not in RESOURCES:
+                raise KeyError
             src = RESOURCES[link.source]
             src.links.append(link)
         except KeyError as notfound:
@@ -736,7 +745,8 @@ class LinkBackend(Backend):
 
             src.links.remove(link)
         except KeyError:
-            raise AttributeError('Source and target need to be valid Resources')
+            raise AttributeError('Source and target need to be valid'
+                                 + ' Resources')
 
     def action(self, entity, action):
         pass

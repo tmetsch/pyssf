@@ -20,18 +20,21 @@
 
 case "$1" in
   keys)
+    cd ..
     export PYOCCI_STYLE_SHEET=`pwd`/misc/style.css
     export PYTHONPATH=`pwd`
     python pyocci/examples/keyvalue_main.py
     ;;
 
   vms)
+    cd ..
     export PYOCCI_STYLE_SHEET=`pwd`/misc/style.css
     export PYTHONPATH=`pwd`
     python pyocci/examples/vms_main.py
     ;;
 
   jobs)
+    cd ..
     export PYOCCI_STYLE_SHEET=`pwd`/misc/style.css
     export PYTHONPATH=`pwd`
     python pyocci/examples/drmaa_main.py

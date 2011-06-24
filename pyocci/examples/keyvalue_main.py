@@ -1,20 +1,20 @@
-# 
+#
 # Copyright (C) 2010-2011 Platform Computing
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
 # version 2.1 of the License, or (at your option) any later version.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-# 
+#
 '''
 A simple module for demonstration purposes.
 
@@ -34,6 +34,7 @@ from pyocci.service import ResourceHandler, CollectionHandler, QueryHandler, \
 import tornado.httpserver
 import tornado.web
 
+
 class Login(LoginHandler):
 
     def authenticate(self, user, password):
@@ -43,6 +44,7 @@ class Login(LoginHandler):
             return True
         else:
             return False
+
 
 class MyService():
     '''
@@ -55,7 +57,8 @@ class MyService():
 
     def __init__(self):
         settings = {
-                    "cookie_secret": "61oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
+                    "cookie_secret":
+        "61oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
                     "login_url": "/login",
         }
         self.application = tornado.web.Application([
@@ -83,8 +86,10 @@ if __name__ == '__main__':
     HTML_RENDERER = TextHTMLRendering()
     registry.register_parser(TextHTMLRendering.content_type,
                                        HTML_RENDERER)
-    registry.register_parser('application/x-www-form-urlencoded', HTML_RENDERER)
-    registry.register_parser(URIListRendering.content_type, URIListRendering())
+    registry.register_parser('application/x-www-form-urlencoded',
+                             HTML_RENDERER)
+    registry.register_parser(URIListRendering.content_type,
+                             URIListRendering())
 
     # register a simple key value backend
     registry.register_backend([KeyValueBackend.kind,

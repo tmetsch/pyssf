@@ -1,20 +1,20 @@
-# 
+#
 # Copyright (C) 2010-2011 Platform Computing
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
 # version 2.1 of the License, or (at your option) any later version.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-# 
+#
 '''
 Created on Nov 26, 2010
 
@@ -28,6 +28,7 @@ from drmaa.errors import InvalidJobException
 from pyocci.backends import Backend
 from pyocci.core import Action, Kind, Resource, Category
 import drmaa
+
 
 class DRMAAJob():
     """
@@ -62,6 +63,7 @@ class DRMAAJob():
     def get_state(self):
         return self.s.jobStatus(self.job_id)
 
+
 class DRMAABackend(Backend):
     '''
     A very simply backend for job submission using DRMAA.
@@ -88,8 +90,12 @@ class DRMAABackend(Backend):
     kind.term = 'job'
 
     def create(self, entity):
-        if not 'remote_command' in entity.attributes or not 'args' in entity.attributes:
-            raise AttributeError('There needs to be an remote_command and args attributes.')
+        if not 'remote_command' in entity.attributes:
+            raise AttributeError('There needs to be an remote_command'
+                                 + ' attributes.')
+        if not 'args' in entity.attributes:
+            raise AttributeError('There needs to be an args'
+                                 + ' attributes.')
         entity.actions = [self.terminate_action]
         # create job...
         command = entity.attributes['remote_command']
@@ -143,7 +149,8 @@ class DRMAABackend(Backend):
             try:
                 job = self.jobs[entity.attributes['job_id']]
             except:
-                raise AttributeError('Trying to run an action on non active resource.')
+                raise AttributeError('Trying to run an action on non active'
+                                     + ' resource.')
             job.terminate()
             entity.actions = []
         else:

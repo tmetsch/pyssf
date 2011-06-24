@@ -1,20 +1,20 @@
-# 
+#
 # Copyright (C) 2010-2011 Platform Computing
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
 # version 2.1 of the License, or (at your option) any later version.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-# 
+#
 '''
 This module holds the OCCI core model.
 
@@ -50,6 +50,7 @@ class Category(object):
     def __repr__(self):
         return self.scheme + '#' + self.term
 
+
 class Kind(Category):
 
     def __init__(self):
@@ -60,6 +61,7 @@ class Kind(Category):
         # Following are not defined by the OCCI spec
         self.location = ''
         self.cls_str = 'kind'
+
 
 class Mixin(Category):
 
@@ -72,6 +74,7 @@ class Mixin(Category):
         self.location = ''
         self.owner = ''
         self.cls_str = 'mixin'
+
 
 class Entity(object):
 
@@ -94,6 +97,7 @@ class Entity(object):
         self.owner = ''
         self.identifier = ''
 
+
 class Resource(Entity):
 
     category = Kind()
@@ -115,6 +119,7 @@ class Resource(Entity):
         self.attributes = {}
         self.actions = []
 
+
 class Link(Entity):
 
     category = Kind()
@@ -135,6 +140,7 @@ class Link(Entity):
         # not defined by OCCI spec
         self.attributes = {}
         self.actions = []
+
 
 class Action(object):
 

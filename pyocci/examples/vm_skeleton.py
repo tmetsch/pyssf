@@ -1,20 +1,20 @@
-# 
+#
 # Copyright (C) 2010-2011 Platform Computing
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
 # version 2.1 of the License, or (at your option) any later version.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-# 
+#
 '''
 A skeleton implementation for OCCI infrastructure.
 
@@ -28,6 +28,7 @@ Created on Dec 7, 2010
 from pyocci.backends import Backend
 from pyocci.core import Kind, Resource, Action, Category, Mixin, Link
 from pyocci.service import LinkBackend
+
 
 class Compute(Backend):
 
@@ -99,7 +100,7 @@ class Compute(Backend):
             entity.actions = [self.start_action]
 
     def update(self, old_entity, new_entity):
-        # here you can check what information from new_entity you wanna bring 
+        # here you can check what information from new_entity you wanna bring
         # into old_entity
 
         # trigger your hypervisor and push most recent information
@@ -107,7 +108,8 @@ class Compute(Backend):
 
     def delete(self, entity):
         # call the hypervisor to delete this VM...
-        print 'Removing representation of virtual maching with id: ' + entity.identifier
+        print('Removing representation of virtual maching with id: '
+              + entity.identifier)
 
     def action(self, entity, action):
         if action not in entity.actions:
@@ -128,6 +130,7 @@ class Compute(Backend):
             entity.attributes['occi.compute.state'] = 'suspended'
             # read attributes from action and do something with it :-)
             print 'Suspending virtual machine with id' + entity.identifier
+
 
 class Network(Backend):
 
@@ -191,6 +194,7 @@ class Network(Backend):
             # read attributes from action and do something with it :-)
             print 'Stoping VNIC with id: ' + entity.identifier
 
+
 class IPNetworking(Backend):
 
     mixin = Mixin()
@@ -221,6 +225,7 @@ class IPNetworking(Backend):
 
     def action(self, entity, action):
         pass
+
 
 class Storage(Backend):
 
@@ -314,6 +319,7 @@ class Storage(Backend):
         elif action.kind == self.resize_action:
             print 'Resizing...storage resource with id: ' + entity.identifier
 
+
 class NetworkInterface(LinkBackend):
 
     kind = Kind()
@@ -361,6 +367,7 @@ class StorageLink(LinkBackend):
         link.attributes.pop('occi.storagelink.mountpoint')
         link.attributes.pop('occi.storagelink.state')
 
+
 class IPNetworkingLink(Backend):
 
     kind = Mixin()
@@ -373,7 +380,8 @@ class IPNetworkingLink(Backend):
     kind.title = 'A ip network interface'
 
     def create(self, entity):
-        # TODO: check is parent resource has the right kind so that thie mixin can be added...
+        # TODO: check is parent resource has the right kind so
+        # that this mixin can be added...
 
         entity.attributes['occi.networkinterface.allocation'] = 'a'
         entity.attributes['occi.networkinterface.gateway'] = '10.0.0.11'
