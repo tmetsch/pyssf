@@ -18,9 +18,9 @@ sS'help'
 p8
 NsS'modules'
 p9
-(S'pyocci'
+(S'ssf'
 p10
-S'ssf'
+S'occi'
 p11
 tp12
 sS'private'
