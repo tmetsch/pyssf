@@ -22,7 +22,7 @@ case "$1" in
   clean)
     python setup.py clean --all
     rm -rf docs/build sdist dist build
-    rm -rf MANIFEST pycallgraph.png
+    rm -rf MANIFEST
     ;;
 
   build)
@@ -35,11 +35,7 @@ case "$1" in
     ;;
 
   coverage)
-    export PYTHONPATH=build/lib.linux-x86_64-2.6/pylsf/
-    export DRMAA_LIBRARY_PATH=/opt/platform/lsf/8.0/linux2.6-glibc2.3-x86_64/lib/libdrmaa.so
-    nosetests --with-coverage --cover-html --cover-html-dir=docs/build/html/cover --cover-erase --cover-package=pyocci,pydrmaa,ssf
-    export PYOCCI_STYLE_SHEET=`pwd`/misc/style.css
-    nosetests --with-coverage --cover-html --cover-html-dir=docs/build/html/cover --cover-package=pyocci,pydrmaa,ssf
+    nosetests --with-coverage --cover-html --cover-html-dir=docs/build/html/cover --cover-erase --cover-package=occi,ssf
     rc=$?
     if [[ $rc != 0 ]] ; then
         exit $rc
@@ -53,8 +49,8 @@ case "$1" in
     cd ..
     $0 coverage
     mkdir docs/build/html/lint/
-    pylint -i y -f html pyocci &> docs/build/html/lint/index.html
-    pep8 --show-source --show-pep8 --statistics --count ssf pyocci
+    pylint -i y -f html ssf occi tests &> docs/build/html/lint/index.html
+    pep8 --show-source --show-pep8 --statistics --count ssf occi tests
     cd docs
     make html
     cd ..

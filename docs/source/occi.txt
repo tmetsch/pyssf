@@ -16,30 +16,21 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
    
 
-Welcome to Service Sharing Facility's documentation!
-====================================================
+The occi package
+================
 
-.. note::
-    This is still work in progress. For more information and tracking the
-    ongoing development go to http://sourceforge.net/projects/pyssf/
+Notes on Backend Implementations
+--------------------------------
 
-This software package is a collection of modules which can be used stand alone
-or all together.
+.. note:: 
+    A Backend must handle all the kinds it defines. That means that if it
+    defines a compute kind and a network resource link kind all the operations
+    should have an 'if statement' to check which type of entity is provided to
+    the routine.
 
-Some bla bla...todo
-
-Contents:
-
-.. toctree::
-   :maxdepth: 2
-   :numbered:
-   
-   ssf.txt
-   occi.txt
-
-* `Coverage report <cover/index.html>`_
-
-* `Pylint report <lint/index.html>`_
-
-* :ref:`search`
-
+The OCCI implementation eventually calls all the backends associated to an
+resource. If a resource has 2 mixins associated to it, the implementation will
+call the backend which defines the kind, and the backends which define the
+mixins. So in total 3 calls are made. So 3 different backends are used when
+each define a single kind - But 1 backend is called 3x times when the backend
+defines all 3 types.

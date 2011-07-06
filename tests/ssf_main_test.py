@@ -16,15 +16,28 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 '''
+To be done...
+
 Created on Jun 28, 2010
 
 @author: tmetsch
 '''
+
+# disabling 'Too many public methods' pylint check (unittest's fault)
+# pylint: disable=R0904
+
 import unittest
 
-class Test(unittest.TestCase):
+
+class MainTest(unittest.TestCase):
+    '''
+    To be done...
+    '''
 
     def test_something(self):
+        '''
+        To be done...
+        '''
         pass
 
 if __name__ == "__main__":
