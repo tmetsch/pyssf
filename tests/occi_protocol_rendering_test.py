@@ -117,6 +117,9 @@ class TestOcciRendering(unittest.TestCase):
         Test is a link can be rendered and retrieved.
         '''
         headers, body = self.rendering.from_entity(self.link1)
+        tmp = 'occi.core.target=' + self.link1.target.identifier
+        tmp += ', occi.core.source=' + self.link1.source.identifier
+        headers['X-OCCI-Attribute'] = tmp
         new = self.rendering.to_entity(headers, body)
         self.assertEqual(self.link1.kind, new.kind)
 

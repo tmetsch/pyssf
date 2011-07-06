@@ -93,6 +93,10 @@ def delete_entity(entity):
         for back in registry.get_all_backends(entity.source):
             back.update(old, entity)
 
+        # just in case - need to hold a clean model
+        if entity in old.links:
+            old.links.remove(entity)
+
     # call all the backends who are associated with this entity.kind...
     backends = registry.get_all_backends(entity)
     for backend in backends:
