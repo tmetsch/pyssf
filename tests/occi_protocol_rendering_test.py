@@ -16,6 +16,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
 '''
+Tests for the renderings.
+
 Created on Jul 5, 2011
 
 @author: tmetsch
@@ -34,7 +36,7 @@ import unittest
 
 class TestOcciRendering(unittest.TestCase):
     '''
-    Simplye sanity checks...
+    Simple sanity checks...
     '''
 
     rendering = TextOcciRendering()

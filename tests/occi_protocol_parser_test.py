@@ -24,9 +24,9 @@ Created on Jul 4, 2011
 '''
 
 # disabling 'Invalid name' pylint check (unittest's fault)
-# disabling 'Line too long' pylint check (Concatenating is worse)
 # disabling 'Too many public methods' pylint check (unittest's fault)
-# pylint: disable=C0103,C0301,R0904
+# disabling 'Access to a protected' pyling check (this is a test)
+# pylint: disable=C0103,R0904,W0212
 
 from occi import registry
 from occi.core_model import Action, Kind, Resource, Link
@@ -55,6 +55,8 @@ class TestParser(unittest.TestCase):
 
     source = Resource('/1', compute, [])
     target = Resource('/2', compute, [])
+    link1 = Link('/link/1', network_link, [], source, target)
+    link2 = Link(None, network_link, [], source, target)
 
     def setUp(self):
         registry.RESOURCES = {self.source.identifier: self.source,
@@ -62,6 +64,8 @@ class TestParser(unittest.TestCase):
         registry.BACKENDS[self.start_action] = None
         registry.BACKENDS[self.compute] = None
         registry.BACKENDS[self.network_link] = None
+
+        self.link1.attributes = {'foo': 'bar'}
 
     def tearDown(self):
         registry.BACKENDS = {}
@@ -80,7 +84,27 @@ class TestParser(unittest.TestCase):
         '''
         Test with faulty category.
         '''
-        self.assertRaises(AttributeError, parser.get_category, 'bla')
+        self.assertRaises(AttributeError, parser.get_category, 'some crap')
+        self.assertRaises(AttributeError, parser.get_category,
+                          'foo; scheme="bar"')
+
+    def test_get_link_for_failure(self):
+        '''
+        Test with msg category.
+        '''
+        # no valid string...
+        self.assertRaises(AttributeError, parser.get_link, 'some crap', None)
+
+        # no target...
+        registry.RESOURCES.pop(self.target.identifier)
+        link_string = parser.get_link_str(self.link1)
+        self.assertRaises(AttributeError, parser.get_link, link_string, None)
+
+    def test_get_attributes_for_failure(self):
+        '''
+        Verifies the parsing of attributes.
+        '''
+        self.assertRaises(AttributeError, parser.get_attributes, 'bla blub')
 
     #==========================================================================
     # Sanity
@@ -97,10 +121,43 @@ class TestParser(unittest.TestCase):
         '''
         Verifies that source and target are set...
         '''
-        link_string = '</2>; rel="http://schemas.ogf.org/occi/infrastructure#network";  category="http://schemas.ogf.org/occi/infrastructure#networkinterface"; occi.networkinterface.interface="eth0"; occi.networkinterface.mac="00:11:22:33:44:55"; occi.networkinterface.state="active";'
+        link_string = parser.get_link_str(self.link1)
         link = parser.get_link(link_string, self.source)
-        self.assertEquals(link.identifier, None)
         self.assertEquals(link.kind, self.network_link)
         self.assertEquals(link.source, self.source)
         self.assertEquals(link.target, self.target)
-        self.assertTrue(len(link.attributes) == 3)
+        self.assertTrue(len(link.attributes) == 1)
+
+        # identifier checks...
+        link_string = parser.get_link_str(self.link1)
+        link = parser.get_link(link_string, self.source)
+        self.assertEquals(link.identifier, '/link/1')
+
+        tmp = link_string.split('; ')
+        tmp.pop(2)
+        link_string = '; '.join(tmp)
+        link = parser.get_link(link_string, self.source)
+        self.assertEquals(link.identifier, None)
+
+    def test_strip_all_for_sanity(self):
+        '''
+        Tests if information get's stripped correctly.
+        '''
+        self.assertEqual('bla', parser._strip_all('bla'))
+        self.assertEqual('bla', parser._strip_all('"bla"'))
+        self.assertEqual('bla', parser._strip_all(' bla '))
+        self.assertEqual('bla', parser._strip_all('"bla'))
+        self.assertEqual('bla', parser._strip_all('bla" '))
+        self.assertEqual('  bla', parser._strip_all('"  bla" '))
+        self.assertEqual('some text', parser._strip_all('"some text" '))
+
+    def test_get_attributes_for_sanity(self):
+        '''
+        Verifies the parsing of attributes.
+        '''
+        self.assertEquals(parser.get_attributes('foo=bar'), ('foo', 'bar'))
+        self.assertEquals(parser.get_attributes('foo=bar '), ('foo', 'bar'))
+        self.assertEquals(parser.get_attributes('foo= "some stuff"'),
+                          ('foo', 'some stuff'))
+        self.assertEquals(parser.get_attributes('foo = "bar"'),
+                          ('foo', 'bar'))

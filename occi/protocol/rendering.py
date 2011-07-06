@@ -83,6 +83,25 @@ class Rendering(object):
 #==============================================================================
 
 
+def _extract_data_from_headers(headers):
+    '''
+    Simple method to split out the information from the HTTP headers.
+
+    @param headers: The HTTP headers.
+    '''
+    # split out the information
+    data = HTTPData()
+    if 'Category' in headers.keys():
+        data.categories = headers['Category'].split(',')
+    if 'X-OCCI-Attribute' in headers.keys():
+        data.attributes = headers['X-OCCI-Attribute'].split(',')
+#        if 'X-OCCI-Location' in headers.keys():
+#            data.locations = headers['X-OCCI-Location'].split(',')
+    if 'Link' in headers.keys():
+        data.links = headers['Link'].split(',')
+    return data
+
+
 class TextOcciRendering(Rendering):
     '''
     This is a rendering which will use the HTTP body to place the information
@@ -91,26 +110,8 @@ class TextOcciRendering(Rendering):
 
     mime_type = 'text/occi'
 
-    def extract_data(self, headers):
-        '''
-        Simple method to split out the information from the HTTP headers.
-
-        @param headers: The HTTP headers.
-        '''
-        # split out the information
-        data = HTTPData()
-        if 'Category' in headers.keys():
-            data.categories = headers['Category'].split(',')
-        if 'X-OCCI-Attribute' in headers.keys():
-            data.attributes = headers['X-OCCI-Attribute'].split(',')
-        if 'X-OCCI-Location' in headers.keys():
-            data.locations = headers['X-OCCI-Location'].split(',')
-        if 'Link' in headers.keys():
-            data.links = headers['Link'].split(',')
-        return data
-
     def to_entity(self, headers, body):
-        data = self.extract_data(headers)
+        data = _extract_data_from_headers(headers)
 
         kind = None
         mixins = []
@@ -201,7 +202,7 @@ class TextOcciRendering(Rendering):
         return headers, 'OK'
 
     def to_action(self, headers, body):
-        data = self.extract_data(headers)
+        data = _extract_data_from_headers(headers)
 
         action = parser.get_category(data.categories[0].strip())
 

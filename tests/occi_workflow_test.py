@@ -24,9 +24,8 @@ Created on Jul 5, 2011
 '''
 
 # disabling 'Invalid name' pylint check (unittest's fault)
-# disabling 'Line too long' pylint check (Concatenating is worse)
 # disabling 'Too many public methods' pylint check (unittest's fault)
-# pylint: disable=C0103,C0301,R0904
+# pylint: disable=C0103,R0904
 
 from occi import registry, workflow
 from occi.core_model import Resource, Kind, Link, Action

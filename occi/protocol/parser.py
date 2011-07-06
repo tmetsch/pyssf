@@ -105,10 +105,14 @@ def get_link(link_string, source):
     tmp = link_string.find('<') + 1
     target_id = link_string[tmp:link_string.rfind('>', tmp)].strip()
 
-    link_id = find_in_string(link_string, 'self')
+    try:
+        link_id = find_in_string(link_string, 'self')
+    except AttributeError:
+        link_id = None
 
-    tmp_category = find_in_string(link_string, 'category')
-    if tmp_category is None:
+    try:
+        tmp_category = find_in_string(link_string, 'category')
+    except AttributeError:
         raise AttributeError('Could not determine the Category of the Link.')
     tempus = tmp_category.split('#')
     link_category = get_category(tempus[1].strip() + ';scheme="'
@@ -122,7 +126,12 @@ def get_link(link_string, source):
         if len(tmp) == 2:
             attributes[tmp[0].strip()] = tmp[1].rstrip('"').lstrip('"').strip()
 
-    target = registry.RESOURCES[target_id]
+    try:
+        target = registry.RESOURCES[target_id]
+    except KeyError:
+        raise AttributeError('The target for the link cannot be found: '
+                             + target_id)
+
     link = Link(link_id, link_category, [], source, target)
     link.attributes = attributes
     return link
@@ -152,7 +161,7 @@ def get_attributes(attribute_string):
     '''
     try:
         tmp = _strip_all(attribute_string)
-        key = tmp.split('=')[0]
+        key = _strip_all(tmp.split('=')[0])
         value = tmp.split('=')[1]
         if value.find('"') is not - 1:
             value = _strip_all(value)
@@ -185,5 +194,5 @@ def find_in_string(string, name):
     end = string.find(';', begin)
     result = string[begin + len(name) + 1:end].rstrip('"').lstrip('"').strip()
     if begin == -1:
-        return None
+        raise AttributeError('Could not determine the value for: ' + name)
     return result
