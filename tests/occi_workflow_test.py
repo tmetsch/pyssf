@@ -42,8 +42,8 @@ class EntityWorkflowTest(unittest.TestCase):
         self.link_kind = Kind('http://example.com#link', 'link')
         mixins = []
         self.action = Action('http://example.com#', 'action')
-        self.src_entity = Resource(None, self.test_kind, mixins)
-        self.trg_entity = Resource('/foo/trg', self.test_kind, mixins)
+        self.src_entity = Resource(None, self.test_kind, mixins, [])
+        self.trg_entity = Resource('/foo/trg', self.test_kind, mixins, [])
         self.link1 = Link('/link/1', self.link_kind, [], self.src_entity,
                           self.trg_entity)
         self.src_entity.links = [self.link1]

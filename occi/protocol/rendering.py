@@ -147,7 +147,7 @@ def _to_entity(data):
 
     if Resource.kind in kind.related:
         # links
-        entity = Resource(None, kind, mixins, links=[])
+        entity = Resource(None, kind, mixins, [])
         for link_string in data.links:
             entity.links.append(parser.get_link(link_string.strip(),
                                                 entity))
@@ -159,7 +159,6 @@ def _to_entity(data):
             raise AttributeError('Both occi.core.[source, target]'
                                  + ' attributes need to be resources.')
         entity = Link(None, kind, mixins, source, target)
-        source.links.append(entity)
     else:
         raise AttributeError('This kind seems not to be related to either'
                              + ' resource or link.')

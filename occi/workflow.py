@@ -88,14 +88,12 @@ def delete_entity(entity):
             registry.RESOURCES.pop(link.identifier)
     elif isinstance(entity, Link):
         # it's a link so update the source entity...
-        old = entity.source
-        entity.source.links.remove(entity)
-        for back in registry.get_all_backends(entity.source):
-            back.update(old, entity)
+        # old = entity.source
 
-        # just in case - need to hold a clean model
-        if entity in old.links:
-            old.links.remove(entity)
+        entity.source.links.remove(entity)
+
+#        for back in registry.get_all_backends(entity.source):
+#            back.update(old, entity)
 
     # call all the backends who are associated with this entity.kind...
     backends = registry.get_all_backends(entity)
@@ -114,7 +112,7 @@ def replace_entity(old, new):
     @param old: The old entity.
     @param new: The new entity.
     '''
-    if isinstance(new, Resource) and new.links is not None:
+    if isinstance(new, Resource) and len(new.links) is not 0:
         raise AttributeError('It is not recommend to have links in a full'
                              + ' update request')
 
@@ -133,7 +131,7 @@ def update_entity(old, new):
     @param old: The old entity.
     @param new: The new entity.
     '''
-    if isinstance(new, Resource) and new.links is not None:
+    if isinstance(new, Resource) and len(new.links) is not 0:
         raise AttributeError('It is not recommend to have links in a full'
                              + ' update request')
 
