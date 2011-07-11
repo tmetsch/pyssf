@@ -30,7 +30,7 @@ Created on Jul 5, 2011
 from occi import registry
 from occi.backend import Backend
 from occi.core_model import Kind, Resource, Link, Mixin, Action
-from occi.protocol.rendering import TextOcciRendering, Rendering
+from occi.protocol.rendering import TextOcciRendering, Rendering, HTMLRendering
 import unittest
 
 
@@ -106,8 +106,9 @@ class TestOcciRendering(unittest.TestCase):
         headers, body = self.rendering.from_entity(self.entity)
         new = self.rendering.to_entity(headers, body)
         self.assertEqual(self.entity.kind, new.kind)
+        self.assertEqual(len(self.entity.links), len(new.links))
 
-        # verifiy that actions get added
+        # verify that actions get added
         self.entity.actions = [self.action]
         headers, body = self.rendering.from_entity(self.entity)
         self.assertTrue('?action' in headers['Link'])
@@ -122,6 +123,8 @@ class TestOcciRendering(unittest.TestCase):
         headers['X-OCCI-Attribute'] = tmp
         new = self.rendering.to_entity(headers, body)
         self.assertEqual(self.link1.kind, new.kind)
+        # do not alter the source entity link list!
+        self.assertTrue(len(self.entity.links) == 1)
 
     def test_action_for_sanity(self):
         '''
@@ -131,6 +134,34 @@ class TestOcciRendering(unittest.TestCase):
                  + self.action.scheme + '"'}
         action = self.rendering.to_action(heads, None)
         self.assertEqual(action, self.action)
+
+
+class TestHTMLRendering(unittest.TestCase):
+    '''
+    Just some simple calls on the HTML rendering.
+    '''
+
+    parser = HTMLRendering()
+
+    def setUp(self):
+        self.resource = Resource('/foo/bar', None, [])
+
+    #==========================================================================
+    # Success
+    #==========================================================================
+
+    def test_from_entity_for_success(self):
+        '''
+        Test from entity...
+        '''
+        self.parser.from_entity(self.resource)
+
+    def test_from_entities_for_success(self):
+        '''
+        Test from entities...
+        '''
+        self.parser.from_entities([self.resource], '/')
+        self.parser.from_entities([], '/')
 
 
 class TestRendering(unittest.TestCase):
@@ -146,3 +177,5 @@ class TestRendering(unittest.TestCase):
         self.assertRaises(NotImplementedError, rendering.to_entity, None, None)
         self.assertRaises(NotImplementedError, rendering.to_action, None, None)
         self.assertRaises(NotImplementedError, rendering.from_entity, None)
+        self.assertRaises(NotImplementedError, rendering.from_entities, None,
+                          None)

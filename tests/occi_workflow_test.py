@@ -143,6 +143,7 @@ class EntityWorkflowTest(unittest.TestCase):
         self.assertTrue(self.src_entity in registry.RESOURCES.values())
         # link entity needs to be available...
         self.assertTrue(self.link1 in registry.RESOURCES.values())
+        self.assertTrue(len(self.src_entity.links) == 1)
 
     def test_create_link_for_sanity(self):
         '''
@@ -157,6 +158,7 @@ class EntityWorkflowTest(unittest.TestCase):
         self.assertTrue(link2 in registry.RESOURCES.values())
         # link needs to be added to the src entity
         self.assertTrue(link2 in self.src_entity.links)
+        self.assertTrue(len(self.src_entity.links) == 2)
 
     def test_delete_resource_for_sanity(self):
         '''

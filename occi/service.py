@@ -227,7 +227,12 @@ class CollectionHandler(BaseHandler):
 
     def get(self, key):
         # retrieve (filter)
-        pass
+        result = []
+        for res in registry.RESOURCES.values():
+            if res.identifier.find(key) == 0:
+                result.append(res)
+
+        self.parse_outgoing(result, key)
 
     def post(self, key):
         # action
@@ -242,6 +247,18 @@ class CollectionHandler(BaseHandler):
     def delete(self, key):
         # delete
         pass
+
+    def parse_outgoing(self, resource_list, key):
+        '''
+        Renders a list of entities to the client.
+
+        @param resource_list: The entities which should be rendered.
+        '''
+        parser = self.get_parser('Accept')
+
+        headers, body = parser.from_entities(resource_list, key)
+
+        self.response(200, parser.mime_type, headers, body)
 
 
 class QueryHandler(BaseHandler):
