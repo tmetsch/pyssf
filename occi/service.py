@@ -227,11 +227,8 @@ class CollectionHandler(BaseHandler):
 
     def get(self, key):
         # retrieve (filter)
-        result = []
-        for res in registry.RESOURCES.values():
-            if res.identifier.find(key) == 0:
-                result.append(res)
-
+        entities = workflow.get_entities_under_path(key)
+        result = workflow.filter_entities(entities, None, None)
         self.parse_outgoing(result, key)
 
     def post(self, key):
@@ -266,14 +263,14 @@ class QueryHandler(BaseHandler):
     Handles the Query interface.
     '''
 
-    def get(self, key):
+    def get(self):
         # retrieve (filter)
         pass
 
-    def post(self, key):
+    def post(self):
         # add user-defined mixin
         pass
 
-    def delete(self, key):
+    def delete(self):
         # delete user defined mixin
         pass

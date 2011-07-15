@@ -31,7 +31,7 @@ Created on Jul 4, 2011
 from occi import registry
 from occi.backend import Backend
 from occi.core_model import Kind, Resource
-from occi.protocol.rendering import Rendering
+from occi.protocol.occi_rendering import Rendering
 import unittest
 
 

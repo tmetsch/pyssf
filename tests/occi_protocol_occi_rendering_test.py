@@ -30,7 +30,7 @@ Created on Jul 5, 2011
 from occi import registry
 from occi.backend import Backend
 from occi.core_model import Kind, Resource, Link, Mixin, Action
-from occi.protocol.rendering import TextOcciRendering, Rendering, HTMLRendering
+from occi.protocol.occi_rendering import TextOcciRendering, Rendering
 import unittest
 
 
@@ -134,34 +134,6 @@ class TestOcciRendering(unittest.TestCase):
                  + self.action.scheme + '"'}
         action = self.rendering.to_action(heads, None)
         self.assertEqual(action, self.action)
-
-
-class TestHTMLRendering(unittest.TestCase):
-    '''
-    Just some simple calls on the HTML rendering.
-    '''
-
-    parser = HTMLRendering()
-
-    def setUp(self):
-        self.resource = Resource('/foo/bar', None, [])
-
-    #==========================================================================
-    # Success
-    #==========================================================================
-
-    def test_from_entity_for_success(self):
-        '''
-        Test from entity...
-        '''
-        self.parser.from_entity(self.resource)
-
-    def test_from_entities_for_success(self):
-        '''
-        Test from entities...
-        '''
-        self.parser.from_entities([self.resource], '/')
-        self.parser.from_entities([], '/')
 
 
 class TestRendering(unittest.TestCase):

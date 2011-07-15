@@ -28,7 +28,7 @@ Created on Jul 5, 2011
 # pylint: disable=C0103,R0904
 
 from occi import registry, workflow
-from occi.core_model import Resource, Kind, Link, Action
+from occi.core_model import Resource, Kind, Link, Action, Mixin
 import unittest
 
 
@@ -178,3 +178,102 @@ class EntityWorkflowTest(unittest.TestCase):
         workflow.delete_entity(self.link1)
         self.assertFalse(self.link1 in self.src_entity.links)
         self.assertFalse(self.link1 in registry.RESOURCES.values())
+
+
+class CollectionWorkflowTest(unittest.TestCase):
+    '''
+    Test the workflow on operations on collections...
+    '''
+
+    def setUp(self):
+        self.kind = Kind('http://example.com/foo#', 'bar')
+        self.link_kind = Kind('http://example.com/foo#', 'link')
+        self.mixin = Mixin('http://example.com/foo#', 'mixin')
+
+        target = Resource('/foo/target', self.kind, [], [])
+
+        source = Resource('/foo/src', self.kind, [self.mixin], [])
+        source.attributes = {'foo': 'bar'}
+
+        link = Link('/link/foo', self.link_kind, [], source, target)
+        link.attributes = {'foo': 'bar'}
+        source.links = [link]
+
+        self.resources = [source, target, link]
+        for item in self.resources:
+            registry.RESOURCES[item.identifier] = item
+
+    def tearDown(self):
+        registry.RESOURCES = {}
+
+    #==========================================================================
+    # Success
+    #==========================================================================
+
+    def test_get_entities_for_success(self):
+        '''
+        TODO: needs to be updated.
+        '''
+        lst = workflow.get_entities_under_path('/')
+        self.assertTrue(self.resources[0] in lst)
+
+    def test_filter_entities_for_success(self):
+        '''
+        Call the filter test.
+        '''
+        workflow.filter_entities(self.resources, [], {})
+        workflow.filter_entities(self.resources, [self.kind], {})
+        workflow.filter_entities(self.resources, [], {'foo': 'bar'})
+
+    #==========================================================================
+    # Sanity
+    #==========================================================================
+
+    def test_get_entities_for_sanity(self):
+        '''
+        Test if correct entities are returned.
+        '''
+        lst = workflow.get_entities_under_path('/link/')
+        self.assertTrue(self.resources[2] in lst)
+        self.assertTrue(len(lst) == 1)
+
+    def test_filter_entities_for_sanity(self):
+        '''
+        Check if the filter operates correctly.
+        '''
+        # return all
+        res = workflow.filter_entities(self.resources, [], {})
+        self.assertTrue(self.resources[0] in res)
+        self.assertTrue(self.resources[1] in res)
+        self.assertTrue(self.resources[2] in res)
+        self.assertTrue(len(res) == 3)
+
+        # return just the two resources
+        res = workflow.filter_entities(self.resources, [self.kind], {})
+        self.assertTrue(self.resources[0] in res)
+        self.assertTrue(self.resources[1] in res)
+        self.assertTrue(len(res) == 2)
+
+        # return source and link
+        res = workflow.filter_entities(self.resources, [], {'foo': 'bar'})
+        self.assertTrue(self.resources[0] in res)
+        self.assertTrue(self.resources[2] in res)
+        self.assertTrue(len(res) == 2)
+
+        # return just the source
+        res = workflow.filter_entities(self.resources, [self.mixin], {})
+        self.assertTrue(self.resources[0] in res)
+        self.assertTrue(len(res) == 1)
+
+        # return just the source and link
+        res = workflow.filter_entities(self.resources, [self.mixin,
+                                                        self.link_kind], {})
+        self.assertTrue(self.resources[0] in res)
+        self.assertTrue(self.resources[2] in res)
+        self.assertTrue(len(res) == 2)
+
+        # return just the link...
+        res = workflow.filter_entities(self.resources, [self.kind],
+                                       {'foo': 'bar'})
+        self.assertTrue(self.resources[0] in res)
+        self.assertTrue(len(res) == 1)

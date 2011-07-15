@@ -171,6 +171,64 @@ def action_entity(entity, action):
     backend = registry.get_backend(action)
     backend.action(entity, action)
 
+
+#==============================================================================
+# Collections
+#==============================================================================
+
+
+def get_entities_under_path(path):
+    '''
+    Return all entities which fall under a path.
+
+    If the path is in locations return all entities of the kind which defines
+    the location.
+
+    If the path is just a path return all children.
+
+    @param path: The path under which to look...
+    '''
+    # TODO: add location case...
+    result = []
+    for res in registry.RESOURCES.values():
+        if res.identifier.find(path) == 0:
+            result.append(res)
+    return result
+
+
+def filter_entities(entities, categories, attributes):
+    '''
+    Filters a set of entities and return those who match the given categories
+    and attributes.
+
+    @param entities: The entities which are to be filtered.
+    @param categories: Categories which must be present in the entity.
+    @param attributes: Attributes which must match with the entity's attrs.
+    '''
+    result = []
+    if len(categories) == 0 and len(attributes.keys()) == 0:
+        return entities
+
+    for entity in entities:
+        indy = 0
+        if entity.kind in categories:
+            indy += 1
+        if len(intersect(categories, entity.mixins)) != 0:
+            indy += 1
+        for attr in intersect(attributes.keys(), entity.attributes.keys()):
+            if entity.attributes[attr] == attributes[attr]:
+                indy += 3
+
+        if len(categories) > 0 and len(attributes.keys()) == 0 and indy >= 1:
+            result.append(entity)
+        elif len(categories) == 0 and len(attributes.keys()) > 0 and indy == 3:
+            result.append(entity)
+        elif len(categories) > 0 and len(attributes.keys()) > 0 and indy >= 4:
+            result.append(entity)
+
+    return result
+
+
 #==============================================================================
 # Convenient stuff
 #==============================================================================
@@ -186,3 +244,13 @@ def create_id(kind):
         key = kind.location
         key += str(uuid.uuid4())
     return key
+
+
+def intersect(list_a, list_b):
+    '''
+    Returns the intersection of two lists.
+    '''
+    if (len(list_a) > 0 and len(list_b) > 0):
+        return list(set(list_a) & set(list_b))
+    else:
+        return list()
