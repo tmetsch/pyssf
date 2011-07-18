@@ -37,14 +37,14 @@ class Category(object):
     OCCI Category.
     '''
 
-    def __init__(self, scheme, term, title='', attributes=None):
+    def __init__(self, scheme, term, title, attributes, location):
         self.scheme = scheme
         self.term = term
         self.title = title
-        self.attributes = attributes or {}
+        self.attributes = attributes
 
         # location
-        self.location = '/' + term + '/'
+        self.location = location
 
     def __eq__(self, instance):
         if instance is None or not isinstance(instance, Category):
@@ -64,8 +64,9 @@ class Kind(Category):
     '''
 
     def __init__(self, scheme, term, related=None, actions=None, title='',
-                 attributes=None):
-        super(Kind, self).__init__(scheme, term, title, attributes or {})
+                 attributes=None, location=None):
+        super(Kind, self).__init__(scheme, term, title, attributes or {},
+                                   location or '/' + term + '/')
         self.related = related or []
         self.actions = actions or []
 
@@ -79,7 +80,8 @@ class Action(Category):
     '''
 
     def __init__(self, scheme, term, title='', attributes=None):
-        super(Action, self).__init__(scheme, term, title, attributes or {})
+        super(Action, self).__init__(scheme, term, title, attributes or {},
+                                     location=None)
 
     def __repr__(self):
         return 'action'
@@ -91,8 +93,9 @@ class Mixin(Category):
     '''
 
     def __init__(self, scheme, term, related=None, actions=None, title='',
-                 attributes=None):
-        super(Mixin, self).__init__(scheme, term, title, attributes or {})
+                 attributes=None, location=None):
+        super(Mixin, self).__init__(scheme, term, title, attributes or {},
+                                    location or '/' + term + '/')
         self.related = related or []
         self.actions = actions or []
 

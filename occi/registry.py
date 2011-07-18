@@ -59,6 +59,17 @@ def get_backend(category):
     return Backend()
 
 
+def get_category(path):
+    '''
+    Return the category which is associated with an Location.
+
+    @param path: The location which the category should define.
+    '''
+    for category in BACKENDS.keys():
+        if category.location == path:
+            return category
+
+
 def get_parser(mime_type):
     '''
     Retrieve a parser for a given mime type.

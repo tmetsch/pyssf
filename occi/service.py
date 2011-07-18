@@ -102,6 +102,67 @@ class BaseHandler(tornado.web.RequestHandler):
         self.set_status(status_code)
         return msg
 
+    def parse_action(self):
+        '''
+        Retrieves the Action which was given in the request.
+        '''
+        headers, body = self.extract_http_data()
+        parser = self.get_parser(CONTENT_TYPE)
+
+        action = parser.to_action(headers, body)
+
+        return action
+
+    def parse_filter(self):
+        '''
+        Retrieve any attributes or categories which where provided in the
+        request for filtering.
+        '''
+        # TODO: ...
+        return [], {}
+
+    def parse_entity(self):
+        '''
+        Retrieves the entity which was rendered within the request.
+        '''
+        headers, body = self.extract_http_data()
+        parser = self.get_parser(CONTENT_TYPE)
+
+        entity = parser.to_entity(headers, body)
+
+        return entity
+
+    def parse_entities(self):
+        '''
+        Retrieves a set of entities which was rendered within the request.
+        '''
+        # TODO: ..
+        return []
+
+    def render_entity(self, entity):
+        '''
+        Renders a single entity to the client.
+
+        @param entity: The entity which should be rendered.
+        '''
+        parser = self.get_parser('Accept')
+
+        headers, body = parser.from_entity(entity)
+
+        self.response(200, parser.mime_type, headers, body)
+
+    def render_entities(self, entities, key):
+        '''
+        Renders a list of entities to the client.
+
+        @param entities: The entities which should be rendered.
+        '''
+        parser = self.get_parser('Accept')
+
+        headers, body = parser.from_entities(entities, key)
+
+        self.response(200, parser.mime_type, headers, body)
+
 
 class ResourceHandler(BaseHandler):
     '''
@@ -114,7 +175,7 @@ class ResourceHandler(BaseHandler):
 
             workflow.retrieve_entity(entity)
 
-            self.parse_outgoing(entity)
+            self.render_entity(entity)
         except AttributeError as attr:
             raise HTTPError(406, str(attr))
         except KeyError as key:
@@ -137,7 +198,7 @@ class ResourceHandler(BaseHandler):
             # update
             try:
                 old = registry.RESOURCES[key]
-                new = self.parse_incoming()
+                new = self.parse_entity()
 
                 workflow.update_entity(old, new)
 
@@ -152,7 +213,7 @@ class ResourceHandler(BaseHandler):
             # replace...
             try:
                 old = registry.RESOURCES[key]
-                new = self.parse_incoming()
+                new = self.parse_entity()
 
                 workflow.replace_entity(old, new)
 
@@ -162,7 +223,7 @@ class ResourceHandler(BaseHandler):
         else:
             # create...
             try:
-                entity = self.parse_incoming()
+                entity = self.parse_entity()
 
                 workflow.create_entity(key, entity)
 
@@ -185,40 +246,6 @@ class ResourceHandler(BaseHandler):
         except KeyError as key:
             raise HTTPError(404, str(key))
 
-    def parse_incoming(self):
-        '''
-        Returns the entity which was rendered within the request.
-        '''
-        headers, body = self.extract_http_data()
-        parser = self.get_parser(CONTENT_TYPE)
-
-        entity = parser.to_entity(headers, body)
-
-        return entity
-
-    def parse_outgoing(self, entity):
-        '''
-        Renders an entity to the client.
-
-        @param entity: The entity which should be rendered.
-        '''
-        parser = self.get_parser('Accept')
-
-        headers, body = parser.from_entity(entity)
-
-        self.response(200, parser.mime_type, headers, body)
-
-    def parse_action(self):
-        '''
-        Returns the Action which was given in the request.
-        '''
-        headers, body = self.extract_http_data()
-        parser = self.get_parser(CONTENT_TYPE)
-
-        action = parser.to_action(headers, body)
-
-        return action
-
 
 class CollectionHandler(BaseHandler):
     '''
@@ -227,35 +254,65 @@ class CollectionHandler(BaseHandler):
 
     def get(self, key):
         # retrieve (filter)
+        categories, attributes = self.parse_filter()
         entities = workflow.get_entities_under_path(key)
-        result = workflow.filter_entities(entities, None, None)
-        self.parse_outgoing(result, key)
+        result = workflow.filter_entities(entities, categories, attributes)
+        self.render_entities(result, key)
 
     def post(self, key):
-        # action
-        # create resource (&links)
-        # update
-        pass
+        if len(self.get_arguments('action')) > 0:
+            # action
+            try:
+                action = self.parse_action()
+                entities = workflow.get_entities_under_path(key)
+                for entity in entities:
+                    workflow.action_entity(entity, action)
+
+                self.response(200, registry.DEFAULT_MIME_TYPE, None)
+            except AttributeError as attr:
+                raise HTTPError(404, str(attr))
+        elif len(self.parse_entities()) == 0:
+            # create resource (&links)
+            try:
+                entity = self.parse_entity()
+
+                workflow.create_entity(key, entity)
+
+                self.response(201, registry.DEFAULT_MIME_TYPE,
+                              {'Location': self.request.protocol
+                                           + '://' + self.request.host + key})
+            except AttributeError as attr:
+                raise HTTPError(406, str(attr))
+        elif len(self.parse_entities()) > 0:
+            # update
+            try:
+                mixin = registry.get_category(key)
+                new_entities = self.parse_entities()
+                old_entities = workflow.get_entities_under_path(key)
+                workflow.update_collection(mixin, old_entities, new_entities)
+            except AttributeError as attr:
+                raise HTTPError(406, str(attr))
 
     def put(self, key):
         # replace
-        pass
+        try:
+            mixin = registry.get_category(key)
+            new_entities = self.parse_entities()
+            old_entities = workflow.get_entities_under_path(key)
+            workflow.replace_collection(mixin, old_entities, new_entities)
+        except AttributeError as attr:
+            raise HTTPError(406, str(attr))
 
     def delete(self, key):
         # delete
-        pass
+        try:
+            entities = workflow.get_entities_under_path(key)
+            for entity in entities:
+                workflow.delete_entity(entity)
 
-    def parse_outgoing(self, resource_list, key):
-        '''
-        Renders a list of entities to the client.
-
-        @param resource_list: The entities which should be rendered.
-        '''
-        parser = self.get_parser('Accept')
-
-        headers, body = parser.from_entities(resource_list, key)
-
-        self.response(200, parser.mime_type, headers, body)
+            self.response(200, registry.DEFAULT_MIME_TYPE, None)
+        except AttributeError as attr:
+            raise HTTPError(406, str(attr))
 
 
 class QueryHandler(BaseHandler):

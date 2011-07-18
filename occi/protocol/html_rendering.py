@@ -144,7 +144,7 @@ class HTMLRendering(Rendering):
 
         elif isinstance(entity, Link):
             tmp += '\t\t\t<h2>Source &amp; Target</h2><ul>'
-            tmp += '<li><strong>Source:</strong>'
+            tmp += '<li><strong>Source: </strong>'
             tmp += '<a href="' + entity.source.identifier + '">'
             tmp += entity.source.identifier + '</a></li>'
             tmp += '<li><strong>Target: </strong>'

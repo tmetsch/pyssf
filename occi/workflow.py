@@ -24,7 +24,7 @@ Created on Jun 30, 2011
 '''
 
 from occi import registry
-from occi.core_model import Resource, Link
+from occi.core_model import Resource, Link, Mixin
 import uuid
 
 # XXX: a nice storage would be nice --> not so many look ups...
@@ -177,6 +177,42 @@ def action_entity(entity, action):
 #==============================================================================
 
 
+def update_collection(mixin, old_entities, new_entities):
+    '''
+    Updates a Collection of Mixin. If not present in the current collections
+    entities will be added to the collection (aka. assigned the Mixin).
+
+    @param mixin: The mixin which defines the collection.
+    @param old_entities: The entities which are in the collection to date.
+    @param new_entities: The entities which should be added to the collection.
+    '''
+    if not isinstance(mixin, Mixin):
+        raise AttributeError('This operation is only supported on Collections'
+                             + ' of Mixins.')
+    for entity in unique(new_entities, old_entities):
+        entity.mixins.append(mixin)
+
+
+def replace_collection(mixin, old_entities, new_entities):
+    '''
+    Replaces a Collection of Mixin. If not present in the current collections
+    entities will be added to the collection (aka. assigned the Mixin). If old
+    entities are not present in the new collection the mixin will be removed
+    from them.
+
+    @param mixin: The mixin which defines the collection.
+    @param old_entities: The entities which are in the collection to date.
+    @param new_entities: The new collection of entities.
+    '''
+    if not isinstance(mixin, Mixin):
+        raise AttributeError('This operation is only supported on Collections'
+                             + ' of Mixins.')
+    for entity in unique(new_entities, old_entities):
+        entity.mixins.append(mixin)
+    for entity in unique(old_entities, new_entities):
+        entity.mixins.remove(mixin)
+
+
 def get_entities_under_path(path):
     '''
     Return all entities which fall under a path.
@@ -188,7 +224,7 @@ def get_entities_under_path(path):
 
     @param path: The path under which to look...
     '''
-    # TODO: add location case...
+    # TODO: add location case..., check for how deep to go into hierarchy...
     result = []
     for res in registry.RESOURCES.values():
         if res.identifier.find(path) == 0:
@@ -228,7 +264,6 @@ def filter_entities(entities, categories, attributes):
 
     return result
 
-
 #==============================================================================
 # Convenient stuff
 #==============================================================================
@@ -249,8 +284,21 @@ def create_id(kind):
 def intersect(list_a, list_b):
     '''
     Returns the intersection of two lists.
+
+    @param list_a: The first list.
+    @param list_b: Another list.
     '''
     if (len(list_a) > 0 and len(list_b) > 0):
         return list(set(list_a) & set(list_b))
     else:
         return list()
+
+
+def unique(list_a, list_b):
+    '''
+    Returns a list of elements which are only in list_a.
+
+    @param list_a: The list to look into for unique elements.
+    @param list_b: Ths list the verify against.
+    '''
+    return [item for item in list_a if item not in list_b]

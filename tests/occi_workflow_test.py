@@ -226,6 +226,24 @@ class CollectionWorkflowTest(unittest.TestCase):
         workflow.filter_entities(self.resources, [], {'foo': 'bar'})
 
     #==========================================================================
+    # Failure
+    #==========================================================================
+
+    def test_update_collection_for_failure(self):
+        '''
+        Check if the update functionalities are implemented correctly.
+        '''
+        self.assertRaises(AttributeError, workflow.update_collection,
+                          self.kind, [], [])
+
+    def test_replace_collection_for_failure(self):
+        '''
+        Check if the replace functionalities are implemented correctly.
+        '''
+        self.assertRaises(AttributeError, workflow.replace_collection,
+                          self.kind, [], [])
+
+    #==========================================================================
     # Sanity
     #==========================================================================
 
@@ -236,6 +254,26 @@ class CollectionWorkflowTest(unittest.TestCase):
         lst = workflow.get_entities_under_path('/link/')
         self.assertTrue(self.resources[2] in lst)
         self.assertTrue(len(lst) == 1)
+
+    def test_update_collection_for_sanity(self):
+        '''
+        Check if the update functionalities are implemented correctly.
+        '''
+        res1 = Resource('/foo/target', self.kind, [self.mixin], [])
+        res2 = Resource('/foo/target', self.kind, [], [])
+        workflow.update_collection(self.mixin, [res1], [res2])
+        self.assertTrue(self.mixin in res1.mixins)
+        self.assertTrue(self.mixin in res2.mixins)
+
+    def test_replace_collection_for_sanity(self):
+        '''
+        Check if the replace functionalities are implemented correctly.
+        '''
+        res1 = Resource('/foo/target', self.kind, [self.mixin], [])
+        res2 = Resource('/foo/target', self.kind, [], [])
+        workflow.replace_collection(self.mixin, [res1], [res2])
+        self.assertTrue(self.mixin not in res1.mixins)
+        self.assertTrue(self.mixin in res2.mixins)
 
     def test_filter_entities_for_sanity(self):
         '''

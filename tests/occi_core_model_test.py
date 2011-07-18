@@ -40,8 +40,8 @@ class TestCore(unittest.TestCase):
         '''
         Test category, Action, Kind and Mixin.
         '''
-        cat1 = Category('http://example.com#', 'foo')
-        cat2 = Category('http://example.com#', 'foo')
+        cat1 = Category('http://example.com#', 'foo', '', {}, '')
+        cat2 = Category('http://example.com#', 'foo', '', {}, '')
         kind = Kind('http://example.com#', 'bar')
         action = Action('http://example.com#', 'action')
         mixin = Mixin('http://example.com#', 'mixin')

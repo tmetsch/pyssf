@@ -121,6 +121,32 @@ class TestParserRegistry(unittest.TestCase):
         self.assertEquals(parser2, parser3)
 
 
+class CategoryRegistryTest(unittest.TestCase):
+    '''
+    Test the capabilities to retrieve categories.
+    '''
+
+    def setUp(self):
+        self.kind1 = Kind('http://example.com#', '1')
+        self.kind2 = Kind('http://example.com#', '2', location='/foo/')
+
+        registry.BACKENDS = {self.kind1: Backend(),
+                             self.kind2: DummyBackend()}
+
+    def test_get_category_for_sanity(self):
+        '''
+        Test if the category can be retrieved from a URN.
+        '''
+        result = registry.get_category('/1/')
+        self.assertTrue(self.kind1 == result)
+
+        result = registry.get_category('/foo/')
+        self.assertTrue(self.kind2 == result)
+
+        result = registry.get_category('/bar/')
+        self.assertTrue(result == None)
+
+
 class DummyBackend(Backend):
     '''
     A dummy...

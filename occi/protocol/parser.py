@@ -46,7 +46,7 @@ def get_category(category_string):
     scheme = find_in_string(category_string, 'scheme')
 
     # return the category from registry...
-    tmp = Category(scheme, term)
+    tmp = Category(scheme, term, '', {}, '')
     for item in registry.BACKENDS.keys():
         if tmp == item:
             del(tmp)
