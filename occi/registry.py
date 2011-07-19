@@ -29,6 +29,7 @@ BACKENDS = {}
 
 RENDERINGS = {}
 
+# Better: key, entity, backends (would obsolete get_all_backends
 RESOURCES = {}
 
 DEFAULT_MIME_TYPE = 'text/plain'
@@ -37,6 +38,8 @@ DEFAULT_MIME_TYPE = 'text/plain'
 def get_all_backends(entity):
     """
     Retrieve all backends associated with a resource instance
+
+    XXX: potential candidate for improvement trough better storage!
 
     entity -- The resource instance.
     """
@@ -53,6 +56,7 @@ def get_backend(category):
 
     category -- The category a backend is needed for.
     """
+    # need to lookup because category should not have __hash__ func.
     for re_cat in BACKENDS.keys():
         if category == re_cat:
             return BACKENDS[re_cat]
@@ -63,6 +67,8 @@ def get_category(path):
     '''
     Return the category which is associated with an Location.
 
+    XXX: potential candidate for improvement trough better storage!
+
     @param path: The location which the category should define.
     '''
     for category in BACKENDS.keys():
@@ -70,9 +76,9 @@ def get_category(path):
             return category
 
 
-def get_parser(mime_type):
+def get_renderer(mime_type):
     '''
-    Retrieve a parser for a given mime type.
+    Retrieve a rendering for a given mime type.
 
     @param mime_type: The mime type you a looking for.
     '''

@@ -24,6 +24,7 @@ Created on Jun 30, 2011
 '''
 
 from occi import registry
+from occi.backend import Backend
 from occi.core_model import Resource, Link, Mixin
 import uuid
 
@@ -224,12 +225,19 @@ def get_entities_under_path(path):
 
     @param path: The path under which to look...
     '''
-    # TODO: add location case..., check for how deep to go into hierarchy...
-    result = []
-    for res in registry.RESOURCES.values():
-        if res.identifier.find(path) == 0:
-            result.append(res)
-    return result
+    if registry.get_category(path) is None:
+        result = []
+        for res in registry.RESOURCES.values():
+            if res.identifier.find(path) == 0:
+                result.append(res)
+        return result
+    else:
+        result = []
+        cat = registry.get_category(path)
+        for res in registry.RESOURCES.values():
+            if cat == res.kind or cat in res.mixins:
+                result.append(res)
+        return result
 
 
 def filter_entities(entities, categories, attributes):
@@ -263,6 +271,47 @@ def filter_entities(entities, categories, attributes):
             result.append(entity)
 
     return result
+
+#==============================================================================
+# Query Interface
+#==============================================================================
+
+
+def filter_categories(categories):
+    '''
+    Filter the categories. Only those requested should be added to the
+    resulting list.
+
+    @param categories: The list of categories to filter against.
+    '''
+    if len(categories) == 0:
+        return registry.BACKENDS.keys()
+
+    result = []
+    for cat in registry.BACKENDS.keys():
+        if cat in categories:
+            result.append(cat)
+    return result
+
+
+def append_mixin(mixin):
+    '''
+    Add a mixin to the service.
+
+    @param mixin: The mixin which is to be added.
+    '''
+    if not isinstance(mixin, Mixin):
+        raise AttributeError('Needs to be of type Mixin.')
+    registry.BACKENDS[mixin] = Backend()
+
+
+def remove_mixin(mixin):
+    '''
+    Remove a mixin from the service.
+
+    @param mixin: The mixin which is to be removed.
+    '''
+    registry.BACKENDS.pop(mixin)
 
 #==============================================================================
 # Convenient stuff

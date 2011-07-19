@@ -100,22 +100,22 @@ class TestParserRegistry(unittest.TestCase):
         '''
         Test retrieval of parsers.
         '''
-        registry.get_parser('text/plain')
-        registry.get_parser('text/occi')
+        registry.get_renderer('text/plain')
+        registry.get_renderer('text/occi')
 
     def test_get_parser_for_failure(self):
         '''
         Test failure handling of retrieval.
         '''
-        self.assertRaises(AttributeError, registry.get_parser, 'foo')
+        self.assertRaises(AttributeError, registry.get_renderer, 'foo')
 
     def test_get_parser_for_sanity(self):
         '''
         Some sanity checks.
         '''
-        parser1 = registry.get_parser('text/plain')
-        parser2 = registry.get_parser('text/plain;q=0.9')
-        parser3 = registry.get_parser('*/*')
+        parser1 = registry.get_renderer('text/plain')
+        parser2 = registry.get_renderer('text/plain;q=0.9')
+        parser3 = registry.get_renderer('*/*')
 
         self.assertEquals(parser1, parser3)
         self.assertEquals(parser2, parser3)

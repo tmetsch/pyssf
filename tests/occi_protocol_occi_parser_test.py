@@ -30,7 +30,7 @@ Created on Jul 4, 2011
 
 from occi import registry
 from occi.core_model import Action, Kind, Resource, Link
-from occi.protocol import parser
+from occi.protocol import occi_parser as parser
 import unittest
 
 

@@ -65,16 +65,16 @@ class BaseHandler(tornado.web.RequestHandler):
             body = ''
         return heads, body
 
-    def get_parser(self, content_type):
+    def get_renderer(self, content_type):
         '''
         Returns the proper rendering parser.
 
         @param content_type: String with either either Content-Type or Accept.
         '''
         try:
-            return registry.get_parser(self.request.headers[content_type])
+            return registry.get_renderer(self.request.headers[content_type])
         except KeyError:
-            return registry.get_parser(registry.DEFAULT_MIME_TYPE)
+            return registry.get_renderer(registry.DEFAULT_MIME_TYPE)
 
     def response(self, status, mime_type, headers, body='OK'):
         '''
@@ -92,7 +92,6 @@ class BaseHandler(tornado.web.RequestHandler):
             for item in headers.keys():
                 self._headers[item] = headers[item]
         self.write(body)
-        #self.finish(body)
 
     def get_error_html(self, status_code, **kwargs):
         self.set_header('Server', self.version)
@@ -107,9 +106,9 @@ class BaseHandler(tornado.web.RequestHandler):
         Retrieves the Action which was given in the request.
         '''
         headers, body = self.extract_http_data()
-        parser = self.get_parser(CONTENT_TYPE)
+        rendering = self.get_renderer(CONTENT_TYPE)
 
-        action = parser.to_action(headers, body)
+        action = rendering.to_action(headers, body)
 
         return action
 
@@ -118,17 +117,21 @@ class BaseHandler(tornado.web.RequestHandler):
         Retrieve any attributes or categories which where provided in the
         request for filtering.
         '''
-        # TODO: ...
-        return [], {}
+        headers, body = self.extract_http_data()
+        rendering = self.get_renderer(CONTENT_TYPE)
+
+        categories, attributes = rendering.get_filters(headers, body)
+
+        return categories, attributes
 
     def parse_entity(self):
         '''
         Retrieves the entity which was rendered within the request.
         '''
         headers, body = self.extract_http_data()
-        parser = self.get_parser(CONTENT_TYPE)
+        rendering = self.get_renderer(CONTENT_TYPE)
 
-        entity = parser.to_entity(headers, body)
+        entity = rendering.to_entity(headers, body)
 
         return entity
 
@@ -136,8 +139,23 @@ class BaseHandler(tornado.web.RequestHandler):
         '''
         Retrieves a set of entities which was rendered within the request.
         '''
-        # TODO: ..
-        return []
+        headers, body = self.extract_http_data()
+        rendering = self.get_renderer(CONTENT_TYPE)
+
+        entities = rendering.to_entities(headers, body)
+
+        return entities
+
+    def parse_mixin(self):
+        '''
+        Retrieves a mixin from a request.
+        '''
+        headers, body = self.extract_http_data()
+        rendering = self.get_renderer(CONTENT_TYPE)
+
+        mixin = rendering.to_mixin(headers, body)
+
+        return mixin
 
     def render_entity(self, entity):
         '''
@@ -145,11 +163,11 @@ class BaseHandler(tornado.web.RequestHandler):
 
         @param entity: The entity which should be rendered.
         '''
-        parser = self.get_parser('Accept')
+        rendering = self.get_renderer('Accept')
 
-        headers, body = parser.from_entity(entity)
+        headers, body = rendering.from_entity(entity)
 
-        self.response(200, parser.mime_type, headers, body)
+        self.response(200, rendering.mime_type, headers, body)
 
     def render_entities(self, entities, key):
         '''
@@ -157,11 +175,23 @@ class BaseHandler(tornado.web.RequestHandler):
 
         @param entities: The entities which should be rendered.
         '''
-        parser = self.get_parser('Accept')
+        rendering = self.get_renderer('Accept')
 
-        headers, body = parser.from_entities(entities, key)
+        headers, body = rendering.from_entities(entities, key)
 
-        self.response(200, parser.mime_type, headers, body)
+        self.response(200, rendering.mime_type, headers, body)
+
+    def render_categories(self, categories):
+        '''
+        Renders a list of categories to the client.
+
+        @param categories: The categories which should be rendered.
+        '''
+        rendering = self.get_renderer('Accept')
+
+        headers, body = rendering.from_categories(categories)
+
+        self.response(200, rendering.mime_type, headers, body)
 
 
 class ResourceHandler(BaseHandler):
@@ -176,8 +206,6 @@ class ResourceHandler(BaseHandler):
             workflow.retrieve_entity(entity)
 
             self.render_entity(entity)
-        except AttributeError as attr:
-            raise HTTPError(406, str(attr))
         except KeyError as key:
             raise HTTPError(404, str(key))
 
@@ -322,12 +350,34 @@ class QueryHandler(BaseHandler):
 
     def get(self):
         # retrieve (filter)
-        pass
+        # disabling 'Unused attr' pylint check (not needed here)
+        # pylint: disable=W0612
+        categories, attributes = self.parse_filter()
+        result = workflow.filter_categories(categories)
+        self.render_categories(result)
 
     def post(self):
         # add user-defined mixin
-        pass
+        try:
+            new = self.parse_mixin()
+
+            workflow.append_mixin(new)
+
+            self.response(200, registry.DEFAULT_MIME_TYPE, None)
+        except AttributeError as attr:
+            raise HTTPError(406, str(attr))
+        except KeyError as key:
+            raise HTTPError(404, str(key))
 
     def delete(self):
         # delete user defined mixin
-        pass
+        try:
+            mixin = self.parse_mixin()
+
+            workflow.remove_mixin(mixin)
+
+            self.response(200, registry.DEFAULT_MIME_TYPE, None)
+        except AttributeError as attr:
+            raise HTTPError(406, str(attr))
+        except KeyError as key:
+            raise HTTPError(404, str(key))

@@ -28,6 +28,7 @@ Created on Jul 5, 2011
 # pylint: disable=C0103,R0904
 
 from occi import registry, workflow
+from occi.backend import Backend
 from occi.core_model import Resource, Kind, Link, Action, Mixin
 import unittest
 
@@ -203,8 +204,11 @@ class CollectionWorkflowTest(unittest.TestCase):
         for item in self.resources:
             registry.RESOURCES[item.identifier] = item
 
+        registry.BACKENDS[self.kind] = Backend
+
     def tearDown(self):
         registry.RESOURCES = {}
+        registry.BACKENDS = {}
 
     #==========================================================================
     # Success
@@ -212,7 +216,7 @@ class CollectionWorkflowTest(unittest.TestCase):
 
     def test_get_entities_for_success(self):
         '''
-        TODO: needs to be updated.
+        Tests retrieval of resources.
         '''
         lst = workflow.get_entities_under_path('/')
         self.assertTrue(self.resources[0] in lst)
@@ -254,6 +258,11 @@ class CollectionWorkflowTest(unittest.TestCase):
         lst = workflow.get_entities_under_path('/link/')
         self.assertTrue(self.resources[2] in lst)
         self.assertTrue(len(lst) == 1)
+
+        lst = workflow.get_entities_under_path('/bar/')
+        self.assertTrue(self.resources[0] in lst)
+        self.assertTrue(self.resources[1] in lst)
+        self.assertTrue(len(lst) == 2)
 
     def test_update_collection_for_sanity(self):
         '''
@@ -315,3 +324,62 @@ class CollectionWorkflowTest(unittest.TestCase):
                                        {'foo': 'bar'})
         self.assertTrue(self.resources[0] in res)
         self.assertTrue(len(res) == 1)
+
+
+class QueriyInterfaceTest(unittest.TestCase):
+    '''
+    Tests the QI routines.
+    '''
+
+    def setUp(self):
+        self.kind1 = Kind('http://www.example.com#', 'foo')
+        self.kind2 = Kind('http://www.example.com#', 'bar')
+        self.mixin = Mixin('http://www.new.com#', 'bar')
+        registry.BACKENDS = {self.kind1: Backend(), self.kind2: Backend()}
+
+    def tearDown(self):
+        registry.BACKENDS = {}
+
+    #==========================================================================
+    # Failure
+    #==========================================================================
+
+    def test_append_mixin_for_failure(self):
+        '''
+        Test if exception is thrown.
+        '''
+        self.assertRaises(AttributeError, workflow.append_mixin, self.kind2)
+
+    #==========================================================================
+    # Sanity
+    #==========================================================================
+
+    def test_filter_categories_for_sanity(self):
+        '''
+        Test the simple filter options.
+        '''
+        res = workflow.filter_categories([])
+        self.assertTrue(self.kind1 in res)
+        self.assertTrue(self.kind2 in res)
+        self.assertTrue(len(res) == 2)
+
+        res = workflow.filter_categories([self.kind1])
+        self.assertTrue(self.kind1 in res)
+        self.assertFalse(self.kind2 in res)
+        self.assertTrue(len(res) == 1)
+
+    def test_append_mixin_for_sanity(self):
+        '''
+        Test if mixins get appended.
+        '''
+        workflow.append_mixin(self.mixin)
+        self.assertTrue(self.mixin in registry.BACKENDS)
+        self.assertTrue(isinstance(registry.BACKENDS[self.mixin], Backend))
+
+    def test_remove_mixin_for_sanity(self):
+        '''
+        Test if mixin get removed.
+        '''
+        workflow.append_mixin(self.mixin)
+        workflow.remove_mixin(self.mixin)
+        self.assertFalse(self.mixin in registry.BACKENDS)

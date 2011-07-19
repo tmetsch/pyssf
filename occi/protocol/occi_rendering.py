@@ -23,12 +23,9 @@ Created on Jun 28, 2011
 @author: tmetsch
 '''
 
-# TODO: remove this one:
-# pylint: disable=W0223
-
 from occi import registry
 from occi.core_model import Resource, Link
-import parser
+import occi_parser as parser
 
 
 class HTTPData(object):
@@ -74,6 +71,17 @@ class Rendering(object):
         '''
         raise NotImplementedError()
 
+    def to_entities(self, headers, body):
+        '''
+        Given the HTTP headers and the body this method will convert the HTTP
+        data into a set of entity representations. Must return a set of
+        Resource or Link instances.
+
+        @param headers: The HTTP headers.
+        @param body: The HTTP body.
+        '''
+        raise NotImplementedError()
+
     def from_entities(self, entity, key):
         '''
         Given an set of entities it will return a HTTP body an header.
@@ -83,10 +91,38 @@ class Rendering(object):
         '''
         raise NotImplementedError()
 
+    def from_categories(self, categories):
+        '''
+        Given an set of categories it will return a HTTP body an header.
+
+        @param categories: The list of categories which is to be rendered.
+        '''
+        raise NotImplementedError()
+
     def to_action(self, headers, body):
         '''
         Given the HTTP headers and the body this method will convert the HTTP
         data into an Action.
+
+        @param headers: The HTTP headers.
+        @param body: The HTTP body.
+        '''
+        raise NotImplementedError()
+
+    def to_mixin(self, headers, body):
+        '''
+        Given the HTTP headers and the body this method will convert the HTTP
+        data into a Mixin. Must return a Mixin instance.
+
+        @param headers: The HTTP headers.
+        @param body: The HTTP body.
+        '''
+        raise NotImplementedError()
+
+    def get_filters(self, headers, body):
+        '''
+        Given the HTTP headers and the body this method will convert the HTTP
+        data into a list of categories and attributes.
 
         @param headers: The HTTP headers.
         @param body: The HTTP body.

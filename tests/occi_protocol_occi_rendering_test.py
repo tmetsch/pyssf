@@ -148,6 +148,12 @@ class TestRendering(unittest.TestCase):
         rendering = Rendering()
         self.assertRaises(NotImplementedError, rendering.to_entity, None, None)
         self.assertRaises(NotImplementedError, rendering.to_action, None, None)
+        self.assertRaises(NotImplementedError, rendering.to_entities, None,
+                          None)
+        self.assertRaises(NotImplementedError, rendering.to_mixin, None, None)
+        self.assertRaises(NotImplementedError, rendering.get_filters, None,
+                          None)
         self.assertRaises(NotImplementedError, rendering.from_entity, None)
+        self.assertRaises(NotImplementedError, rendering.from_categories, None)
         self.assertRaises(NotImplementedError, rendering.from_entities, None,
                           None)
