@@ -23,7 +23,7 @@ Created on Jul 15, 2011
 @author: tmetsch
 '''
 
-# TODO: remove this one:
+# disabling 'Method is abstract' pylint check (HTML only support GET!)
 # pylint: disable=W0223
 
 from occi.core_model import Resource, Link
@@ -81,6 +81,9 @@ class HTMLRendering(Rendering):
            table { \
             margin: 0 0 0 1em; \
            } \
+           table ul { \
+            margin: 0.3em; \
+           } \
            th { \
             background: #73c167; \
             padding:  0.2em; \
@@ -98,12 +101,21 @@ class HTMLRendering(Rendering):
             margin: 1em; \
            }"
 
+    def __init__(self, css=None):
+        '''
+        Constructor for HTML rendering. Can be used to use other CSS.
+
+        @param css: If provided this CSS is used.
+        '''
+        Rendering.__init__(self)
+        if css is not None:
+            self.css = css
+
     def from_entity(self, entity):
         tmp = '<html>\n\t<head>\n'
         tmp += '\t\t<title>Resource: ' + entity.identifier + '</title>\n'
         tmp += '\t\t<style type="text/css"><!-- ' + self.css + ' --></style>\n'
-        tmp += '\t</head>\n'
-        tmp += '\t<body>\n'
+        tmp += '\t</head>\n\t<body>\n'
 
         # header
         tmp += '\t\t<div id="header"><ul><li><a href="/">Home</a></li>'
@@ -164,13 +176,12 @@ class HTMLRendering(Rendering):
                 tmp += '<li>' + str(action.term) + '</li>'
             tmp += '<ul>\n'
 
-        tmp += '\t\t</div>\n'
-        tmp += '\t</body>\n</html>'
+        tmp += '\t\t</div>\n\t</body>\n</html>'
         return {}, tmp
 
     def from_entities(self, entities, key):
         tmp = '<html>\n\t<head>\n'
-        tmp += '\t\t<title>' + key + '</title>\n'
+        tmp += '\t\t<title>Resource listing: ' + key + '</title>\n'
         tmp += '\t\t<style type="text/css"><!-- ' + self.css + ' --></style>\n'
         tmp += '\t</head>\n'
         tmp += '\t<body>\n'
@@ -182,7 +193,7 @@ class HTMLRendering(Rendering):
         # breadcrumb
         tmp += '\t\t<div id="breadcrumb"><a href="/">&raquo;</a> /'
         path = '/'
-        for item in key.split('/')[1:]:
+        for item in key.split('/')[1:-1]:
             path += item + '/'
             tmp += ' <a href="' + path + '">' + item + "</a> /"
         tmp += '</div>\n'
@@ -195,5 +206,63 @@ class HTMLRendering(Rendering):
             tmp += '\t\t\t<li><a href="' + item.identifier + '">'
             tmp += item.identifier + '</a></li>\n'
         tmp += '\t\t</ul></div>\n'
+        tmp += '\t</body>\n</html>'
+        return {}, tmp
+
+    def from_categories(self, categories):
+        tmp = '<html>\n\t<head>\n'
+        tmp += '\t\t<title>Query Interface</title>\n'
+        tmp += '\t\t<style type="text/css"><!-- ' + self.css + ' --></style>\n'
+        tmp += '\t</head>\n'
+        tmp += '\t<body>\n'
+
+        # header
+        tmp += '\t\t<div id="header"><ul><li><a href="/">Home</a></li>'
+        tmp += '<li><a href="/-/">Query Interface</a></li></ul></div>\n'
+
+        # breadcrumb
+        tmp += '\t\t<div id="breadcrumb"><a href="/">&raquo;</a> /</div>\n'
+
+        # body
+        for cat in categories:
+            tmp += '\t\t<h2>' + repr(cat).upper() + ': ' + cat.term + '</h2>\n'
+            tmp += '\t\t<table>\n'
+            tmp += '\t\t\t<tr><th>Scheme</th><td>' + cat.scheme
+            tmp += '</td></tr>\n'
+            if hasattr(cat, 'title') and cat.title is not '':
+                tmp += '\t\t\t<tr><th>Title</th><td>' + cat.title
+                tmp += '</td></tr>\n'
+            if hasattr(cat, 'related') and len(cat.related) > 0:
+                rel_list = '<ul>'
+                for item in cat.related:
+                    rel_list += '<li>' + str(item) + '</li>'
+                rel_list += '</ul>'
+                tmp += '\t\t\t<tr><th>Related</th><td>' + rel_list
+                tmp += '</td></tr>\n'
+            if hasattr(cat, 'location') and cat.location is not None:
+                tmp += '\t\t\t<tr><th>Location</th><td><a href="'
+                tmp += cat.location + '">' + cat.location + '</a></td></tr>\n'
+            if hasattr(cat, 'actions') and len(cat.actions) > 0:
+                acts = '<ul>'
+                for item in cat.actions:
+                    acts += '<li>' + str(item) + '</li>'
+                acts += '</ul>'
+                tmp += '\t\t\t<tr><th>Actions</th><td>' + acts + '</td></tr>\n'
+            if hasattr(cat, 'attributes') and len(cat.attributes) > 0:
+                attrs = '<ul>'
+                for item in cat.attributes:
+                    if cat.attributes[item] == 'required':
+                        attrs += '<li>' + item
+                        attrs += ' (<strong>required</strong>)</li>'
+                    elif cat.attributes[item] == 'immutable':
+                        attrs += '<li>' + item
+                        attrs += ' (<strong>immutable</strong>)</li>'
+                    else:
+                        attrs += '<li>' + item + '</li>'
+                attrs += '</ul>'
+                tmp += '\t\t\t<tr><th>Attributes</th><td>' + attrs
+                tmp += '</td></tr>\n'
+            tmp += '\t\t</table>\n'
+
         tmp += '\t</body>\n</html>'
         return {}, tmp

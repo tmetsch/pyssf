@@ -24,26 +24,34 @@ Created on Jun 28, 2011
 '''
 
 from occi import registry
-from occi.core_model import Category, Link
+from occi.core_model import Category, Link, Mixin
 
 #==============================================================================
 # Following are text/occi and text/plain related parsing functions.
 #==============================================================================
 
 
-def get_category(category_string):
+def get_category(category_string, is_mixin=False):
     '''
     Create a Category from a string rendering.
 
     If found it will return the object from the registry.
 
+    If is_mixin is set to true it will not match with the registry and just
+    return a Mixin.
+
     @param category_string: A string rendering of a category.
+    @param is_mixin: Mixin will be created and no matching will be done.
     '''
     # find term
     term = category_string[:category_string.find(';')].strip()
 
     # find scheme
     scheme = find_in_string(category_string, 'scheme')
+
+    if is_mixin:
+        location = find_in_string(category_string, 'location')
+        return Mixin(scheme, term, location=location)
 
     # return the category from registry...
     tmp = Category(scheme, term, '', {}, '')
@@ -73,7 +81,7 @@ def get_category_str(category):
         for item in category.related:
             rel_list.append(str(item))
         tmp += '; rel="' + ' '.join(rel_list) + '"'
-    if hasattr(category, 'location') and category.location is not '':
+    if hasattr(category, 'location') and category.location is not None:
         tmp += '; location="' + category.location + '"'
     if hasattr(category, 'attributes') and len(category.attributes) > 0:
         attr_list = []
@@ -147,6 +155,11 @@ def get_link_str(link):
     tmp = tmp + '; rel="' + str(link.target.kind) + '"'
     tmp = tmp + '; self="' + str(link.identifier) + '"'
     tmp = tmp + '; category="' + str(link.kind) + '"'
+
+    link.attributes['occi.core.id'] = link.identifier
+    link.attributes['occi.core.source'] = link.source.identifier
+    link.attributes['occi.core.target'] = link.target.identifier
+
     if len(link.attributes) > 0:
         attr_str_list = []
         for item in link.attributes:
@@ -184,8 +197,8 @@ def _strip_all(string):
 
 def find_in_string(string, name):
     '''
-    Search for string which is surrounded by '<name>=' and ';'. Returns None
-    if the value cannot be found.
+    Search for string which is surrounded by '<name>=' and ';'. Raises
+    AttributeError if value cannot be found.
 
     @param string: The string to look into.
     @name: The name of the value to look for.

@@ -294,24 +294,26 @@ def filter_categories(categories):
     return result
 
 
-def append_mixin(mixin):
+def append_mixins(mixins):
     '''
     Add a mixin to the service.
 
     @param mixin: The mixin which is to be added.
     '''
-    if not isinstance(mixin, Mixin):
-        raise AttributeError('Needs to be of type Mixin.')
-    registry.BACKENDS[mixin] = Backend()
+    for mixin in mixins:
+        if not isinstance(mixin, Mixin):
+            raise AttributeError('Needs to be of type Mixin.')
+        registry.BACKENDS[mixin] = Backend()
 
 
-def remove_mixin(mixin):
+def remove_mixins(mixins):
     '''
     Remove a mixin from the service.
 
     @param mixin: The mixin which is to be removed.
     '''
-    registry.BACKENDS.pop(mixin)
+    for mixin in mixins:
+        registry.BACKENDS.pop(mixin)
 
 #==============================================================================
 # Convenient stuff

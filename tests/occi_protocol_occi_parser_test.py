@@ -74,7 +74,17 @@ class TestParser(unittest.TestCase):
     # Success
     #==========================================================================
 
-    # TBD
+    def test_get_category_for_success(self):
+        '''
+        Tests if a mixin can be created.
+        '''
+
+        # disabling 'Method could be func' pylint check (pyunit fault :-))
+        # pylint: disable=R0201
+
+        # mixin check...
+        tmp = 'foo; scheme="http://example.com#"; location="/foo_bar/'
+        parser.get_category(tmp, is_mixin=True)
 
     #==========================================================================
     # Failure
@@ -87,6 +97,10 @@ class TestParser(unittest.TestCase):
         self.assertRaises(AttributeError, parser.get_category, 'some crap')
         self.assertRaises(AttributeError, parser.get_category,
                           'foo; scheme="bar"')
+
+        # mixin with msg location check...
+        tmp = 'foo; scheme="http://example.com#"'
+        self.assertRaises(AttributeError, parser.get_category, tmp, True)
 
     def test_get_link_for_failure(self):
         '''
@@ -126,7 +140,8 @@ class TestParser(unittest.TestCase):
         self.assertEquals(link.kind, self.network_link)
         self.assertEquals(link.source, self.source)
         self.assertEquals(link.target, self.target)
-        self.assertTrue(len(link.attributes) == 1)
+        # 4 = 1 attr + core.id + core.src + core.target
+        self.assertTrue(len(link.attributes) == 4)
 
         # identifier checks...
         link_string = parser.get_link_str(self.link1)

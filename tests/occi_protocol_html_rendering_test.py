@@ -40,18 +40,30 @@ class TestHTMLRendering(unittest.TestCase):
     parser = HTMLRendering()
 
     def setUp(self):
-        kind = Kind('http://example.com/foo#', 'bar')
+        action = Action('http://example.com/foo#', 'action')
+        self.kind = Kind('http://example.com/foo#', 'bar',
+                         'http://schemeas.ogf.org/occi/core#',
+                          [action], 'Some bla bla',
+                          {'foo': 'required', 'foo2': 'immutable', 'bar': ''},
+                          '/foo/')
         mixin = Mixin('http://example.com/foo#', 'mixin')
         action = Action('http://example.com/foo#', 'action')
-        self.target = Resource('/foo/target', kind, [], [])
-        self.source = Resource('/foo/src', kind, [mixin], [])
-        self.link = Link('/link/foo', kind, [], self.source, self.target)
+        self.target = Resource('/foo/target', self.kind, [], [])
+        self.source = Resource('/foo/src', self.kind, [mixin], [])
+        self.link = Link('/link/foo', self.kind, [], self.source, self.target)
         self.source.links = [self.link]
         self.source.actions = [action]
 
     #==========================================================================
     # Success
     #==========================================================================
+
+    def test_init_for_success(self):
+        '''
+        Test init...
+        '''
+        parser = HTMLRendering(css='body {background: #d00;}')
+        self.assertEquals(parser.css, 'body {background: #d00;}')
 
     def test_from_entity_for_success(self):
         '''
@@ -64,5 +76,11 @@ class TestHTMLRendering(unittest.TestCase):
         '''
         Test from entities...
         '''
-        self.parser.from_entities([self.source], '/')
+        self.parser.from_entities([self.source], '/foo/')
         self.parser.from_entities([], '/')
+
+    def test_from_categories_for_success(self):
+        '''
+        Test from categories...
+        '''
+        self.parser.from_categories([self.kind])

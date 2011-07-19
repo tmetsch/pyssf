@@ -82,11 +82,11 @@ class Rendering(object):
         '''
         raise NotImplementedError()
 
-    def from_entities(self, entity, key):
+    def from_entities(self, entities, key):
         '''
         Given an set of entities it will return a HTTP body an header.
 
-        @param entity: The entity which is to rendered.
+        @param entities: The entities which will be rendered.
         @param key: Needed for uri-list (see RFC) and html rendering.
         '''
         raise NotImplementedError()
@@ -109,10 +109,10 @@ class Rendering(object):
         '''
         raise NotImplementedError()
 
-    def to_mixin(self, headers, body):
+    def to_mixins(self, headers, body):
         '''
         Given the HTTP headers and the body this method will convert the HTTP
-        data into a Mixin. Must return a Mixin instance.
+        data into a Mixins. Must return a list with Mixin instances.
 
         @param headers: The HTTP headers.
         @param body: The HTTP body.
@@ -146,8 +146,8 @@ def _extract_data_from_headers(headers):
         data.categories = headers['Category'].split(',')
     if 'X-OCCI-Attribute' in headers.keys():
         data.attributes = headers['X-OCCI-Attribute'].split(',')
-#        if 'X-OCCI-Location' in headers.keys():
-#            data.locations = headers['X-OCCI-Location'].split(',')
+    if 'X-OCCI-Location' in headers.keys():
+        data.locations = headers['X-OCCI-Location'].split(',')
     if 'Link' in headers.keys():
         data.links = headers['Link'].split(',')
     return data
@@ -162,9 +162,14 @@ def _set_data_to_headers(data):
     headers = {}
     body = 'OK'
 
-    headers['Category'] = ', '.join(data.categories)
-    headers['Link'] = ', '.join(data.links)
-    headers['Attributes'] = ', '.join(data.attributes)
+    if len(data.categories) > 0:
+        headers['Category'] = ', '.join(data.categories)
+    if len(data.links) > 0:
+        headers['Link'] = ', '.join(data.links)
+    if len(data.locations) > 0:
+        headers['X-OCCI-Location'] = ', '.join(data.locations)
+    if len(data.attributes) > 0:
+        headers['X-OCCI-Attribute'] = ', '.join(data.attributes)
 
     return headers, body
 
@@ -265,6 +270,45 @@ def _from_entity(entity):
     return data
 
 
+def _to_entities(data):
+    '''
+    Extract a set of (in the service existing) entities from a request.
+    '''
+    result = []
+    for item in data.locations:
+        try:
+            result.append(registry.RESOURCES[item.strip()])
+        except KeyError:
+            raise AttributeError('Could not find the resource with id: '
+                                 + str(item))
+
+    return result
+
+
+def _from_entities(entity_list):
+    '''
+    Return a list of entities using the X-OCCI-Location attribute.
+    '''
+    data = HTTPData()
+    for entity in entity_list:
+        # TODO: check if URN or URI.
+        data.locations.append(entity.identifier)
+
+    return data
+
+
+def _from_categories(categories):
+    '''
+    Create a HTTP data object from a set of categories.
+    '''
+    data = HTTPData()
+
+    for cat in categories:
+        data.categories.append(parser.get_category_str(cat))
+
+    return data
+
+
 def _to_action(data):
     '''
     Create an action from an HTTP data object.
@@ -272,6 +316,34 @@ def _to_action(data):
     action = parser.get_category(data.categories[0].strip())
 
     return action
+
+
+def _to_mixins(data):
+    '''
+    Create a Mixin from an HTTP data object.
+    '''
+    result = []
+    for cat_str in data.categories:
+        result.append(parser.get_category(cat_str, is_mixin=True))
+
+    return result
+
+
+def _get_filter(data):
+    '''
+    Parse categories and attributes from the request.
+    '''
+    categories = []
+    attributes = {}
+
+    for cat in data.categories:
+        categories.append(parser.get_category(cat))
+
+    for attr in data.attributes:
+        key, value = parser.get_attributes(attr)
+        attributes[key] = value
+
+    return categories, attributes
 
 
 class TextOcciRendering(Rendering):
@@ -282,23 +354,131 @@ class TextOcciRendering(Rendering):
 
     mime_type = 'text/occi'
 
+    # disabling 'Method could be...' pylint check (want them to be overwritten)
+    # disabling 'Unused argument' pylint check (text/plain will use it :-))
+    # pylint: disable=R0201,W0613
+
+    def get_data(self, headers, body):
+        '''
+        Mainly here so TextPlainRendering can reuse.
+
+        @param headers: The headers of the request.
+        @param body: The body of the request.
+        '''
+        return _extract_data_from_headers(headers)
+
+    def set_data(self, data):
+        '''
+        Mainly here so TextPlainRendering can reuse.
+
+        @param data: An HTTPData object.
+        '''
+        return _set_data_to_headers(data)
+
     def to_entity(self, headers, body):
-        data = _extract_data_from_headers(headers)
+        data = self.get_data(headers, body)
         entity = _to_entity(data)
         return entity
 
     def from_entity(self, entity):
         data = _from_entity(entity)
-        headers, body = _set_data_to_headers(data)
+        headers, body = self.set_data(data)
+        return headers, body
+
+    def to_entities(self, headers, body):
+        data = self.get_data(headers, body)
+        entities = _to_entities(data)
+        return entities
+
+    def from_entities(self, entities, key):
+        data = _from_entities(entities)
+        headers, body = self.set_data(data)
+        return headers, body
+
+    def from_categories(self, categories):
+        data = _from_categories(categories)
+        headers, body = self.set_data(data)
         return headers, body
 
     def to_action(self, headers, body):
-        data = _extract_data_from_headers(headers)
+        data = self.get_data(headers, body)
         action = _to_action(data)
         return action
 
+    def to_mixins(self, headers, body):
+        data = self.get_data(headers, body)
+        mixin = _to_mixins(data)
+        return mixin
 
-class TextPlainRendering(Rendering):
+    def get_filters(self, headers, body):
+        data = self.get_data(headers, body)
+        categories, attributes = _get_filter(data)
+        return categories, attributes
+
+
+def _extract_data_from_body(body):
+    '''
+    Simple method to split out the information from the HTTP body.
+
+    @param body: The HTTP body.
+    '''
+    data = HTTPData()
+    for entry in body.split('\n'):
+        if entry.find('Category:') > -1:
+            data.categories.extend(_extract_values(entry, 'Category:'))
+        if entry.find('X-OCCI-Attribute:') > -1:
+            data.attributes.extend(_extract_values(entry, 'X-OCCI-Attribute:'))
+        if entry.find('Link:') > -1:
+            data.links.extend(_extract_values(entry, 'Link:'))
+        if entry.find('X-OCCI-Location:') > -1:
+            data.locations.extend(_extract_values(entry, 'X-OCCI-Location:'))
+    return data
+
+
+def _extract_values(entry, key):
+    '''
+    In HTTP body OCCI renderings can either be in new lines or separated by ,.
+
+    @param entry: The text line to look into.
+    @param key: The key to look for and strip away.
+    '''
+    items = []
+    tmp = entry[entry.find(key) + len(key) + 1:]
+    if tmp.find(',') == -1:
+        items.append(tmp)
+    else:
+        for item in tmp.split(','):
+            items.append(item)
+    return items
+
+
+def _set_data_to_body(data):
+    '''
+    Simple method to set all information in the HTTP body.
+
+    @param data: The data to set.
+    '''
+    body = ''
+    if len(data.categories) > 0:
+        for cat in data.categories:
+            body += '\nCategory: ' + cat
+
+    if len(data.links) > 0:
+        for link in data.links:
+            body += '\nLink: ' + link
+
+    if len(data.attributes) > 0:
+        for attr in data.attributes:
+            body += '\nX-OCCI-Attribute: ' + attr
+
+    if len(data.locations) > 0:
+        for loc in data.locations:
+            body += '\nX-OCCI-Location: ' + loc
+
+    return {}, body
+
+
+class TextPlainRendering(TextOcciRendering):
     '''
     This is a rendering which will use the HTTP body to place the information
     in an syntax and semantics as defined in the OCCI specification.
@@ -306,7 +486,11 @@ class TextPlainRendering(Rendering):
 
     mime_type = 'text/plain'
 
-    # TODO: implement this one..
+    def set_data(self, data):
+        return _set_data_to_body(data)
+
+    def get_data(self, headers, body):
+        return _extract_data_from_body(body)
 
 
 class TextUriListRendering(Rendering):
@@ -315,5 +499,33 @@ class TextUriListRendering(Rendering):
     '''
 
     mime_type = 'text/uri-list'
+    error = 'Unable to handle this request with the text/uri-list' \
+                ' rendering.'
 
-    # TODO: implement this one..
+    def to_entity(self, headers, body):
+        raise AttributeError(self.error)
+
+    def from_entity(self, entity):
+        raise AttributeError(self.error)
+
+    def to_entities(self, headers, body):
+        raise AttributeError(self.error)
+
+    def from_entities(self, entities, key):
+        body = '# uri:' + str(key)
+        for entity in entities:
+            # TODO: check if URN or URI.
+            body += '\n' + entity.identifier
+        return {}, body
+
+    def from_categories(self, categories):
+        raise AttributeError(self.error)
+
+    def to_action(self, headers, body):
+        raise AttributeError(self.error)
+
+    def to_mixins(self, headers, body):
+        raise AttributeError(self.error)
+
+    def get_filters(self, headers, body):
+        raise AttributeError(self.error)

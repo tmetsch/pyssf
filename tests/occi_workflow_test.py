@@ -344,11 +344,11 @@ class QueriyInterfaceTest(unittest.TestCase):
     # Failure
     #==========================================================================
 
-    def test_append_mixin_for_failure(self):
+    def test_append_mixins_for_failure(self):
         '''
         Test if exception is thrown.
         '''
-        self.assertRaises(AttributeError, workflow.append_mixin, self.kind2)
+        self.assertRaises(AttributeError, workflow.append_mixins, [self.kind2])
 
     #==========================================================================
     # Sanity
@@ -368,18 +368,18 @@ class QueriyInterfaceTest(unittest.TestCase):
         self.assertFalse(self.kind2 in res)
         self.assertTrue(len(res) == 1)
 
-    def test_append_mixin_for_sanity(self):
+    def test_append_mixins_for_sanity(self):
         '''
         Test if mixins get appended.
         '''
-        workflow.append_mixin(self.mixin)
+        workflow.append_mixins([self.mixin])
         self.assertTrue(self.mixin in registry.BACKENDS)
         self.assertTrue(isinstance(registry.BACKENDS[self.mixin], Backend))
 
-    def test_remove_mixin_for_sanity(self):
+    def test_remove_mixins_for_sanity(self):
         '''
         Test if mixin get removed.
         '''
-        workflow.append_mixin(self.mixin)
-        workflow.remove_mixin(self.mixin)
+        workflow.append_mixins([self.mixin])
+        workflow.remove_mixins([self.mixin])
         self.assertFalse(self.mixin in registry.BACKENDS)

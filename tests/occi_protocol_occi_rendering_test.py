@@ -30,14 +30,18 @@ Created on Jul 5, 2011
 from occi import registry
 from occi.backend import Backend
 from occi.core_model import Kind, Resource, Link, Mixin, Action
-from occi.protocol.occi_rendering import TextOcciRendering, Rendering
+from occi.protocol.occi_rendering import TextOcciRendering, Rendering, \
+    TextPlainRendering, TextUriListRendering
 import unittest
 
 
-class TestOcciRendering(unittest.TestCase):
+class TestTextOcciRendering(unittest.TestCase):
     '''
     Simple sanity checks...
     '''
+
+    # disable 'Unused attr' pylint check (not needing body here)
+    # pylint: disable=W0612
 
     rendering = TextOcciRendering()
 
@@ -83,6 +87,14 @@ class TestOcciRendering(unittest.TestCase):
         self.assertRaises(AttributeError, self.rendering.to_entity,
                           headers, body)
 
+    def test_resources_for_failure(self):
+        '''
+        Tests is a set of resource can be set and retrieved.
+        '''
+        heads = {'X-OCCI-Location': '/bla/bla/2'}
+        self.assertRaises(AttributeError, self.rendering.to_entities, heads,
+                          '')
+
     def test_link_for_failure(self):
         '''
         Test link...
@@ -113,6 +125,15 @@ class TestOcciRendering(unittest.TestCase):
         headers, body = self.rendering.from_entity(self.entity)
         self.assertTrue('?action' in headers['Link'])
 
+    def test_resources_for_sanity(self):
+        '''
+        Tests is a set of resource can be set and retrieved.
+        '''
+        heads, body = self.rendering.from_entities(registry.RESOURCES.values(),
+                                                   '/')
+        entities = self.rendering.to_entities(heads, body)
+        self.assertEqual(registry.RESOURCES.values(), entities)
+
     def test_link_for_sanity(self):
         '''
         Test is a link can be rendered and retrieved.
@@ -126,6 +147,18 @@ class TestOcciRendering(unittest.TestCase):
         # do not alter the source entity link list!
         self.assertTrue(len(self.entity.links) == 1)
 
+    def test_qi_categories_for_sanity(self):
+        '''
+        Tests QI interface rendering...
+        '''
+        heads = {'Category': 'foo; scheme="http://example.com#";' +
+                 ' location="/foo/"'}
+        mixins = self.rendering.to_mixins(heads, '')
+        headers, body = self.rendering.from_categories(mixins)
+        self.assertTrue('foo' in headers['Category'])
+        self.assertTrue('scheme="http://example.com#"' in headers['Category'])
+        self.assertTrue('location="/foo/"' in headers['Category'])
+
     def test_action_for_sanity(self):
         '''
         Test the to actions function...
@@ -134,6 +167,83 @@ class TestOcciRendering(unittest.TestCase):
                  + self.action.scheme + '"'}
         action = self.rendering.to_action(heads, None)
         self.assertEqual(action, self.action)
+
+    def test_get_filters_for_sanity(self):
+        '''
+        Test if filters can be retrieved...
+        '''
+        headers, body = self.rendering.from_categories([self.kind])
+        cats, attrs = self.rendering.get_filters(headers, '')
+        self.assertTrue(cats == [self.kind])
+        self.assertTrue(attrs == {})
+
+        headers['X-OCCI-Attribute'] = 'foo="bar"'
+        cats, attrs = self.rendering.get_filters(headers, '')
+        self.assertTrue(cats == [self.kind])
+        self.assertTrue(attrs['foo'] == 'bar')
+
+
+class TestTextPlainRendering(unittest.TestCase):
+    '''
+    Test the text/plain rendering. This is simple since it's derived from
+    text/occi rendering.
+    '''
+
+    def setUp(self):
+        self.rendering = TextPlainRendering()
+
+    def test_data_routines_for_sanity(self):
+        '''
+        Test if set and get data are overwritten and work properly
+        '''
+        headers = {}
+        body = 'Category: foo\n' \
+            'Category: foo,bar\n' \
+            'Link: bar\n' \
+            'Link: foo,bar\n' \
+            'X-OCCI-Location: foo,bar\n' \
+            'X-OCCI-Location: bar\n' \
+            'X-OCCI-Attribute: foo\n' \
+            'X-OCCI-Attribute: bar,foo\n'
+        data = self.rendering.get_data(headers, body)
+        headers, body = self.rendering.set_data(data)
+        self.assertTrue(body.count('Category') == 3)
+        self.assertTrue(body.count('Link') == 3)
+        self.assertTrue(body.count('X-OCCI-Attribute') == 3)
+        self.assertTrue(body.count('X-OCCI-Location') == 3)
+
+
+class TestTextURIListRendering(unittest.TestCase):
+    '''
+    Test the uri-list rendering.
+    '''
+
+    rendering = TextUriListRendering()
+
+    def test_from_entities_for_sanity(self):
+        '''
+        Test uri listings...
+        '''
+        res = Resource('/foo/123', None, [])
+        entities = [res]
+        heads, body = self.rendering.from_entities(entities, 'foo')
+        self.assertTrue(heads == {})
+        self.assertTrue(res.identifier in body)
+
+    def test_not_support_thrown_for_success(self):
+        '''
+        Tests is attr-exp are thrown for unsupported operations.
+        '''
+        self.assertRaises(AttributeError, self.rendering.to_entity, None,
+                          None)
+        self.assertRaises(AttributeError, self.rendering.from_entity, None)
+        self.assertRaises(AttributeError, self.rendering.to_entities, None,
+                          None)
+        self.assertRaises(AttributeError, self.rendering.from_categories, None)
+        self.assertRaises(AttributeError, self.rendering.to_action, None, None)
+        self.assertRaises(AttributeError, self.rendering.to_mixins, None, None)
+        self.assertRaises(AttributeError, self.rendering.get_filters, None,
+                          None)
 
 
 class TestRendering(unittest.TestCase):
@@ -150,7 +260,7 @@ class TestRendering(unittest.TestCase):
         self.assertRaises(NotImplementedError, rendering.to_action, None, None)
         self.assertRaises(NotImplementedError, rendering.to_entities, None,
                           None)
-        self.assertRaises(NotImplementedError, rendering.to_mixin, None, None)
+        self.assertRaises(NotImplementedError, rendering.to_mixins, None, None)
         self.assertRaises(NotImplementedError, rendering.get_filters, None,
                           None)
         self.assertRaises(NotImplementedError, rendering.from_entity, None)

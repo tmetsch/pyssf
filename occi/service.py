@@ -92,6 +92,7 @@ class BaseHandler(tornado.web.RequestHandler):
             for item in headers.keys():
                 self._headers[item] = headers[item]
         self.write(body)
+        self.finish('\n')
 
     def get_error_html(self, status_code, **kwargs):
         self.set_header('Server', self.version)
@@ -118,6 +119,11 @@ class BaseHandler(tornado.web.RequestHandler):
         request for filtering.
         '''
         headers, body = self.extract_http_data()
+
+        attr = 'X-OCCI-Attribute'
+        if  attr not in headers and 'Category' not in headers and body == '':
+            return [], {}
+
         rendering = self.get_renderer(CONTENT_TYPE)
 
         categories, attributes = rendering.get_filters(headers, body)
@@ -146,14 +152,14 @@ class BaseHandler(tornado.web.RequestHandler):
 
         return entities
 
-    def parse_mixin(self):
+    def parse_mixins(self):
         '''
         Retrieves a mixin from a request.
         '''
         headers, body = self.extract_http_data()
         rendering = self.get_renderer(CONTENT_TYPE)
 
-        mixin = rendering.to_mixin(headers, body)
+        mixin = rendering.to_mixins(headers, body)
 
         return mixin
 
@@ -282,12 +288,20 @@ class CollectionHandler(BaseHandler):
 
     def get(self, key):
         # retrieve (filter)
-        categories, attributes = self.parse_filter()
-        entities = workflow.get_entities_under_path(key)
-        result = workflow.filter_entities(entities, categories, attributes)
-        self.render_entities(result, key)
+        try:
+            if key == '' or key[-1] != '/':
+                key += '/'
+
+            categories, attributes = self.parse_filter()
+            entities = workflow.get_entities_under_path(key)
+            result = workflow.filter_entities(entities, categories, attributes)
+            self.render_entities(result, key)
+        except AttributeError as attr:
+            raise HTTPError(406, str(attr))
 
     def post(self, key):
+        if key == '' or key[-1] != '/':
+            key += '/'
         if len(self.get_arguments('action')) > 0:
             # action
             try:
@@ -324,6 +338,8 @@ class CollectionHandler(BaseHandler):
     def put(self, key):
         # replace
         try:
+            if key == '' or key[-1] != '/':
+                key += '/'
             mixin = registry.get_category(key)
             new_entities = self.parse_entities()
             old_entities = workflow.get_entities_under_path(key)
@@ -334,6 +350,8 @@ class CollectionHandler(BaseHandler):
     def delete(self, key):
         # delete
         try:
+            if key == '' or key[-1] != '/':
+                key += '/'
             entities = workflow.get_entities_under_path(key)
             for entity in entities:
                 workflow.delete_entity(entity)
@@ -352,16 +370,19 @@ class QueryHandler(BaseHandler):
         # retrieve (filter)
         # disabling 'Unused attr' pylint check (not needed here)
         # pylint: disable=W0612
-        categories, attributes = self.parse_filter()
-        result = workflow.filter_categories(categories)
-        self.render_categories(result)
+        try:
+            categories, attributes = self.parse_filter()
+            result = workflow.filter_categories(categories)
+            self.render_categories(result)
+        except AttributeError as attr:
+            raise HTTPError(406, str(attr))
 
     def post(self):
         # add user-defined mixin
         try:
-            new = self.parse_mixin()
+            mixins = self.parse_mixins()
 
-            workflow.append_mixin(new)
+            workflow.append_mixins(mixins)
 
             self.response(200, registry.DEFAULT_MIME_TYPE, None)
         except AttributeError as attr:
@@ -372,9 +393,11 @@ class QueryHandler(BaseHandler):
     def delete(self):
         # delete user defined mixin
         try:
-            mixin = self.parse_mixin()
+            # disabling 'Unused attr' pylint check (only need cats)
+            # pylint: disable=W0612
+            categories, attributes = self.parse_filter()
 
-            workflow.remove_mixin(mixin)
+            workflow.remove_mixins(categories)
 
             self.response(200, registry.DEFAULT_MIME_TYPE, None)
         except AttributeError as attr:

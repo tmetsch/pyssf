@@ -74,6 +74,7 @@ def get_category(path):
     for category in BACKENDS.keys():
         if category.location == path:
             return category
+    return None
 
 
 def get_renderer(mime_type):
