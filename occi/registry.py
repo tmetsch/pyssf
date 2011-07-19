@@ -18,6 +18,8 @@
 '''
 Registry for the OCCI service.
 
+XXX: Would be cool to improve with so lookup loops get minimized.
+
 Created on Jun 28, 2011
 
 @author: tmetsch
@@ -29,17 +31,16 @@ BACKENDS = {}
 
 RENDERINGS = {}
 
-# Better: key, entity, backends (would obsolete get_all_backends
 RESOURCES = {}
 
 DEFAULT_MIME_TYPE = 'text/plain'
+
+HOST = ''
 
 
 def get_all_backends(entity):
     """
     Retrieve all backends associated with a resource instance
-
-    XXX: potential candidate for improvement trough better storage!
 
     entity -- The resource instance.
     """
@@ -67,8 +68,6 @@ def get_category(path):
     '''
     Return the category which is associated with an Location.
 
-    XXX: potential candidate for improvement trough better storage!
-
     @param path: The location which the category should define.
     '''
     for category in BACKENDS.keys():
@@ -84,6 +83,7 @@ def get_renderer(mime_type):
     @param mime_type: The mime type you a looking for.
     '''
     parser = None
+
     for tmp in mime_type.split(','):
         type_str = tmp.strip()
         if type_str.find(';q=') > -1:
@@ -96,6 +96,7 @@ def get_renderer(mime_type):
         elif type_str == '*/*':
             parser = RENDERINGS[DEFAULT_MIME_TYPE]
             break
+
     if parser is None:
         raise AttributeError('This service is unable to understand the mime'
                              + ' type: ' + repr(mime_type))

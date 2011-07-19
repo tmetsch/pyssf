@@ -23,11 +23,56 @@ Created on Jun 27, 2011
 @author: tmetsch
 '''
 
-# TODO: add routine to check that link rel and target.kind match...
-# TODO: add routine to check for mutability of attributes...
-# TODO: add routine to check if action is applicable...
-# TODO: add routine to automatically register a backend...
-# TODO: add routine to create OCCI compatible service...
+
+def is_related_valid(link):
+    '''
+    Verifies that a link is consistent.
+
+    @param link: The link which should be verified.
+    '''
+    if link.target.kind == link.kind.related:
+        return True
+    else:
+        return False
+
+
+def is_attr_mutable(category, attribute_name):
+    '''
+    Checks if an attribute is mutable. Return True if so.
+
+    @param category: The category which defines the attribute.
+    @param attribute_name: The name of the attribute.
+    '''
+    if category.attributes[attribute_name] == 'mutable':
+        return True
+    else:
+        return False
+
+
+def is_attr_required(category, attribute_name):
+    '''
+    Checks if an attribute is required. Return True if so.
+
+    @param category: The category which defines the attribute.
+    @param attribute_name: The name of the attribute.
+    '''
+    if category.attributes[attribute_name] == 'required':
+        return True
+    else:
+        return False
+
+
+def is_action_applicable(entity, action):
+    '''
+    Returns true if the action is currently applicable.
+
+    @param entity: The current entity.
+    @param action: The action to test for.
+    '''
+    if action in entity.actions and action in entity.kind.actions:
+        return True
+    else:
+        return False
 
 
 class Backend(object):

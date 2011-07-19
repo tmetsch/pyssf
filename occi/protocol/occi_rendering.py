@@ -291,8 +291,7 @@ def _from_entities(entity_list):
     '''
     data = HTTPData()
     for entity in entity_list:
-        # TODO: check if URN or URI.
-        data.locations.append(entity.identifier)
+        data.locations.append(registry.HOST + entity.identifier)
 
     return data
 
@@ -514,8 +513,7 @@ class TextUriListRendering(Rendering):
     def from_entities(self, entities, key):
         body = '# uri:' + str(key)
         for entity in entities:
-            # TODO: check if URN or URI.
-            body += '\n' + entity.identifier
+            body += '\n' + registry.HOST + entity.identifier
         return {}, body
 
     def from_categories(self, categories):

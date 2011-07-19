@@ -28,8 +28,6 @@ from occi.backend import Backend
 from occi.core_model import Resource, Link, Mixin
 import uuid
 
-# XXX: a nice storage would be nice --> not so many look ups...
-
 #==============================================================================
 # Handling of Resources & Links
 #==============================================================================
