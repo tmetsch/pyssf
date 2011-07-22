@@ -28,7 +28,7 @@ Created on Jul 5, 2011
 # pylint: disable=C0103,R0904
 
 from occi import registry
-from occi.backend import Backend
+from occi.backend import KindBackend, MixinBackend, ActionBackend
 from occi.core_model import Kind, Resource, Link, Mixin, Action
 from occi.protocol.occi_rendering import TextOcciRendering, Rendering, \
     TextPlainRendering, TextUriListRendering
@@ -52,11 +52,11 @@ class TestTextOcciRendering(unittest.TestCase):
         self.link = Kind('http://example.com#', 'link', related=[Link.kind])
         self.mixin = Mixin('http://example.com#', 'mixin')
         self.action = Action('http://example.com#', 'action')
-        registry.BACKENDS[self.kind] = Backend()
-        registry.BACKENDS[self.invalid_kind] = Backend()
-        registry.BACKENDS[self.link] = Backend()
-        registry.BACKENDS[self.mixin] = Backend()
-        registry.BACKENDS[self.action] = Backend()
+        registry.BACKENDS[self.kind] = KindBackend()
+        registry.BACKENDS[self.invalid_kind] = KindBackend()
+        registry.BACKENDS[self.link] = KindBackend()
+        registry.BACKENDS[self.mixin] = MixinBackend()
+        registry.BACKENDS[self.action] = ActionBackend()
 
         # 2 linked entities
         self.entity = Resource('/foo/1', self.kind, [self.mixin])

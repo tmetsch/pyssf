@@ -19,8 +19,172 @@
 The occi package
 ================
 
+This package provides an OCCI compatible front-end which can easily be
+integrated with any Resource Management Framework (e.g. a Hypervisor - but not
+strictly bound to that).
+
+The package here provides an OCCI compatible service and takes care of:
+
+  * An OCCI compatible interface (Support text/occi, text/plain and
+    text/uri-list)
+  * A dynamically updated capabilities query interface
+  * Support for collections, mixins, templating and actions as defined by OCCI
+  * Renderings which are defined by OCCI
+  * A simple HTML interface for monitoring
+
+Creating an OCCI Service
+------------------------
+
+Creating a OCCI compatible service is simple. Write a Backend and associate a
+Kind, Mixin or Action with it. The Backend is the glue between the OCCI
+front-end and you Resource Management Framework. Every OCCI type definition
+needs and corresponding backend which will handle the operations.
+
+This can either mean to implement one backend which can handle several OCCI
+types; or to implement a backend for each OCCI type::
+
+    from occi.backend import ActionBackend, KindBackend
+    from occi.core_model import Action, Kind, Mixin, Resource
+    from occi.service import OCCI
+
+
+    class MyBackend(KindBackend, ActionBackend):
+        '''
+        TODO: This needs to be implemented!
+
+        Will implement create, retrieve, update, delete, replace
+        Will also implement: action (from ActionBackend).
+        '''
+
+        pass
+
+    class MyMixinBackend(MixinBackend):
+        '''
+        TODO: This needs to be implemented!
+
+        Will implement add_entity and remove_entity...
+        '''
+
+        pass
+
+    if __name__ == '__main__':
+        mykind = Kind('http://example.com/occi#',
+                      'mykind',
+                      title='A OCCI kind...',
+                      attributes={'occi.example.attr': '',
+                                  'occi.compute.state': 'immutable',
+                                  'occi.compute.mandatory': 'required'},
+                      related=[Resource.kind],
+                      actions=[])
+
+        mymixin = Mixin('http://example.com/occi#', 'mykind', '/my_stuff/')
+
+        kind_backend = MyBackend()
+        mixin_backend = MyMixinBackend()
+
+        service = OCCI()
+        service.register_backend(mykind, backend)
+        service.register_backend(mymixin, mixin_backend)
+        service.start(8888)
+
+After running this example the service will be up and running on port 8888.
+You can visit it by going to localhost:8888.
+
+Implementing Backends
+---------------------
+
+.. note::
+    Please also check the API documentation.
+
+In general backends handle types of resources - whenever a resource (of the
+type which the backend is registered for) gets modified, it is called with the
+resource as parameter.
+
+.. note::
+    Backends always have the last word - if a resource cannot be created,
+    retrieved, updated, replace or delete it will not be done by the service.
+    Simply throw an AttributeError. (Same for Action and Mixin Backends)
+
+3 Types of Backends exists (KindBackend, MixinBackend and ActionBackend).
+Those who are capable of handling resource of type OCCI Kind. Those who handle
+OCCI Mixins and those who can handle Actions.
+
+Thanks to the multiple inheritance features of python you can create a Backend
+which handles the resources of a type as well as the actions which can be
+performed on the resources. To do so simple derive from the KindBackend and
+ActionBackend class.
+
+A Backend is always presented the current state of the resource. The
+implementor does not need to modify the attributes 'links' and 'mixins' of the
+entity. Those are handled by the service. Only the 'attributes' dictionary
+itself should be modified accordingly. It is recommend to add necessary
+attributes to this dictionary during create. Also do not forget to set the
+currently applicable actions in the 'actions' list of an entity.
+
+When Backends get called
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following listing shows when and which function is called on a KindBackend:
+
+========  ====================================================================
+Routine   Description
+========  ====================================================================
+create    Called when a resource or link is create. It is recommended to set
+          all necessary attributes (like the state) and applicable actions in
+          this routine.
+retrieve  Called when a resource or link is to be retrieved. Implementors can
+          request up to date information from the Resource Management
+          Framework and assign it to the resource (like updating the state or
+          reviewing the applicable actions).
+update    Called when a resource or link needs to updated. New information is
+          provided in the new entity. Note that the the new entity does not
+          need to be a complete representation of the resource.
+replace   Called when a resource or link get replaced. Also see 'update' - but
+          this time the new entity is a complety representation.
+delete    Called when a resource or link get deleted.
+========  ====================================================================
+
+The following routines are called on Backends deriving from MixinBackend:
+
+============  ================================================================
+Routine       Description
+============  ================================================================
+add_mixin     Called when a mixin is remove from the resource. Implementors
+              should ensure that the capabilities (actions, attributes)
+              defined by the mixin get added to the entity.
+remove_mixin  Called when the mixin is removed from an entity. Implementors
+              should ensure that the capabilities (actions, attributes)
+              defined by the mixin get removed from the entity.
+============  ================================================================
+
+The following routines are called on Backends deriving from Action Backend:
+
+=======  =====================================================================
+Routine  Description
+=======  =====================================================================
+action   Called when an action is performed on the resource. Implementors
+         might want to check the and update the attributes (like the state)
+         of the resource.
+=======  =====================================================================
+
+The OCCI implementation eventually calls all the backends associated to an
+resource. If a resource has 2 mixins associated to it, the implementation will
+call the backend which defines the kind, and the backends which define the
+mixins. So in total 3 calls are made.
+
+To give another example: When a resource is created which has links assigned
+the 'create' routines for the backend defining the kind of the resource is
+called; the backends for the assigned mixins of the resource are called; as
+well as backends defining the links kinds get called called. So if a resource
+has 1 kind, 2 mixins and 2 links --> 5 calls on backends are performed.
+
 Notes on Backend Implementations
 --------------------------------
+
+.. note::
+    The OCCI Infrastructure extension is also implemented and ready to be
+    used. Simply write the backends for the Kinds, Mixins and Actions defined
+    in the module occi.extension.infrastructure.
 
 .. note::
     A Backend must handle all the kinds it defines. That means that if it
@@ -29,15 +193,15 @@ Notes on Backend Implementations
     the routine.
 
 .. note::
+    There are some routines for your convenience which will help you implement
+    backends. They are located in the backend module. Please refer to the API
+    documentation for more details.
+
+.. note::
     If a backend handles mixins it should verify that mixins can be applied to
     the provided resources.
 
-It is recommended to throw AttributeError on issues...Will translate in Bad
-Request...
+.. note::
+    It is recommended to throw AttributeError on any errors in Backends. Those
+    Errors will be translated into the HTTP Error: Bad Request.
 
-The OCCI implementation eventually calls all the backends associated to an
-resource. If a resource has 2 mixins associated to it, the implementation will
-call the backend which defines the kind, and the backends which define the
-mixins. So in total 3 calls are made. So 3 different backends are used when
-each define a single kind - But 1 backend is called 3x times when the backend
-defines all 3 types.

@@ -24,11 +24,10 @@ Created on Jun 30, 2011
 '''
 
 from occi import registry
-from occi.backend import Backend
+from occi.backend import UserDefinedMixinBackend
 from occi.core_model import Resource, Link, Mixin, Category
 from tornado.web import HTTPError
 import uuid
-
 
 #==============================================================================
 # Handling of Resources & Links
@@ -78,7 +77,6 @@ def delete_entity(entity):
 
     If it's a link it will remove the link from the entity source links list.
 
-    @param key: The key for the entity.
     @param entity: The entity itself - either Link or Resource instance.
     '''
     if isinstance(entity, Resource):
@@ -88,13 +86,7 @@ def delete_entity(entity):
                 back.delete(link)
             registry.RESOURCES.pop(link.identifier)
     elif isinstance(entity, Link):
-        # it's a link so update the source entity...
-        # old = entity.source
-
         entity.source.links.remove(entity)
-
-#        for back in registry.get_all_backends(entity.source):
-#            back.update(old, entity)
 
     # call all the backends who are associated with this entity.kind...
     backends = registry.get_all_backends(entity)
@@ -178,7 +170,6 @@ def action_entity(entity, action):
     backend = registry.get_backend(action)
     backend.action(entity, action)
 
-
 #==============================================================================
 # Collections
 #==============================================================================
@@ -198,6 +189,8 @@ def update_collection(mixin, old_entities, new_entities):
                              + ' of Mixins.')
     for entity in unique(new_entities, old_entities):
         entity.mixins.append(mixin)
+        backend = registry.get_backend(mixin)
+        backend.add_entity(entity)
     del(new_entities)
 
 
@@ -217,7 +210,11 @@ def replace_collection(mixin, old_entities, new_entities):
                              + ' of Mixins.')
     for entity in unique(new_entities, old_entities):
         entity.mixins.append(mixin)
+        backend = registry.get_backend(mixin)
+        backend.add_entity(entity)
     for entity in unique(old_entities, new_entities):
+        backend = registry.get_backend(mixin)
+        backend.remove_entity(entity)
         entity.mixins.remove(mixin)
     del(new_entities)
 
@@ -227,13 +224,15 @@ def delete_from_collection(mixin, entities):
     Removes entities from a collection by removing the mixin from their list.
 
     @param mixin: The mixin which defines the collection.
-    @param old_entities: The entities which are to be removed.
+    @param entities: The entities which are to be removed.
     '''
     if not isinstance(mixin, Mixin):
         raise AttributeError('This operation is only supported on Collections'
                              + ' of Mixins.')
 
     for entity in intersect(entities, registry.RESOURCES.values()):
+        backend = registry.get_backend(mixin)
+        backend.remove_entity(entity)
         entity.mixins.remove(mixin)
 
 
@@ -320,7 +319,7 @@ def append_mixins(mixins):
     '''
     Add a mixin to the service.
 
-    @param mixin: The mixin which is to be added.
+    @param mixins: The mixins which are to be added.
     '''
     for mixin in mixins:
         if not isinstance(mixin, Mixin):
@@ -333,19 +332,27 @@ def append_mixins(mixins):
             raise AttributeError('Category with same term, scheme already' +
                                  ' exists.')
         del(cat)
-        registry.BACKENDS[mixin] = Backend()
+        registry.BACKENDS[mixin] = UserDefinedMixinBackend()
 
 
 def remove_mixins(mixins):
     '''
     Remove a mixin from the service.
 
-    # TODO: remove the mixins from all resources.
-    # TODO: When this is a service side defined mixin -> 403!
-
-    @param mixin: The mixin which is to be removed.
+    @param mixins: The mixin which are to be removed.
     '''
     for mixin in mixins:
+        if not isinstance(mixin, Mixin):
+            raise AttributeError('Needs to be of type Mixin.')
+
+        backend = registry.get_backend(mixin)
+
+        if not isinstance(backend, UserDefinedMixinBackend):
+            raise HTTPError(403, 'This Mixin cannot be deleted!')
+
+        entities = get_entities_under_path(mixin.location)
+        for entity in entities:
+            entity.mixins.remove(mixin)
         registry.BACKENDS.pop(mixin)
 
 #==============================================================================

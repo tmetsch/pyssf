@@ -29,8 +29,8 @@ Created on Jul 4, 2011
 # pylint: disable=C0103,R0904,R0201
 
 from occi import registry
-from occi.backend import Backend
-from occi.core_model import Kind, Resource
+from occi.backend import KindBackend, ActionBackend, MixinBackend
+from occi.core_model import Kind, Resource, Action, Mixin
 from occi.protocol.occi_rendering import Rendering
 from tornado.web import HTTPError
 import unittest
@@ -44,9 +44,13 @@ class TestBackendsRegistry(unittest.TestCase):
     def setUp(self):
         self.kind1 = Kind('http://example.com#', '1')
         self.kind2 = Kind('http://example.com#', '2')
+        self.action = Action('http://example.com#', 'action')
+        self.mixin = Mixin('http://example.com#', 'mixin')
 
-        registry.BACKENDS = {self.kind1: Backend(),
-                             self.kind2: DummyBackend()}
+        registry.BACKENDS = {self.kind1: KindBackend(),
+                             self.kind2: DummyBackend(),
+                             self.action: ActionBackend(),
+                             self.mixin: MixinBackend()}
 
         self.entity = Resource('foo', self.kind1, [self.kind2])
 
@@ -60,10 +64,19 @@ class TestBackendsRegistry(unittest.TestCase):
         '''
         registry.get_backend(self.kind1)
         registry.get_backend(self.kind2)
+        registry.get_backend(self.action)
+        registry.get_backend(self.mixin)
 
     #==========================================================================
     # Failure
     #==========================================================================
+
+    def test_get_backend_for_failure(self):
+        '''
+        Test if backend can be retrieved...
+        '''
+        self.assertRaises(AttributeError, registry.get_backend,
+                          Kind('foo', 'bar'))
 
     #==========================================================================
     # Sanity
@@ -75,10 +88,8 @@ class TestBackendsRegistry(unittest.TestCase):
         '''
         back1 = registry.get_backend(self.kind1)
         back2 = registry.get_backend(self.kind2)
-        back3 = registry.get_backend(Kind('foo', 'bar'))
-        self.assertTrue(isinstance(back1, Backend))
+        self.assertTrue(isinstance(back1, KindBackend))
         self.assertTrue(isinstance(back2, DummyBackend))
-        self.assertTrue(isinstance(back3, Backend))
 
     def test_get_all_backends_for_sanity(self):
         '''
@@ -131,7 +142,7 @@ class CategoryRegistryTest(unittest.TestCase):
         self.kind1 = Kind('http://example.com#', '1')
         self.kind2 = Kind('http://example.com#', '2', location='/foo/')
 
-        registry.BACKENDS = {self.kind1: Backend(),
+        registry.BACKENDS = {self.kind1: KindBackend(),
                              self.kind2: DummyBackend()}
 
     def test_get_category_for_sanity(self):
@@ -148,7 +159,7 @@ class CategoryRegistryTest(unittest.TestCase):
         self.assertTrue(result == None)
 
 
-class DummyBackend(Backend):
+class DummyBackend(KindBackend):
     '''
     A dummy...
     '''

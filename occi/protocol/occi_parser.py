@@ -203,7 +203,7 @@ def find_in_string(string, name):
     AttributeError if value cannot be found.
 
     @param string: The string to look into.
-    @name: The name of the value to look for.
+    @param name: The name of the value to look for.
     '''
     begin = string.find(name + '=')
     end = string.find(';', begin)

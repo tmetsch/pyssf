@@ -29,7 +29,7 @@ Created on Jul 4, 2011
 # pylint: disable=C0103,R0904,W0612
 
 from occi import registry
-from occi.backend import Backend
+from occi.backend import KindBackend, MixinBackend, ActionBackend
 from occi.core_model import Resource, Link, Mixin
 from occi.extensions.infrastructure import COMPUTE, STORAGE, NETWORK, \
     NETWORKINTERFACE, IPNETWORKINTERFACE, IPNETWORK, START
@@ -101,7 +101,7 @@ class TestQueryCapabilites(unittest.TestCase):
         #registry.RENDERINGS['text/plain'] = TextPlainRendering()
         registry.RENDERINGS['text/occi'] = TextOcciRendering()
 
-        backend = Backend()
+        backend = KindBackend()
 
         registry.BACKENDS = {COMPUTE: backend,
                              STORAGE: backend,
@@ -266,10 +266,9 @@ class TestCollectionCapabilites(unittest.TestCase):
                                       [IPNETWORKINTERFACE], self.compute,
                                       self.network)
 
-        backend = Backend()
         registry.BACKENDS = {COMPUTE: SimpleComputeBackend(),
-                             NETWORK: backend,
-                             self.mixin: backend,
+                             NETWORK: KindBackend(),
+                             self.mixin: MixinBackend(),
                              START: SimpleComputeBackend()}
 
         registry.RESOURCES = {self.compute.identifier: self.compute,
@@ -503,10 +502,9 @@ class TestResourceCapabilites(unittest.TestCase):
         self.app = Application([(r"(.*)", ResourceWrapper)])
         registry.RENDERINGS['text/occi'] = TextOcciRendering()
 
-        backend = Backend()
         registry.BACKENDS = {COMPUTE: SimpleComputeBackend(),
-                             NETWORK: backend,
-                             NETWORKINTERFACE: backend,
+                             NETWORK: KindBackend(),
+                             NETWORKINTERFACE: KindBackend(),
                              START: SimpleComputeBackend()}
 
     def tearDown(self):
@@ -774,10 +772,9 @@ class TestLinkHandling(unittest.TestCase):
         registry.RENDERINGS['text/plain'] = TextPlainRendering()
         registry.RENDERINGS['text/occi'] = TextOcciRendering()
 
-        backend = Backend()
         registry.BACKENDS = {COMPUTE: SimpleComputeBackend(),
-                             NETWORK: backend,
-                             NETWORKINTERFACE: backend,
+                             NETWORK: KindBackend(),
+                             NETWORKINTERFACE: KindBackend(),
                              START: SimpleComputeBackend()}
 
         self.compute = Resource('/compute/1', COMPUTE, [])
@@ -886,9 +883,9 @@ def create_request(verb, headers=None, body=None, uri=None):
     return request
 
 
-class SimpleComputeBackend(Backend):
+class SimpleComputeBackend(KindBackend, ActionBackend):
     '''
-    Simple backend...
+    Simple backend...handing the kinds and Actions!
     '''
 
     def create(self, entity):

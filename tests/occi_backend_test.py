@@ -25,21 +25,22 @@ Created on Jul 5, 2011
 
 # disabling 'Invalid name' pylint check (unittest's fault)
 # disabling 'Too many public methods' pylint check (unittest's fault)
-# pylint: disable=C0103,R0904
+# disabling 'Method could be function' pyling check (well guess who's fault..)
+# pylint: disable=C0103,R0904,R0201
 
 from occi import backend
-from occi.backend import Backend
+from occi.backend import KindBackend, ActionBackend, MixinBackend
 from occi.core_model import Kind, Resource, Link, Action
 import unittest
 
 
-class TestBackend(unittest.TestCase):
+class TestKindBackend(unittest.TestCase):
     '''
     Some sanity checks for convenient routines in the backend.
     '''
 
     def setUp(self):
-        self.back = Backend()
+        self.back = KindBackend()
         self.action = Action('foo', 'action')
         self.kind = Kind('foo', 'bar', actions=[self.action],
                          attributes={'foo': 'mutable', 'bar': 'required'})
@@ -57,7 +58,6 @@ class TestBackend(unittest.TestCase):
         self.back.delete(None)
         self.back.update(None, None)
         self.back.replace(None, None)
-        self.back.action(None, None)
 
     def test_is_related_for_sanity(self):
         '''
@@ -94,3 +94,30 @@ class TestBackend(unittest.TestCase):
         action3 = Action('foo', 'start')
         self.resource.actions.append(action3)
         self.assertFalse(backend.is_action_applicable(self.resource, action3))
+
+
+class TestActionBackend(unittest.TestCase):
+    '''
+    Test the Action backend...
+    '''
+
+    def test_simple_calls(self):
+        '''
+        Test if default pass...
+        '''
+        back = ActionBackend()
+        back.action(None, None)
+
+
+class TestMixinBackend(unittest.TestCase):
+    '''
+    Test the Action backend...
+    '''
+
+    def test_simple_calls(self):
+        '''
+        Test if default pass...
+        '''
+        back = MixinBackend()
+        back.add_entity(None)
+        back.remove_entity(None)

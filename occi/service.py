@@ -24,6 +24,7 @@ Created on Jul 19, 2011
 '''
 
 from occi import registry
+from occi.backend import KindBackend, ActionBackend, MixinBackend
 from occi.protocol.html_rendering import HTMLRendering
 from occi.protocol.occi_rendering import TextOcciRendering, \
     TextPlainRendering, TextUriListRendering
@@ -59,10 +60,27 @@ class OCCI(object):
         '''
         Register a backend.
 
+        Verifies that correct 'parent' backends are used.
+
         @param category: The category the backend defines.
         @param backend: The backend which handles the given category.
         '''
-        registry.BACKENDS[category] = backend
+        allow = False
+        if repr(category) == 'kind' and isinstance(backend, KindBackend):
+            allow = True
+        elif repr(category) == 'mixin' and isinstance(backend, MixinBackend):
+            allow = True
+        elif repr(category) == 'action' and isinstance(backend, ActionBackend):
+            allow = True
+
+        if allow:
+            registry.BACKENDS[category] = backend
+        else:
+            raise AttributeError('Backends handling kinds need to derive' \
+                                 ' from KindBackend; Backends handling' \
+                                 ' actions need to derive from' \
+                                 ' ActionBackend and backends handling' \
+                                 ' mixins need to derive from MixinBackend.')
 
     def start(self, port):
         '''

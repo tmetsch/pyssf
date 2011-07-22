@@ -1,20 +1,20 @@
-.. 
+..
    Copyright (C) 2010-2011 Platform Computing
-   
+
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
    version 2.1 of the License, or (at your option) any later version.
-   
+
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
-   
+
    You should have received a copy of the GNU Lesser General Public
    License along with this library; if not, write to the Free Software
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-   
+
 
 Welcome to Service Sharing Facility's documentation!
 ====================================================
@@ -24,22 +24,35 @@ Welcome to Service Sharing Facility's documentation!
     ongoing development go to http://sourceforge.net/projects/pyssf/
 
 This software package is a collection of modules which can be used stand alone
-or all together.
+or all together. The tool-suite aims to give you some building blocks to
+create service offerings for Grids, Clusters, HPC and Clouds.
 
-Some bla bla...todo
+All Software presented here falls under an Open Source License - Although
+thoroughly tested (100% code/documentation coverage) we cannot guarantee the
+absence of bugs - use on your own risk. But we do value your feedback! Feel
+free to visit the SourceForge page and submit issues, features request, ask
+for support or leave a friendly note.
+
+This tool-suite contains an `OCCI <http://www.occi-wg.org>`_ compatible
+implementation and is available on
+`pypi <http://pypi.python.org/pypi/pyssf>`_. The support for submitting jobs
+through DRMAA using an RESTful OCCI compatible interface is currently updated.
+We are working on service for automatic negotiation of SLAs.
 
 Contents:
 
 .. toctree::
    :maxdepth: 2
    :numbered:
-   
+
    ssf.txt
    occi.txt
 
 * `Coverage report <cover/index.html>`_
 
 * `Pylint report <lint/index.html>`_
+
+* `EpyDoc API Documentation <api/index.html>`_
 
 * :ref:`search`
 

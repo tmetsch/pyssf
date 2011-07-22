@@ -28,6 +28,8 @@ Created on Jul 4, 2011
 # pylint: disable=C0103,R0904
 
 from occi import registry
+from occi.backend import KindBackend, MixinBackend, ActionBackend
+from occi.extensions.infrastructure import COMPUTE, IPNETWORKINTERFACE, START
 from occi.service import OCCI
 import tornado
 import unittest
@@ -45,18 +47,35 @@ class TestService(unittest.TestCase):
         '''
         Test constructor and initialization of service.
         '''
-        OCCI()
         self.assertTrue('text/occi' in registry.RENDERINGS)
         self.assertTrue('text/plain' in registry.RENDERINGS)
         self.assertTrue('text/uri-list' in registry.RENDERINGS)
         self.assertTrue('text/html' in registry.RENDERINGS)
 
+    def test_register_backend_for_failure(self):
+        '''
+        Test registration.
+        '''
+        back1 = MixinBackend()
+        back2 = ActionBackend()
+        self.assertRaises(AttributeError, self.service.register_backend,
+                          COMPUTE, back1)
+        self.assertRaises(AttributeError, self.service.register_backend,
+                          COMPUTE, back2)
+
     def test_register_backend_for_sanity(self):
         '''
         Test registration.
         '''
-        self.service.register_backend('foo', 'bar')
-        self.assertTrue(registry.BACKENDS['foo'] == 'bar')
+        back = KindBackend()
+        back1 = MixinBackend()
+        back2 = ActionBackend()
+        self.service.register_backend(COMPUTE, back)
+        self.service.register_backend(IPNETWORKINTERFACE, back1)
+        self.service.register_backend(START, back2)
+        self.assertTrue(registry.BACKENDS[COMPUTE] == back)
+        self.assertTrue(registry.BACKENDS[IPNETWORKINTERFACE] == back1)
+        self.assertTrue(registry.BACKENDS[START] == back2)
 
     def test_start_for_success(self):
         '''

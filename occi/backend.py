@@ -75,11 +75,13 @@ def is_action_applicable(entity, action):
         return False
 
 
-class Backend(object):
+class KindBackend(object):
     '''
-    A prototype backend which essentially does nothing. Backends are only
-    needed for resources. So even when a link is updated the according backends
-    are called. It can happen that an entity has more than one backend assigned
+    A prototype backend which essentially does nothing.
+
+    Use this Backend for your Resource and Link types.
+
+    Note that it can happen that an entity has more than one backend assigned
     (this is the case when it has a couple of mixins). But you can assign
     multiple kinds to one backend.
     '''
@@ -108,6 +110,9 @@ class Backend(object):
         It is up to the backend implementation to decide which information from
         new if copied into old.
 
+        Note that the new entity might no have all the information the old one
+        had.
+
         @param old: The old entity which is to be updated.
         @param new: The new entity holding the updated information.
         '''
@@ -121,7 +126,7 @@ class Backend(object):
 
         It is up to the backend implementation to decide which information from
         new if copied into old. So if you really want to replace old with new
-        you need to have an old.* = new.* somewhere here.
+        you need to have an old.* = new.* somewhere here (RECOMMENDED).
 
         @param old: The old entity which is to be updated.
         @param new: The new entity holding the updated information.
@@ -136,6 +141,17 @@ class Backend(object):
         '''
         pass
 
+
+class ActionBackend(object):
+    '''
+    A prototype backend which essentially does nothing.
+
+    Use this Backend for Action types.
+    '''
+
+    # disabling 'Too few public...' pyling check (this is for extension)
+    # pylint: disable=R0903
+
     def action(self, entity, action):
         '''
         Call the Resource Management and perform this action.
@@ -144,3 +160,39 @@ class Backend(object):
         @param action: The action category definition.
         '''
         pass
+
+
+class MixinBackend(object):
+    '''
+    A prototype backend which essentially does nothing.
+
+    Use this Backend for Mixin types.
+    '''
+
+    def add_entity(self, entity):
+        '''
+        This routine is called when the mixin which is handled by this backend
+        get added to an entity.
+
+        @param entity: The entity which has been added the mixin.
+        '''
+        pass
+
+    def remove_entity(self, entity):
+        '''
+        This routine is called when the mixin which is handled by this backend
+        is removed from the entity.
+
+        @param entity: The entity which has no longer the mixin.
+        '''
+        pass
+
+
+class UserDefinedMixinBackend(MixinBackend):
+    '''
+    A Backend for mixins defined by users.
+
+    DO NOT USE THIS CLASS IN YOUR IMPLEMENTATION!
+    '''
+
+    pass

@@ -2,15 +2,27 @@
 Version 0.4.0
 -------------
 
+This is a complete refactoring - now has cleaned up interfaces. Better Backend
+implementation support & is OCCI 1.1 compatible again.
+
+R,S420,Document 'how to develop backend'
+R,S430,Code optimizations
+R,S580,Update pyocci to actual current rev of OCCI spec
 R,S600,Remove pylsf and pydrmaa package
 
 Obsoletes:
-
 R,S440,Develop & Integrate a LSF 'Proxy' Interface
 R,S450,handle long running tasks
+R,S470,Develop & Integrate a BES Interface
+R,S480,Integrate WS-Agreement (WSAG4j)
 R,S490,Implement DRMAAv2
 R,S500,Let DMRMAAv2 interface with SSF
+R,S510,Optimize HTML rendering so links and locations can be provided
 R,S530,Test pyLSF Interface
+R,S540,Strip out wsgi app and create a adapter for tornado for easier ...
+R,S560,Server attribute sometime returns wrong value on ops on collections
+R,S570,Adding mixins should be revised
+
 
 Version 0.3.1
 -------------

@@ -28,7 +28,7 @@ Created on Jul 5, 2011
 # pylint: disable=C0103,R0904
 
 from occi import registry, workflow
-from occi.backend import Backend
+from occi.backend import KindBackend, MixinBackend, ActionBackend
 from occi.core_model import Resource, Kind, Link, Action, Mixin
 from tornado.web import HTTPError
 import unittest
@@ -49,7 +49,11 @@ class EntityWorkflowTest(unittest.TestCase):
         self.link1 = Link('/link/1', self.link_kind, [], self.src_entity,
                           self.trg_entity)
         self.src_entity.links = [self.link1]
+
         registry.RESOURCES[self.trg_entity.identifier] = self.trg_entity
+        registry.BACKENDS = {self.test_kind: KindBackend(),
+                             self.link_kind: KindBackend(),
+                             self.action: ActionBackend()}
 
     def tearDown(self):
         registry.RESOURCES = {}
@@ -209,7 +213,8 @@ class CollectionWorkflowTest(unittest.TestCase):
         for item in self.resources:
             registry.RESOURCES[item.identifier] = item
 
-        registry.BACKENDS[self.kind] = Backend
+        registry.BACKENDS[self.kind] = KindBackend()
+        registry.BACKENDS[self.mixin] = MixinBackend()
 
     def tearDown(self):
         registry.RESOURCES = {}
@@ -360,10 +365,12 @@ class QueriyInterfaceTest(unittest.TestCase):
         self.kind1 = Kind('http://www.example.com#', 'foo')
         self.kind2 = Kind('http://www.example.com#', 'bar')
         self.mixin = Mixin('http://www.new.com#', 'mixin')
-        registry.BACKENDS = {self.kind1: Backend(), self.kind2: Backend()}
+        registry.BACKENDS = {self.kind1: KindBackend(),
+                             self.kind2: KindBackend()}
 
     def tearDown(self):
         registry.BACKENDS = {}
+        registry.RESOURCES = {}
 
     #==========================================================================
     # Failure
@@ -383,6 +390,17 @@ class QueriyInterfaceTest(unittest.TestCase):
         # name collision
         mixin = Mixin('http://www.example.com#', 'foo', location="/stuff/")
         self.assertRaises(AttributeError, workflow.append_mixins, [mixin])
+
+    def test_remove_mixins_for_failure(self):
+        '''
+        Test if only correct mixin get removed...
+        '''
+        mixin = Mixin('http://www.new.com#', 'mixin')
+        registry.BACKENDS[mixin] = MixinBackend()
+
+        self.assertRaises(HTTPError, workflow.remove_mixins, [self.mixin])
+
+        self.assertRaises(AttributeError, workflow.remove_mixins, [self.kind1])
 
     #==========================================================================
     # Sanity
@@ -408,12 +426,18 @@ class QueriyInterfaceTest(unittest.TestCase):
         '''
         workflow.append_mixins([self.mixin])
         self.assertTrue(self.mixin in registry.BACKENDS)
-        self.assertTrue(isinstance(registry.BACKENDS[self.mixin], Backend))
+        self.assertTrue(isinstance(registry.BACKENDS[self.mixin],
+                                   MixinBackend))
 
     def test_remove_mixins_for_sanity(self):
         '''
         Test if mixin get removed.
         '''
         workflow.append_mixins([self.mixin])
+
+        res = Resource('/foo/1', self.kind1, [self.mixin])
+        registry.RESOURCES = {'/foo/1': res}
+
         workflow.remove_mixins([self.mixin])
         self.assertFalse(self.mixin in registry.BACKENDS)
+        self.assertFalse(self.mixin in res.mixins)

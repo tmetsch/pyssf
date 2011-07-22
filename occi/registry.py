@@ -25,7 +25,7 @@ Created on Jun 28, 2011
 @author: tmetsch
 '''
 
-from occi.backend import Backend
+from occi.backend import KindBackend, ActionBackend, MixinBackend
 from tornado.web import HTTPError
 
 BACKENDS = {}
@@ -61,8 +61,14 @@ def get_backend(category):
     # need to lookup because category should not have __hash__ func.
     for re_cat in BACKENDS.keys():
         if category == re_cat:
-            return BACKENDS[re_cat]
-    return Backend()
+            back = BACKENDS[re_cat]
+            if repr(re_cat) == 'kind' and isinstance(back, KindBackend):
+                return back
+            elif repr(re_cat) == 'action' and isinstance(back, ActionBackend):
+                return back
+            if repr(re_cat) == 'mixin' and isinstance(back, MixinBackend):
+                return back
+    raise AttributeError('Cannot find corresponding Backend.')
 
 
 def get_category(path):
@@ -88,7 +94,7 @@ def get_renderer(mime_type):
     for tmp in mime_type.split(','):
         type_str = tmp.strip()
         if type_str.find(';q=') > -1:
-            # FIXME: dropping those ;q=x.x values...
+            # XXX: dropping those ;q=x.x values...
             type_str = type_str[:type_str.find(';q=')]
 
         if type_str in RENDERINGS:
