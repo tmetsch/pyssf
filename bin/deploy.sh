@@ -69,7 +69,7 @@ case "$1" in
 
   deploy)
     $0 build
-    $0 doc
+    $0 big-doc
     hg commit
     xmessage "Password required"
     hg push
