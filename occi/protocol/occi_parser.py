@@ -51,6 +51,8 @@ def get_category(category_string, is_mixin=False):
 
     if is_mixin:
         location = find_in_string(category_string, 'location')
+        if not location[0] == '/' or not location[-1] == '/':
+            raise AttributeError('Illegal location; must start and end with /')
         return Mixin(scheme, term, location=location)
 
     # return the category from registry...

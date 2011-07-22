@@ -30,6 +30,7 @@ Created on Jul 5, 2011
 from occi import registry, workflow
 from occi.backend import Backend
 from occi.core_model import Resource, Kind, Link, Action, Mixin
+from tornado.web import HTTPError
 import unittest
 
 
@@ -108,8 +109,12 @@ class EntityWorkflowTest(unittest.TestCase):
         '''
         self.trg_entity.links = [self.link1]
         # new entity should not have links...
-        self.assertRaises(AttributeError, workflow.replace_entity,
+        self.assertRaises(HTTPError, workflow.replace_entity,
                           self.src_entity, self.trg_entity)
+
+        # cannot replace reouce with link
+        self.assertRaises(AttributeError, workflow.replace_entity,
+                          self.src_entity, self.link1)
 
     def test_update_entity_for_failure(self):
         '''
@@ -117,7 +122,7 @@ class EntityWorkflowTest(unittest.TestCase):
         '''
         self.trg_entity.links = [self.link1]
         # new entity should not have links...
-        self.assertRaises(AttributeError, workflow.update_entity,
+        self.assertRaises(HTTPError, workflow.update_entity,
                           self.src_entity, self.trg_entity)
 
     #==========================================================================
@@ -247,6 +252,13 @@ class CollectionWorkflowTest(unittest.TestCase):
         self.assertRaises(AttributeError, workflow.replace_collection,
                           self.kind, [], [])
 
+    def test_delete_from_collection_for_failure(self):
+        '''
+        Check if the delete functionalities are implemented correctly.
+        '''
+        self.assertRaises(AttributeError, workflow.delete_from_collection,
+                          self.kind, [])
+
     #==========================================================================
     # Sanity
     #==========================================================================
@@ -283,6 +295,19 @@ class CollectionWorkflowTest(unittest.TestCase):
         workflow.replace_collection(self.mixin, [res1], [res2])
         self.assertTrue(self.mixin not in res1.mixins)
         self.assertTrue(self.mixin in res2.mixins)
+
+    def test_delete_from_collection_for_sanity(self):
+        '''
+        Check if the delete functionalities are implemented correctly.
+        '''
+        res1 = Resource('/foo/1', self.kind, [self.mixin], [])
+        res2 = Resource('/foo/2', self.kind, [self.mixin], [])
+
+        registry.RESOURCES = {'/foo/1': res1, '/foo/2': res2}
+
+        workflow.delete_from_collection(self.mixin, [res2])
+        self.assertTrue(self.mixin not in res2.mixins)
+        self.assertTrue(self.mixin in res1.mixins)
 
     def test_filter_entities_for_sanity(self):
         '''
@@ -334,7 +359,7 @@ class QueriyInterfaceTest(unittest.TestCase):
     def setUp(self):
         self.kind1 = Kind('http://www.example.com#', 'foo')
         self.kind2 = Kind('http://www.example.com#', 'bar')
-        self.mixin = Mixin('http://www.new.com#', 'bar')
+        self.mixin = Mixin('http://www.new.com#', 'mixin')
         registry.BACKENDS = {self.kind1: Backend(), self.kind2: Backend()}
 
     def tearDown(self):
@@ -348,7 +373,16 @@ class QueriyInterfaceTest(unittest.TestCase):
         '''
         Test if exception is thrown.
         '''
+        # is not a mixin
         self.assertRaises(AttributeError, workflow.append_mixins, [self.kind2])
+
+        # location collision
+        mixin = Mixin('http://www.new.com#', 'mixin', location="/foo/")
+        self.assertRaises(AttributeError, workflow.append_mixins, [mixin])
+
+        # name collision
+        mixin = Mixin('http://www.example.com#', 'foo', location="/stuff/")
+        self.assertRaises(AttributeError, workflow.append_mixins, [mixin])
 
     #==========================================================================
     # Sanity

@@ -25,8 +25,10 @@ Created on Jun 30, 2011
 
 from occi import registry
 from occi.backend import Backend
-from occi.core_model import Resource, Link, Mixin
+from occi.core_model import Resource, Link, Mixin, Category
+from tornado.web import HTTPError
 import uuid
+
 
 #==============================================================================
 # Handling of Resources & Links
@@ -112,13 +114,18 @@ def replace_entity(old, new):
     @param new: The new entity.
     '''
     if isinstance(new, Resource) and len(new.links) is not 0:
-        raise AttributeError('It is not recommend to have links in a full'
-                             + ' update request')
+        raise HTTPError(400, 'It is not recommend to have links in a full' +
+                        ' update request')
+
+    if new.kind is not old.kind:
+        raise AttributeError('It is not possible to change the kind of an' +
+                             ' entity.')
 
     # call all the backends who are associated with this entity.kind...
     backends = registry.get_all_backends(old)
     for backend in backends:
         backend.replace(old, new)
+    del(new)
 
 
 def update_entity(old, new):
@@ -131,13 +138,14 @@ def update_entity(old, new):
     @param new: The new entity.
     '''
     if isinstance(new, Resource) and len(new.links) is not 0:
-        raise AttributeError('It is not recommend to have links in a full'
-                             + ' update request')
+        raise HTTPError(400, 'It is not recommend to have links in a full' +
+                        ' update request')
 
     # call all the backends who are associated with this entity.kind...
     backends = registry.get_all_backends(old)
     for backend in backends:
         backend.update(old, new)
+    del(new)
 
 
 def retrieve_entity(entity):
@@ -190,6 +198,7 @@ def update_collection(mixin, old_entities, new_entities):
                              + ' of Mixins.')
     for entity in unique(new_entities, old_entities):
         entity.mixins.append(mixin)
+    del(new_entities)
 
 
 def replace_collection(mixin, old_entities, new_entities):
@@ -210,6 +219,22 @@ def replace_collection(mixin, old_entities, new_entities):
         entity.mixins.append(mixin)
     for entity in unique(old_entities, new_entities):
         entity.mixins.remove(mixin)
+    del(new_entities)
+
+
+def delete_from_collection(mixin, entities):
+    '''
+    Removes entities from a collection by removing the mixin from their list.
+
+    @param mixin: The mixin which defines the collection.
+    @param old_entities: The entities which are to be removed.
+    '''
+    if not isinstance(mixin, Mixin):
+        raise AttributeError('This operation is only supported on Collections'
+                             + ' of Mixins.')
+
+    for entity in intersect(entities, registry.RESOURCES.values()):
+        entity.mixins.remove(mixin)
 
 
 def get_entities_under_path(path):
@@ -223,14 +248,13 @@ def get_entities_under_path(path):
 
     @param path: The path under which to look...
     '''
+    result = []
     if registry.get_category(path) is None:
-        result = []
         for res in registry.RESOURCES.values():
             if res.identifier.find(path) == 0:
                 result.append(res)
         return result
     else:
-        result = []
         cat = registry.get_category(path)
         for res in registry.RESOURCES.values():
             if cat == res.kind or cat in res.mixins:
@@ -301,12 +325,23 @@ def append_mixins(mixins):
     for mixin in mixins:
         if not isinstance(mixin, Mixin):
             raise AttributeError('Needs to be of type Mixin.')
+        if registry.get_category(mixin.location):
+            raise AttributeError('Location overlaps with existing one.')
+        cat = Category(mixin.scheme, mixin.term, '', {}, '')
+        if cat in registry.BACKENDS.keys():
+            del(cat)
+            raise AttributeError('Category with same term, scheme already' +
+                                 ' exists.')
+        del(cat)
         registry.BACKENDS[mixin] = Backend()
 
 
 def remove_mixins(mixins):
     '''
     Remove a mixin from the service.
+
+    # TODO: remove the mixins from all resources.
+    # TODO: When this is a service side defined mixin -> 403!
 
     @param mixin: The mixin which is to be removed.
     '''

@@ -49,7 +49,7 @@ class Rendering(object):
     All renderings should derive from this class.
     '''
 
-    def to_entity(self, headers, body):
+    def to_entity(self, headers, body, def_kind):
         '''
         Given the HTTP headers and the body this method will convert the HTTP
         data into an entity representation. Must return Resource or Link
@@ -57,6 +57,7 @@ class Rendering(object):
 
         @param headers: The HTTP headers.
         @param body: The HTTP body.
+        @param def_kind: If provided this kind is taken (Needed for update).
         '''
         raise NotImplementedError()
 
@@ -174,7 +175,7 @@ def _set_data_to_headers(data):
     return headers, body
 
 
-def _to_entity(data):
+def _to_entity(data, def_kind):
     '''
     Extract an entity from the HTTP data object.
     '''
@@ -198,8 +199,10 @@ def _to_entity(data):
         attributes[key] = value
 
     # now create the entity
-    if kind_found is False:
+    if kind_found is False and def_kind is None:
         raise AttributeError('Could not find a valid kind.')
+    elif def_kind is not None:
+        kind = def_kind
 
     if Resource.kind in kind.related:
         # links
@@ -374,9 +377,9 @@ class TextOcciRendering(Rendering):
         '''
         return _set_data_to_headers(data)
 
-    def to_entity(self, headers, body):
+    def to_entity(self, headers, body, def_kind):
         data = self.get_data(headers, body)
-        entity = _to_entity(data)
+        entity = _to_entity(data, def_kind)
         return entity
 
     def from_entity(self, entity):
@@ -501,7 +504,7 @@ class TextUriListRendering(Rendering):
     error = 'Unable to handle this request with the text/uri-list' \
                 ' rendering.'
 
-    def to_entity(self, headers, body):
+    def to_entity(self, headers, body, def_kind):
         raise AttributeError(self.error)
 
     def from_entity(self, entity):

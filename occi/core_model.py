@@ -136,7 +136,6 @@ class Resource(Entity):
         super(Resource, self).__init__(identifier, title, kind, mixins)
         self.links = links or []
         self.summary = summary
-        self.links = links
 
 
 class Link(Entity):

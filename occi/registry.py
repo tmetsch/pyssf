@@ -26,6 +26,7 @@ Created on Jun 28, 2011
 '''
 
 from occi.backend import Backend
+from tornado.web import HTTPError
 
 BACKENDS = {}
 
@@ -98,7 +99,7 @@ def get_renderer(mime_type):
             break
 
     if parser is None:
-        raise AttributeError('This service is unable to understand the mime'
-                             + ' type: ' + repr(mime_type))
+        raise HTTPError(406, 'This service is unable to understand the mime' +
+                        ' type: ' + repr(mime_type))
     else:
         return parser

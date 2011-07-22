@@ -29,21 +29,8 @@ Created on Jul 4, 2011
 
 from occi import registry
 from occi.service import OCCI
-import threading
+import tornado
 import unittest
-
-
-class ServiceThread(threading.Thread):
-    '''
-    Simple thread to test service.
-    '''
-
-    def __init__(self, service):
-        threading.Thread.__init__(self)
-        self.service = service
-
-    def run(self):
-        self.service.start(8888)
 
 
 class TestService(unittest.TestCase):
@@ -70,3 +57,37 @@ class TestService(unittest.TestCase):
         '''
         self.service.register_backend('foo', 'bar')
         self.assertTrue(registry.BACKENDS['foo'] == 'bar')
+
+    def test_start_for_success(self):
+        '''
+        Just here to reach 100% code coverage :-)
+        '''
+        self.service.http_server.listen = fake_listen
+        tornado.ioloop.IOLoop.instance = fake_ioloop
+        self.service.start(1010)
+
+
+class fake_ioloop(object):
+    '''
+    Fake io loop for tornado.
+    '''
+
+    # pylint: disable=R0903
+
+    def start(self):
+        '''
+        Start.
+        '''
+        pass
+
+
+def fake_listen(port):
+    '''
+    fake function to emulate listen...
+
+    @param port: A random nr.
+    '''
+
+    # pylint: disable=W0613
+
+    pass

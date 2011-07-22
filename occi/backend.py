@@ -116,12 +116,12 @@ class Backend(object):
     def replace(self, old, new):
         '''
         Call the Resource Management and update this entity. This is
-        essentially a full update (Which allows removal of attribtues for
+        essentially a full update (Which allows removal of attributes for
         example).
 
         It is up to the backend implementation to decide which information from
         new if copied into old. So if you really want to replace old with new
-        you need to have an old = new somewhere here.
+        you need to have an old.* = new.* somewhere here.
 
         @param old: The old entity which is to be updated.
         @param new: The new entity holding the updated information.

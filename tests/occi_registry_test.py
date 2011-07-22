@@ -32,6 +32,7 @@ from occi import registry
 from occi.backend import Backend
 from occi.core_model import Kind, Resource
 from occi.protocol.occi_rendering import Rendering
+from tornado.web import HTTPError
 import unittest
 
 
@@ -107,7 +108,7 @@ class TestParserRegistry(unittest.TestCase):
         '''
         Test failure handling of retrieval.
         '''
-        self.assertRaises(AttributeError, registry.get_renderer, 'foo')
+        self.assertRaises(HTTPError, registry.get_renderer, 'foo')
 
     def test_get_parser_for_sanity(self):
         '''

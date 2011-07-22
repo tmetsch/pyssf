@@ -48,6 +48,7 @@ class OCCI(object):
 
         application = tornado.web.Application([
                 (r"/-/", QueryHandler),
+                (r"/.well-known/org/ogf/occi/-/", QueryHandler),
                 (r"(.*)/", CollectionHandler),
                 (r"(.*)", ResourceHandler),
             ])

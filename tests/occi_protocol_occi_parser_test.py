@@ -83,7 +83,7 @@ class TestParser(unittest.TestCase):
         # pylint: disable=R0201
 
         # mixin check...
-        tmp = 'foo; scheme="http://example.com#"; location="/foo_bar/'
+        tmp = 'foo; scheme="http://example.com#"; location="/foo_bar/"'
         parser.get_category(tmp, is_mixin=True)
 
     #==========================================================================
@@ -100,6 +100,10 @@ class TestParser(unittest.TestCase):
 
         # mixin with msg location check...
         tmp = 'foo; scheme="http://example.com#"'
+        self.assertRaises(AttributeError, parser.get_category, tmp, True)
+
+        # mixin with faulty location check...
+        tmp = 'foo; scheme="http://example.com#"; location="sdf"'
         self.assertRaises(AttributeError, parser.get_category, tmp, True)
 
     def test_get_link_for_failure(self):

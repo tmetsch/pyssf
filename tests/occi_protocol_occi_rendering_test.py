@@ -79,13 +79,13 @@ class TestTextOcciRendering(unittest.TestCase):
         res = Resource('/foo/1', self.mixin, [], links=[])
         headers, body = self.rendering.from_entity(res)
         self.assertRaises(AttributeError, self.rendering.to_entity,
-                          headers, body)
+                          headers, body, None)
 
         # kind does not relate to link or resource...
         res.kind = self.invalid_kind
         headers, body = self.rendering.from_entity(res)
         self.assertRaises(AttributeError, self.rendering.to_entity,
-                          headers, body)
+                          headers, body, None)
 
     def test_resources_for_failure(self):
         '''
@@ -104,7 +104,7 @@ class TestTextOcciRendering(unittest.TestCase):
         link = Link('/bar/1', self.link, [], self.entity, trg)
         headers, body = self.rendering.from_entity(link)
         self.assertRaises(AttributeError, self.rendering.to_entity,
-                          headers, body)
+                          headers, body, None)
 
     #==========================================================================
     # Sanity
@@ -116,8 +116,15 @@ class TestTextOcciRendering(unittest.TestCase):
         '''
         # basic check
         headers, body = self.rendering.from_entity(self.entity)
-        new = self.rendering.to_entity(headers, body)
+        new = self.rendering.to_entity(headers, body, None)
         self.assertEqual(self.entity.kind, new.kind)
+        self.assertEqual(len(self.entity.links), len(new.links))
+
+        # verify that provided kind is taken
+        kind = Kind('foo', 'bar', related=[Resource.kind])
+        headers, body = self.rendering.from_entity(self.entity)
+        new = self.rendering.to_entity(headers, body, kind)
+        self.assertEqual(new.kind, kind)
         self.assertEqual(len(self.entity.links), len(new.links))
 
         # verify that actions get added
@@ -142,7 +149,7 @@ class TestTextOcciRendering(unittest.TestCase):
         tmp = 'occi.core.target=' + self.link1.target.identifier
         tmp += ', occi.core.source=' + self.link1.source.identifier
         headers['X-OCCI-Attribute'] = tmp
-        new = self.rendering.to_entity(headers, body)
+        new = self.rendering.to_entity(headers, body, None)
         self.assertEqual(self.link1.kind, new.kind)
         # do not alter the source entity link list!
         self.assertTrue(len(self.entity.links) == 1)
@@ -235,7 +242,7 @@ class TestTextURIListRendering(unittest.TestCase):
         Tests is attr-exp are thrown for unsupported operations.
         '''
         self.assertRaises(AttributeError, self.rendering.to_entity, None,
-                          None)
+                          None, None)
         self.assertRaises(AttributeError, self.rendering.from_entity, None)
         self.assertRaises(AttributeError, self.rendering.to_entities, None,
                           None)
@@ -256,7 +263,8 @@ class TestRendering(unittest.TestCase):
         Just to check the abstract class.
         '''
         rendering = Rendering()
-        self.assertRaises(NotImplementedError, rendering.to_entity, None, None)
+        self.assertRaises(NotImplementedError, rendering.to_entity, None, None,
+                          None)
         self.assertRaises(NotImplementedError, rendering.to_action, None, None)
         self.assertRaises(NotImplementedError, rendering.to_entities, None,
                           None)

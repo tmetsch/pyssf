@@ -28,6 +28,7 @@ Created on Jul 5, 2011
 # pylint: disable=C0103,R0904
 
 from occi import backend
+from occi.backend import Backend
 from occi.core_model import Kind, Resource, Link, Action
 import unittest
 
@@ -38,6 +39,7 @@ class TestBackend(unittest.TestCase):
     '''
 
     def setUp(self):
+        self.back = Backend()
         self.action = Action('foo', 'action')
         self.kind = Kind('foo', 'bar', actions=[self.action],
                          attributes={'foo': 'mutable', 'bar': 'required'})
@@ -45,6 +47,17 @@ class TestBackend(unittest.TestCase):
         self.resource = Resource('/foo/1', self.kind, [])
         self.resource.actions = [self.action]
         self.link = Link('/link/1', self.link_kind, [], None, self.resource)
+
+    def test_simple_calls(self):
+        '''
+        Test all possible calls if the pass...
+        '''
+        self.back.create(None)
+        self.back.retrieve(None)
+        self.back.delete(None)
+        self.back.update(None, None)
+        self.back.replace(None, None)
+        self.back.action(None, None)
 
     def test_is_related_for_sanity(self):
         '''

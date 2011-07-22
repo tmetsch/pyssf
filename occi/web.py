@@ -34,6 +34,8 @@ import tornado.web
 
 CONTENT_TYPE = 'Content-Type'
 
+ACCEPT = 'Accept'
+
 
 class BaseHandler(tornado.web.RequestHandler):
     '''
@@ -68,6 +70,7 @@ class BaseHandler(tornado.web.RequestHandler):
             body = self.request.body.strip()
         else:
             body = ''
+
         return heads, body
 
     def get_renderer(self, content_type):
@@ -135,14 +138,16 @@ class BaseHandler(tornado.web.RequestHandler):
 
         return categories, attributes
 
-    def parse_entity(self):
+    def parse_entity(self, def_kind=None):
         '''
         Retrieves the entity which was rendered within the request.
+
+        @param def_kind: Indicates if the request can be incomplete (False).
         '''
         headers, body = self.extract_http_data()
         rendering = self.get_renderer(CONTENT_TYPE)
 
-        entity = rendering.to_entity(headers, body)
+        entity = rendering.to_entity(headers, body, def_kind)
 
         return entity
 
@@ -174,7 +179,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
         @param entity: The entity which should be rendered.
         '''
-        rendering = self.get_renderer('Accept')
+        rendering = self.get_renderer(ACCEPT)
 
         headers, body = rendering.from_entity(entity)
 
@@ -186,7 +191,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
         @param entities: The entities which should be rendered.
         '''
-        rendering = self.get_renderer('Accept')
+        rendering = self.get_renderer(ACCEPT)
 
         headers, body = rendering.from_entities(entities, key)
 
@@ -198,7 +203,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
         @param categories: The categories which should be rendered.
         '''
-        rendering = self.get_renderer('Accept')
+        rendering = self.get_renderer(ACCEPT)
 
         headers, body = rendering.from_categories(categories)
 
@@ -228,22 +233,25 @@ class ResourceHandler(BaseHandler):
                 action = self.parse_action()
 
                 workflow.action_entity(entity, action)
+
                 self.response(200, registry.DEFAULT_MIME_TYPE, None)
             except AttributeError as attr:
-                raise HTTPError(406, str(attr))
+                raise HTTPError(400, str(attr))
             except KeyError as key:
                 raise HTTPError(404, str(key))
         else:
             # update
             try:
                 old = registry.RESOURCES[key]
-                new = self.parse_entity()
+                new = self.parse_entity(def_kind=old.kind)
 
                 workflow.update_entity(old, new)
 
-                self.response(200, registry.DEFAULT_MIME_TYPE, None)
+                self.response(201, registry.DEFAULT_MIME_TYPE,
+                              {'Location': self.request.protocol
+                                           + '://' + self.request.host + key})
             except AttributeError as attr:
-                raise HTTPError(406, str(attr))
+                raise HTTPError(400, str(attr))
             except KeyError as key:
                 raise HTTPError(404, str(key))
 
@@ -255,10 +263,11 @@ class ResourceHandler(BaseHandler):
                 new = self.parse_entity()
 
                 workflow.replace_entity(old, new)
-
-                self.response(200, registry.DEFAULT_MIME_TYPE, None)
+                self.response(201, registry.DEFAULT_MIME_TYPE,
+                              {'Location': self.request.protocol
+                                           + '://' + self.request.host + key})
             except AttributeError as attr:
-                raise HTTPError(406, str(attr))
+                raise HTTPError(400, str(attr))
         else:
             # create...
             try:
@@ -270,7 +279,7 @@ class ResourceHandler(BaseHandler):
                               {'Location': self.request.protocol
                                            + '://' + self.request.host + key})
             except AttributeError as attr:
-                raise HTTPError(406, str(attr))
+                raise HTTPError(400, str(attr))
 
     def delete(self, key):
         # delete
@@ -281,7 +290,7 @@ class ResourceHandler(BaseHandler):
 
             self.response(200, registry.DEFAULT_MIME_TYPE, None)
         except AttributeError as attr:
-            raise HTTPError(406, str(attr))
+            raise HTTPError(400, str(attr))
         except KeyError as key:
             raise HTTPError(404, str(key))
 
@@ -302,7 +311,7 @@ class CollectionHandler(BaseHandler):
             result = workflow.filter_entities(entities, categories, attributes)
             self.render_entities(result, key)
         except AttributeError as attr:
-            raise HTTPError(406, str(attr))
+            raise HTTPError(400, str(attr))
 
     def post(self, key):
         if key == '' or key[-1] != '/':
@@ -317,7 +326,7 @@ class CollectionHandler(BaseHandler):
 
                 self.response(200, registry.DEFAULT_MIME_TYPE, None)
             except AttributeError as attr:
-                raise HTTPError(404, str(attr))
+                raise HTTPError(400, str(attr))
         elif len(self.parse_entities()) == 0:
             # create resource (&links)
             try:
@@ -327,18 +336,20 @@ class CollectionHandler(BaseHandler):
 
                 self.response(201, registry.DEFAULT_MIME_TYPE,
                               {'Location': self.request.protocol
-                                           + '://' + self.request.host + key})
+                                           + '://' + self.request.host
+                                           + key})
             except AttributeError as attr:
-                raise HTTPError(406, str(attr))
+                raise HTTPError(400, str(attr))
         elif len(self.parse_entities()) > 0:
             # update
             try:
                 mixin = registry.get_category(key)
                 new_entities = self.parse_entities()
                 old_entities = workflow.get_entities_under_path(key)
-                workflow.update_collection(mixin, old_entities, new_entities)
+                workflow.update_collection(mixin, old_entities,
+                                           new_entities)
             except AttributeError as attr:
-                raise HTTPError(406, str(attr))
+                raise HTTPError(400, str(attr))
 
     def put(self, key):
         # replace
@@ -350,11 +361,11 @@ class CollectionHandler(BaseHandler):
             old_entities = workflow.get_entities_under_path(key)
             workflow.replace_collection(mixin, old_entities, new_entities)
         except AttributeError as attr:
-            raise HTTPError(406, str(attr))
+            raise HTTPError(400, str(attr))
 
     def delete(self, key):
-        # delete
-        try:
+        if len(self.parse_entities()) == 0:
+            # delete entities
             if key == '' or key[-1] != '/':
                 key += '/'
             entities = workflow.get_entities_under_path(key)
@@ -362,8 +373,14 @@ class CollectionHandler(BaseHandler):
                 workflow.delete_entity(entity)
 
             self.response(200, registry.DEFAULT_MIME_TYPE, None)
-        except AttributeError as attr:
-            raise HTTPError(406, str(attr))
+        elif len(self.parse_entities()) > 0:
+            # remove from collection
+            try:
+                mixin = registry.get_category(key)
+                entities = self.parse_entities()
+                workflow.delete_from_collection(mixin, entities)
+            except AttributeError as attr:
+                raise HTTPError(400, str(attr))
 
 
 class QueryHandler(BaseHandler):
@@ -371,16 +388,17 @@ class QueryHandler(BaseHandler):
     Handles the Query interface.
     '''
 
+    # disabling 'Unused attr' pylint check (not needed here)
+    # pylint: disable=W0612
+
     def get(self):
         # retrieve (filter)
-        # disabling 'Unused attr' pylint check (not needed here)
-        # pylint: disable=W0612
         try:
             categories, attributes = self.parse_filter()
             result = workflow.filter_categories(categories)
             self.render_categories(result)
         except AttributeError as attr:
-            raise HTTPError(406, str(attr))
+            raise HTTPError(400, str(attr))
 
     def post(self):
         # add user-defined mixin
@@ -389,23 +407,17 @@ class QueryHandler(BaseHandler):
 
             workflow.append_mixins(mixins)
 
-            self.response(200, registry.DEFAULT_MIME_TYPE, None)
+            self.response(200, self.request.headers[ACCEPT], None)
         except AttributeError as attr:
-            raise HTTPError(406, str(attr))
-        except KeyError as key:
-            raise HTTPError(404, str(key))
+            raise HTTPError(400, str(attr))
 
     def delete(self):
         # delete user defined mixin
         try:
-            # disabling 'Unused attr' pylint check (only need cats)
-            # pylint: disable=W0612
             categories, attributes = self.parse_filter()
 
             workflow.remove_mixins(categories)
 
             self.response(200, registry.DEFAULT_MIME_TYPE, None)
         except AttributeError as attr:
-            raise HTTPError(406, str(attr))
-        except KeyError as key:
-            raise HTTPError(404, str(key))
+            raise HTTPError(400, str(attr))
