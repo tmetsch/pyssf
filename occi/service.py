@@ -23,11 +23,11 @@ Created on Jul 19, 2011
 @author: tmetsch
 '''
 
-from occi import registry
 from occi.backend import KindBackend, ActionBackend, MixinBackend
 from occi.protocol.html_rendering import HTMLRendering
 from occi.protocol.occi_rendering import TextOcciRendering, \
     TextPlainRendering, TextUriListRendering
+from occi.registry import Registry, NonePersistentRegistry
 from occi.web import QueryHandler, CollectionHandler, ResourceHandler
 import tornado.httpserver
 
@@ -40,18 +40,31 @@ class OCCI(object):
     # disabling 'Method could be func' pylint check (this is for extension)
     # pylint: disable=R0201
 
-    def __init__(self):
+    def __init__(self, registry=None):
 
-        registry.RENDERINGS['text/occi'] = TextOcciRendering()
-        registry.RENDERINGS['text/plain'] = TextPlainRendering()
-        registry.RENDERINGS['text/uri-list'] = TextUriListRendering()
-        registry.RENDERINGS['text/html'] = HTMLRendering()
+        if registry is None:
+            self.registry = NonePersistentRegistry()
+        elif isinstance(registry, Registry):
+            self.registry = registry
+        else:
+            raise AttributeError('Registry needs to derive from abstract' \
+                                 ' class \'Registry\'')
+
+        self.registry.set_renderer('text/occi',
+                                   TextOcciRendering(self.registry))
+        self.registry.set_renderer('text/plain',
+                                   TextPlainRendering(self.registry))
+        self.registry.set_renderer('text/uri-list',
+                                   TextUriListRendering(self.registry))
+        self.registry.set_renderer('text/html', HTMLRendering(self.registry))
 
         application = tornado.web.Application([
-                (r"/-/", QueryHandler),
-                (r"/.well-known/org/ogf/occi/-/", QueryHandler),
-                (r"(.*)/", CollectionHandler),
-                (r"(.*)", ResourceHandler),
+                (r"/-/", QueryHandler, dict(registry=self.registry)),
+                (r"/.well-known/org/ogf/occi/-/",
+                 QueryHandler,
+                 dict(registry=self.registry)),
+                (r"(.*)/", CollectionHandler, dict(registry=self.registry)),
+                (r"(.*)", ResourceHandler, dict(registry=self.registry)),
             ])
 
         self.http_server = tornado.httpserver.HTTPServer(application)
@@ -62,8 +75,8 @@ class OCCI(object):
 
         Verifies that correct 'parent' backends are used.
 
-        @param category: The category the backend defines.
-        @param backend: The backend which handles the given category.
+        category -- The category the backend defines.
+        backend -- The backend which handles the given category.
         '''
         allow = False
         if repr(category) == 'kind' and isinstance(backend, KindBackend):
@@ -74,7 +87,7 @@ class OCCI(object):
             allow = True
 
         if allow:
-            registry.BACKENDS[category] = backend
+            self.registry.set_backend(category, backend)
         else:
             raise AttributeError('Backends handling kinds need to derive' \
                                  ' from KindBackend; Backends handling' \

@@ -28,7 +28,7 @@ def is_related_valid(link):
     '''
     Verifies that a link is consistent.
 
-    @param link: The link which should be verified.
+    link -- The link which should be verified.
     '''
     if link.target.kind == link.kind.related:
         return True
@@ -40,8 +40,8 @@ def is_attr_mutable(category, attribute_name):
     '''
     Checks if an attribute is mutable. Return True if so.
 
-    @param category: The category which defines the attribute.
-    @param attribute_name: The name of the attribute.
+    category -- The category which defines the attribute.
+    attribute_name -- The name of the attribute.
     '''
     if category.attributes[attribute_name] == 'mutable':
         return True
@@ -53,8 +53,8 @@ def is_attr_required(category, attribute_name):
     '''
     Checks if an attribute is required. Return True if so.
 
-    @param category: The category which defines the attribute.
-    @param attribute_name: The name of the attribute.
+    category -- The category which defines the attribute.
+    attribute_name -- The name of the attribute.
     '''
     if category.attributes[attribute_name] == 'required':
         return True
@@ -66,8 +66,8 @@ def is_action_applicable(entity, action):
     '''
     Returns true if the action is currently applicable.
 
-    @param entity: The current entity.
-    @param action: The action to test for.
+    entity -- The current entity.
+    action -- The action to test for.
     '''
     if action in entity.actions and action in entity.kind.actions:
         return True
@@ -90,7 +90,7 @@ class KindBackend(object):
         '''
         Call the Resource Management and create this entity.
 
-        @param entity: The entity which is to be created.
+        entity -- The entity which is to be created.
         '''
         pass
 
@@ -99,7 +99,7 @@ class KindBackend(object):
         Call the Resource Management and refresh this entity so the client gets
         up to date information.
 
-        @param entity: The entity which is to be retrieved.
+        entity -- The entity which is to be retrieved.
         '''
         pass
 
@@ -113,8 +113,8 @@ class KindBackend(object):
         Note that the new entity might no have all the information the old one
         had.
 
-        @param old: The old entity which is to be updated.
-        @param new: The new entity holding the updated information.
+        old -- The old entity which is to be updated.
+        new -- The new entity holding the updated information.
         '''
         pass
 
@@ -128,8 +128,8 @@ class KindBackend(object):
         new if copied into old. So if you really want to replace old with new
         you need to have an old.* = new.* somewhere here (RECOMMENDED).
 
-        @param old: The old entity which is to be updated.
-        @param new: The new entity holding the updated information.
+        old -- The old entity which is to be updated.
+        new -- The new entity holding the updated information.
         '''
         pass
 
@@ -137,7 +137,7 @@ class KindBackend(object):
         '''
         Call the Resource Management and delete this entity.
 
-        @param entity: The entity which is to be deleted.
+        entity -- The entity which is to be deleted.
         '''
         pass
 
@@ -156,8 +156,8 @@ class ActionBackend(object):
         '''
         Call the Resource Management and perform this action.
 
-        @param entity: The entity on which the action is going to be performed.
-        @param action: The action category definition.
+        entity -- The entity on which the action is going to be performed.
+        action -- The action category definition.
         '''
         pass
 
@@ -174,7 +174,7 @@ class MixinBackend(object):
         This routine is called when the mixin which is handled by this backend
         get added to an entity.
 
-        @param entity: The entity which has been added the mixin.
+        entity -- The entity which has been added the mixin.
         '''
         pass
 
@@ -183,7 +183,7 @@ class MixinBackend(object):
         This routine is called when the mixin which is handled by this backend
         is removed from the entity.
 
-        @param entity: The entity which has no longer the mixin.
+        entity -- The entity which has no longer the mixin.
         '''
         pass
 

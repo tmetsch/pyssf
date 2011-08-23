@@ -27,11 +27,11 @@ Created on Jul 5, 2011
 # disabling 'Too many public methods' pylint check (unittest's fault)
 # pylint: disable=C0103,R0904
 
-from occi import registry
 from occi.backend import KindBackend, MixinBackend, ActionBackend
 from occi.core_model import Kind, Resource, Link, Mixin, Action
 from occi.protocol.occi_rendering import TextOcciRendering, Rendering, \
     TextPlainRendering, TextUriListRendering
+from occi.registry import NonePersistentRegistry
 import unittest
 
 
@@ -41,31 +41,41 @@ class TestTextOcciRendering(unittest.TestCase):
     '''
 
     # disable 'Unused attr' pylint check (not needing body here)
-    # pylint: disable=W0612
+    # disable 'Too many instance attributes' pyling check (It's a test :))
+    # pylint: disable=W0612,R0902
 
-    rendering = TextOcciRendering()
+    registry = NonePersistentRegistry()
 
     def setUp(self):
+        self.rendering = TextOcciRendering(self.registry)
         # type system...
         self.kind = Kind('http://example.com#', 'foo', related=[Resource.kind])
         self.invalid_kind = Kind('http://example.com#', 'invalid')
         self.link = Kind('http://example.com#', 'link', related=[Link.kind])
         self.mixin = Mixin('http://example.com#', 'mixin')
         self.action = Action('http://example.com#', 'action')
-        registry.BACKENDS[self.kind] = KindBackend()
-        registry.BACKENDS[self.invalid_kind] = KindBackend()
-        registry.BACKENDS[self.link] = KindBackend()
-        registry.BACKENDS[self.mixin] = MixinBackend()
-        registry.BACKENDS[self.action] = ActionBackend()
+
+        self.registry.set_backend(self.kind, KindBackend())
+        self.registry.set_backend(self.invalid_kind, KindBackend())
+        self.registry.set_backend(self.link, KindBackend())
+        self.registry.set_backend(self.mixin, MixinBackend())
+        self.registry.set_backend(self.action, ActionBackend())
 
         # 2 linked entities
         self.entity = Resource('/foo/1', self.kind, [self.mixin])
         trg = Resource('/foo/2', self.kind, [], [])
         self.link1 = Link('/link/1', self.link, [], self.entity, trg)
         self.entity.links = [self.link1]
-        registry.RESOURCES = {'/foo/2': trg,
-                              '/link/1': self.link1,
-                              '/foo/1': self.entity}
+
+        self.registry.add_resource('/foo/2', trg)
+        self.registry.add_resource('/link/1', self.link1)
+        self.registry.add_resource('/foo/1', self.entity)
+
+    def tearDown(self):
+        for res in self.registry.get_resources():
+            self.registry.delete_resource(res.identifier)
+        for item in self.registry.get_categories():
+            self.registry.delete_mixin(item)
 
     #==========================================================================
     # Failure
@@ -134,12 +144,12 @@ class TestTextOcciRendering(unittest.TestCase):
 
     def test_resources_for_sanity(self):
         '''
-        Tests is a set of resource can be set and retrieved.
+        Tests is a set of resource can be set and retrieved for sanity.
         '''
-        heads, body = self.rendering.from_entities(registry.RESOURCES.values(),
-                                                   '/')
+        res = self.registry.get_resources()
+        heads, body = self.rendering.from_entities(res, '/')
         entities = self.rendering.to_entities(heads, body)
-        self.assertEqual(registry.RESOURCES.values(), entities)
+        self.assertEqual(self.registry.get_resources(), entities)
 
     def test_link_for_sanity(self):
         '''
@@ -192,12 +202,14 @@ class TestTextOcciRendering(unittest.TestCase):
 
 class TestTextPlainRendering(unittest.TestCase):
     '''
-    Test the text/plain rendering. This is simple since it's derived from
+    Test the text / plain rendering. This is simple since it's derived from
     text/occi rendering.
     '''
 
+    registry = NonePersistentRegistry()
+
     def setUp(self):
-        self.rendering = TextPlainRendering()
+        self.rendering = TextPlainRendering(self.registry)
 
     def test_data_routines_for_sanity(self):
         '''
@@ -225,7 +237,10 @@ class TestTextURIListRendering(unittest.TestCase):
     Test the uri-list rendering.
     '''
 
-    rendering = TextUriListRendering()
+    registry = NonePersistentRegistry()
+
+    def setUp(self):
+        self.rendering = TextUriListRendering(self.registry)
 
     def test_from_entities_for_sanity(self):
         '''
@@ -258,11 +273,13 @@ class TestRendering(unittest.TestCase):
     Test for the abstract Rendering class.
     '''
 
+    registry = NonePersistentRegistry()
+
     def test_if_not_implemented_is_thrown(self):
         '''
         Just to check the abstract class.
         '''
-        rendering = Rendering()
+        rendering = Rendering(self.registry)
         self.assertRaises(NotImplementedError, rendering.to_entity, None, None,
                           None)
         self.assertRaises(NotImplementedError, rendering.to_action, None, None)

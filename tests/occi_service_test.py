@@ -27,9 +27,9 @@ Created on Jul 4, 2011
 # disabling 'Too many public methods' pylint check (unittest's fault)
 # pylint: disable=C0103,R0904
 
-from occi import registry
 from occi.backend import KindBackend, MixinBackend, ActionBackend
 from occi.extensions.infrastructure import COMPUTE, IPNETWORKINTERFACE, START
+from occi.registry import NonePersistentRegistry
 from occi.service import OCCI
 import tornado
 import unittest
@@ -40,6 +40,8 @@ class TestService(unittest.TestCase):
     Test the service extension point.
     '''
 
+    registry = NonePersistentRegistry()
+
     def setUp(self):
         self.service = OCCI()
 
@@ -47,10 +49,12 @@ class TestService(unittest.TestCase):
         '''
         Test constructor and initialization of service.
         '''
-        self.assertTrue('text/occi' in registry.RENDERINGS)
-        self.assertTrue('text/plain' in registry.RENDERINGS)
-        self.assertTrue('text/uri-list' in registry.RENDERINGS)
-        self.assertTrue('text/html' in registry.RENDERINGS)
+        self.assertTrue(self.registry.get_renderer('text/occi'))
+        self.assertTrue(self.registry.get_renderer('text/plain'))
+        self.assertTrue(self.registry.get_renderer('text/uri-list'))
+        self.assertTrue(self.registry.get_renderer('text/html'))
+
+        OCCI(registry=NonePersistentRegistry())
 
     def test_register_backend_for_failure(self):
         '''
@@ -62,6 +66,12 @@ class TestService(unittest.TestCase):
                           COMPUTE, back1)
         self.assertRaises(AttributeError, self.service.register_backend,
                           COMPUTE, back2)
+        try:
+            OCCI(registry=dict())
+        except AttributeError:
+            pass
+        else:
+            self.assertFalse(True, 'Exception not thrown...')
 
     def test_register_backend_for_sanity(self):
         '''
@@ -73,9 +83,10 @@ class TestService(unittest.TestCase):
         self.service.register_backend(COMPUTE, back)
         self.service.register_backend(IPNETWORKINTERFACE, back1)
         self.service.register_backend(START, back2)
-        self.assertTrue(registry.BACKENDS[COMPUTE] == back)
-        self.assertTrue(registry.BACKENDS[IPNETWORKINTERFACE] == back1)
-        self.assertTrue(registry.BACKENDS[START] == back2)
+
+        self.assertTrue(self.registry.get_backend(COMPUTE) == back)
+        self.assertTrue(self.registry.get_backend(IPNETWORKINTERFACE) == back1)
+        self.assertTrue(self.registry.get_backend(START) == back2)
 
     def test_start_for_success(self):
         '''
@@ -104,7 +115,7 @@ def fake_listen(port):
     '''
     fake function to emulate listen...
 
-    @param port: A random nr.
+    port -- A random nr.
     '''
 
     # pylint: disable=W0613

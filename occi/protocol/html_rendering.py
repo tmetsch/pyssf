@@ -101,13 +101,14 @@ class HTMLRendering(Rendering):
             margin: 1em; \
            }"
 
-    def __init__(self, css=None):
+    def __init__(self, registry, css=None):
         '''
         Constructor for HTML rendering. Can be used to use other CSS.
 
-        @param css: If provided this CSS is used.
+        registry -- Registry used in this service.
+        css -- If provided this CSS is used.
         '''
-        Rendering.__init__(self)
+        Rendering.__init__(self, registry)
         if css is not None:
             self.css = css
 

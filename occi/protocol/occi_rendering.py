@@ -23,7 +23,6 @@ Created on Jun 28, 2011
 @author: tmetsch
 '''
 
-from occi import registry
 from occi.core_model import Resource, Link
 import occi_parser as parser
 
@@ -49,15 +48,23 @@ class Rendering(object):
     All renderings should derive from this class.
     '''
 
+    def __init__(self, registry):
+        '''
+        Constructor.
+
+        registry -- The registry used for this process.
+        '''
+        self.registry = registry
+
     def to_entity(self, headers, body, def_kind):
         '''
         Given the HTTP headers and the body this method will convert the HTTP
         data into an entity representation. Must return Resource or Link
         instances.
 
-        @param headers: The HTTP headers.
-        @param body: The HTTP body.
-        @param def_kind: If provided this kind is taken (Needed for update).
+        headers -- The HTTP headers.
+        body -- The HTTP body.
+        def_kind -- If provided this kind is taken (Needed for update).
         '''
         raise NotImplementedError()
 
@@ -68,7 +75,7 @@ class Rendering(object):
         If it's a link make sure source, target attributes are set. If it's a
         Resource make sure Links are presented properly.
 
-        @param entity: The entity which is to rendered.
+        entity -- The entity which is to rendered.
         '''
         raise NotImplementedError()
 
@@ -78,8 +85,8 @@ class Rendering(object):
         data into a set of entity representations. Must return a set of
         Resource or Link instances.
 
-        @param headers: The HTTP headers.
-        @param body: The HTTP body.
+        headers -- The HTTP headers.
+        body -- The HTTP body.
         '''
         raise NotImplementedError()
 
@@ -87,8 +94,8 @@ class Rendering(object):
         '''
         Given an set of entities it will return a HTTP body an header.
 
-        @param entities: The entities which will be rendered.
-        @param key: Needed for uri-list (see RFC) and html rendering.
+        entities -- The entities which will be rendered.
+        key -- Needed for uri-list (see RFC) and html rendering.
         '''
         raise NotImplementedError()
 
@@ -96,7 +103,7 @@ class Rendering(object):
         '''
         Given an set of categories it will return a HTTP body an header.
 
-        @param categories: The list of categories which is to be rendered.
+        categories -- The list of categories which is to be rendered.
         '''
         raise NotImplementedError()
 
@@ -105,8 +112,8 @@ class Rendering(object):
         Given the HTTP headers and the body this method will convert the HTTP
         data into an Action.
 
-        @param headers: The HTTP headers.
-        @param body: The HTTP body.
+        headers -- The HTTP headers.
+        body -- The HTTP body.
         '''
         raise NotImplementedError()
 
@@ -115,8 +122,8 @@ class Rendering(object):
         Given the HTTP headers and the body this method will convert the HTTP
         data into a Mixins. Must return a list with Mixin instances.
 
-        @param headers: The HTTP headers.
-        @param body: The HTTP body.
+        headers -- The HTTP headers.
+        body -- The HTTP body.
         '''
         raise NotImplementedError()
 
@@ -125,8 +132,8 @@ class Rendering(object):
         Given the HTTP headers and the body this method will convert the HTTP
         data into a list of categories and attributes.
 
-        @param headers: The HTTP headers.
-        @param body: The HTTP body.
+        headers -- The HTTP headers.
+        body -- The HTTP body.
         '''
         raise NotImplementedError()
 
@@ -139,7 +146,7 @@ def _extract_data_from_headers(headers):
     '''
     Simple method to split out the information from the HTTP headers.
 
-    @param headers: The HTTP headers.
+    headers -- The HTTP headers.
     '''
     # split out the information
     data = HTTPData()
@@ -158,7 +165,7 @@ def _set_data_to_headers(data):
     '''
     Simple method to set all information in the HTTP header.
 
-    @param data: The data to set.
+    data -- The data to set.
     '''
     headers = {}
     body = 'OK'
@@ -175,17 +182,25 @@ def _set_data_to_headers(data):
     return headers, body
 
 
-def _to_entity(data, def_kind):
+def _to_entity(data, def_kind, registry):
     '''
     Extract an entity from the HTTP data object.
+
+    kind -- The kind definition.
+    registry -- The registry.
     '''
+
+    # disable 'Too many local vars' pylint check (It's a bit ugly but will do)
+    # pylint: disable=R0914
+
     kind = None
     mixins = []
 
     # first kind & mixins
     kind_found = False
     for category_string in data.categories:
-        category = parser.get_category(category_string.strip())
+        category = parser.get_category(category_string.strip(),
+                                       registry.get_categories())
         if repr(category) == 'kind' and not kind_found:
             kind = category
             kind_found = True
@@ -209,11 +224,12 @@ def _to_entity(data, def_kind):
         entity = Resource(None, kind, mixins, [])
         for link_string in data.links:
             entity.links.append(parser.get_link(link_string.strip(),
-                                                entity))
+                                                entity,
+                                                registry))
     elif Link.kind in kind.related:
         try:
-            source = registry.RESOURCES[attributes['occi.core.source']]
-            target = registry.RESOURCES[attributes['occi.core.target']]
+            source = registry.get_resource(attributes['occi.core.source'])
+            target = registry.get_resource(attributes['occi.core.target'])
         except KeyError:
             raise AttributeError('Both occi.core.[source, target]'
                                  + ' attributes need to be resources.')
@@ -229,6 +245,8 @@ def _to_entity(data, def_kind):
 def _from_entity(entity):
     '''
     Create a HTTP data object from an entity.
+
+    entity -- The entity to render.
     '''
     data = HTTPData()
 
@@ -273,14 +291,17 @@ def _from_entity(entity):
     return data
 
 
-def _to_entities(data):
+def _to_entities(data, registry):
     '''
     Extract a set of (in the service existing) entities from a request.
+
+    data -- the HTTP data.
+    registry -- The registry used for this call.
     '''
     result = []
     for item in data.locations:
         try:
-            result.append(registry.RESOURCES[item.strip()])
+            result.append(registry.get_resource(item.strip()))
         except KeyError:
             raise AttributeError('Could not find the resource with id: '
                                  + str(item))
@@ -288,13 +309,16 @@ def _to_entities(data):
     return result
 
 
-def _from_entities(entity_list):
+def _from_entities(entity_list, registry):
     '''
     Return a list of entities using the X-OCCI-Location attribute.
+
+    entity_list -- list of entities.
+    registry -- The registry used for this call.registry
     '''
     data = HTTPData()
     for entity in entity_list:
-        data.locations.append(registry.HOST + entity.identifier)
+        data.locations.append(registry.get_hostname() + entity.identifier)
 
     return data
 
@@ -302,6 +326,8 @@ def _from_entities(entity_list):
 def _from_categories(categories):
     '''
     Create a HTTP data object from a set of categories.
+
+    categories -- list of categories.
     '''
     data = HTTPData()
 
@@ -311,35 +337,47 @@ def _from_categories(categories):
     return data
 
 
-def _to_action(data):
+def _to_action(data, registry):
     '''
     Create an action from an HTTP data object.
+
+    data -- the HTTP data.
+    registry -- The registry used for this call.
     '''
-    action = parser.get_category(data.categories[0].strip())
+    action = parser.get_category(data.categories[0].strip(),
+                                 registry.get_categories())
 
     return action
 
 
-def _to_mixins(data):
+def _to_mixins(data, registry):
     '''
     Create a Mixin from an HTTP data object.
+
+    data -- the HTTP data.
+    registry -- The registry used for this call.
     '''
     result = []
     for cat_str in data.categories:
-        result.append(parser.get_category(cat_str, is_mixin=True))
+        result.append(parser.get_category(cat_str,
+                                          registry.get_categories(),
+                                          is_mixin=True))
 
     return result
 
 
-def _get_filter(data):
+def _get_filter(data, registry):
     '''
     Parse categories and attributes from the request.
+
+    data -- the HTTP data.
+    registry -- The registry used for this call.
     '''
     categories = []
     attributes = {}
 
     for cat in data.categories:
-        categories.append(parser.get_category(cat))
+        categories.append(parser.get_category(cat, registry.get_categories()))
 
     for attr in data.attributes:
         key, value = parser.get_attributes(attr)
@@ -364,8 +402,8 @@ class TextOcciRendering(Rendering):
         '''
         Mainly here so TextPlainRendering can reuse.
 
-        @param headers: The headers of the request.
-        @param body: The body of the request.
+        headers -- The headers of the request.
+        body -- The body of the request.
         '''
         return _extract_data_from_headers(headers)
 
@@ -373,13 +411,13 @@ class TextOcciRendering(Rendering):
         '''
         Mainly here so TextPlainRendering can reuse.
 
-        @param data: An HTTPData object.
+        data -- An HTTPData object.
         '''
         return _set_data_to_headers(data)
 
     def to_entity(self, headers, body, def_kind):
         data = self.get_data(headers, body)
-        entity = _to_entity(data, def_kind)
+        entity = _to_entity(data, def_kind, self.registry)
         return entity
 
     def from_entity(self, entity):
@@ -389,11 +427,11 @@ class TextOcciRendering(Rendering):
 
     def to_entities(self, headers, body):
         data = self.get_data(headers, body)
-        entities = _to_entities(data)
+        entities = _to_entities(data, self.registry)
         return entities
 
     def from_entities(self, entities, key):
-        data = _from_entities(entities)
+        data = _from_entities(entities, self.registry)
         headers, body = self.set_data(data)
         return headers, body
 
@@ -404,17 +442,17 @@ class TextOcciRendering(Rendering):
 
     def to_action(self, headers, body):
         data = self.get_data(headers, body)
-        action = _to_action(data)
+        action = _to_action(data, self.registry)
         return action
 
     def to_mixins(self, headers, body):
         data = self.get_data(headers, body)
-        mixin = _to_mixins(data)
+        mixin = _to_mixins(data, self.registry)
         return mixin
 
     def get_filters(self, headers, body):
         data = self.get_data(headers, body)
-        categories, attributes = _get_filter(data)
+        categories, attributes = _get_filter(data, self.registry)
         return categories, attributes
 
 
@@ -422,7 +460,7 @@ def _extract_data_from_body(body):
     '''
     Simple method to split out the information from the HTTP body.
 
-    @param body: The HTTP body.
+    body -- The HTTP body.
     '''
     data = HTTPData()
     for entry in body.split('\n'):
@@ -441,8 +479,8 @@ def _extract_values(entry, key):
     '''
     In HTTP body OCCI renderings can either be in new lines or separated by ,.
 
-    @param entry: The text line to look into.
-    @param key: The key to look for and strip away.
+    entry -- The text line to look into.
+    key -- The key to look for and strip away.
     '''
     items = []
     tmp = entry[entry.find(key) + len(key) + 1:]
@@ -458,7 +496,7 @@ def _set_data_to_body(data):
     '''
     Simple method to set all information in the HTTP body.
 
-    @param data: The data to set.
+    data -- The data to set.
     '''
     body = ''
     if len(data.categories) > 0:
@@ -516,7 +554,7 @@ class TextUriListRendering(Rendering):
     def from_entities(self, entities, key):
         body = '# uri:' + str(key)
         for entity in entities:
-            body += '\n' + registry.HOST + entity.identifier
+            body += '\n' + self.registry.get_hostname() + entity.identifier
         return {}, body
 
     def from_categories(self, categories):

@@ -28,13 +28,13 @@ Created on Jul 4, 2011
 # disabling 'Unused variable' pylint check (sometime I only look in the body)
 # pylint: disable=C0103,R0904,W0612
 
-from occi import registry
 from occi.backend import KindBackend, MixinBackend, ActionBackend
 from occi.core_model import Resource, Link, Mixin
 from occi.extensions.infrastructure import COMPUTE, STORAGE, NETWORK, \
     NETWORKINTERFACE, IPNETWORKINTERFACE, IPNETWORK, START
 from occi.protocol.occi_rendering import TextOcciRendering, \
     TextUriListRendering, TextPlainRendering
+from occi.registry import NonePersistentRegistry
 from occi.web import QueryHandler, BaseHandler, CollectionHandler, \
     ResourceHandler
 from tornado.httpserver import HTTPRequest
@@ -61,6 +61,9 @@ class TestMixin(BaseHandler):
     Mixin which overwrites some functions.
     '''
 
+    # disabling 'Arguments number differs' pylint check (Needed here...)
+    # pylint: disable=W0221
+
     heads = {}
     body = ''
 
@@ -68,6 +71,9 @@ class TestMixin(BaseHandler):
         super(TestMixin, self).__init__(application, request, **kwargs)
         self._transforms = []
         self.request.remote_ip = '10.0.0.1'
+
+    def initialize(self):
+        pass
 
     def response(self, status, mime_type, headers, body='OK'):
         super(TestMixin, self).response(status, mime_type, headers, body)
@@ -96,19 +102,22 @@ class TestQueryCapabilites(unittest.TestCase):
     Test the QI.
     '''
 
+    registry = NonePersistentRegistry()
+
     def setUp(self):
         self.app = Application([(r"/-/", QueryWrapper)])
-        #registry.RENDERINGS['text/plain'] = TextPlainRendering()
-        registry.RENDERINGS['text/occi'] = TextOcciRendering()
+        self.registry.set_renderer('text/occi',
+                                   TextOcciRendering(self.registry))
 
         backend = KindBackend()
 
-        registry.BACKENDS = {COMPUTE: backend,
-                             STORAGE: backend,
-                             NETWORK: backend}
+        self.registry.set_backend(COMPUTE, backend)
+        self.registry.set_backend(STORAGE, backend)
+        self.registry.set_backend(NETWORK, backend)
 
     def tearDown(self):
-        registry.BACKENDS = {}
+        for item in self.registry.get_categories():
+            self.registry.delete_mixin(item)
 
     #==========================================================================
     # Failure
@@ -251,11 +260,18 @@ class TestCollectionCapabilites(unittest.TestCase):
     Test the collection handler.
     '''
 
+    registry = NonePersistentRegistry()
+
     def setUp(self):
+        self.registry.set_hostname('http://127.0.0.1')
         self.app = Application([(r"(.*)/", CollectionWrapper)])
-        registry.RENDERINGS['text/occi'] = TextOcciRendering()
-        registry.RENDERINGS['text/plain'] = TextPlainRendering()
-        registry.RENDERINGS['text/uri-list'] = TextUriListRendering()
+
+        self.registry.set_renderer('text/plain',
+                                   TextPlainRendering(self.registry))
+        self.registry.set_renderer('text/occi',
+                                   TextOcciRendering(self.registry))
+        self.registry.set_renderer('text/uri-list',
+                                   TextUriListRendering(self.registry))
 
         self.mixin = Mixin('foo', 'mystuff')
 
@@ -266,18 +282,19 @@ class TestCollectionCapabilites(unittest.TestCase):
                                       [IPNETWORKINTERFACE], self.compute,
                                       self.network)
 
-        registry.BACKENDS = {COMPUTE: SimpleComputeBackend(),
-                             NETWORK: KindBackend(),
-                             self.mixin: MixinBackend(),
-                             START: SimpleComputeBackend()}
+        self.registry.set_backend(COMPUTE, SimpleComputeBackend())
+        self.registry.set_backend(NETWORK, KindBackend())
+        self.registry.set_backend(self.mixin, MixinBackend())
+        self.registry.set_backend(START, SimpleComputeBackend())
 
-        registry.RESOURCES = {self.compute.identifier: self.compute,
-                              self.network.identifier: self.network,
-                              self.network_interface.identifier:
-        self.network_interface}
+        self.registry.add_resource(self.compute.identifier, self.compute)
+        self.registry.add_resource(self.network.identifier, self.network)
+        self.registry.add_resource(self.network_interface.identifier,
+                                   self.network_interface)
 
     def tearDown(self):
-        registry.RESOURCES = {}
+        for item in self.registry.get_resources():
+            self.registry.delete_resource(item.identifier)
 
     #==========================================================================
     # Failure
@@ -414,7 +431,7 @@ class TestCollectionCapabilites(unittest.TestCase):
         request = create_request('DELETE', {}, '')
         handler = CollectionWrapper(self.app, request)
         handler.delete('/compute')
-        self.assertFalse(self.compute in registry.RESOURCES.values())
+        self.assertFalse(self.compute in self.registry.get_resources())
 
     def test_action_for_sanity(self):
         '''
@@ -483,7 +500,7 @@ class TestCollectionCapabilites(unittest.TestCase):
         request = create_request('POST', headers, '')
         handler = CollectionWrapper(self.app, request)
         handler.post('/compute/')
-        self.assertTrue(len(registry.RESOURCES) == 4)
+        self.assertTrue(len(self.registry.get_resources()) == 4)
 
 
 class ResourceWrapper(ResourceHandler, TestMixin):
@@ -498,17 +515,21 @@ class TestResourceCapabilites(unittest.TestCase):
     Test the Resource Handler.
     '''
 
+    registry = NonePersistentRegistry()
+
     def setUp(self):
         self.app = Application([(r"(.*)", ResourceWrapper)])
-        registry.RENDERINGS['text/occi'] = TextOcciRendering()
+        self.registry.set_renderer('text/occi',
+                                   TextOcciRendering(self.registry))
 
-        registry.BACKENDS = {COMPUTE: SimpleComputeBackend(),
-                             NETWORK: KindBackend(),
-                             NETWORKINTERFACE: KindBackend(),
-                             START: SimpleComputeBackend()}
+        self.registry.set_backend(COMPUTE, SimpleComputeBackend())
+        self.registry.set_backend(NETWORK, KindBackend())
+        self.registry.set_backend(NETWORKINTERFACE, KindBackend())
+        self.registry.set_backend(START, SimpleComputeBackend())
 
     def tearDown(self):
-        registry.RESOURCES = {}
+        for item in self.registry.get_resources():
+            self.registry.delete_resource(item.identifier)
 
     #==========================================================================
     # Failure
@@ -548,7 +569,7 @@ class TestResourceCapabilites(unittest.TestCase):
         request = create_request('PUT', headers, '')
         handler = ResourceWrapper(self.app, request)
         handler.put('/compute/1')
-        self.assertTrue('/compute/1' in registry.RESOURCES.keys())
+        self.assertTrue('/compute/1' in self.registry.get_resource_keys())
 
         headers = {'Content-Type': 'text/occi',
                    'X-Occi-Attribute': 'garbage'}
@@ -566,7 +587,7 @@ class TestResourceCapabilites(unittest.TestCase):
         request = create_request('PUT', headers, '')
         handler = ResourceWrapper(self.app, request)
         handler.put('/compute/1')
-        self.assertTrue('/compute/1' in registry.RESOURCES.keys())
+        self.assertTrue('/compute/1' in self.registry.get_resource_keys())
 
         headers = {'Content-Type': 'text/occi',
                    'Category': 'garbage'}
@@ -588,7 +609,7 @@ class TestResourceCapabilites(unittest.TestCase):
         request = create_request('PUT', headers, '')
         handler = ResourceWrapper(self.app, request)
         handler.put('/compute/1')
-        self.assertTrue('/compute/1' in registry.RESOURCES.keys())
+        self.assertTrue('/compute/1' in self.registry.get_resource_keys())
 
         request = create_request('DELETE', {}, '')
         handler = ResourceWrapper(self.app, request)
@@ -603,7 +624,7 @@ class TestResourceCapabilites(unittest.TestCase):
         request = create_request('PUT', headers, '')
         handler = ResourceWrapper(self.app, request)
         handler.put('/compute/3')
-        self.assertTrue('/compute/3' in registry.RESOURCES.keys())
+        self.assertTrue('/compute/3' in self.registry.get_resource_keys())
 
         headers = {'Content-Type': 'text/occi',
                    'Category': 'blabla'}
@@ -632,14 +653,14 @@ class TestResourceCapabilites(unittest.TestCase):
         request = create_request('PUT', headers, '')
         handler = ResourceWrapper(self.app, request)
         handler.put('/compute/1')
-        self.assertTrue('/compute/1' in registry.RESOURCES.keys())
+        self.assertTrue('/compute/1' in self.registry.get_resource_keys())
 
         headers = {'Content-Type': 'text/occi',
                    'Category': parser.get_category_str(NETWORK)}
         request = create_request('PUT', headers, '')
         handler = ResourceWrapper(self.app, request)
         handler.put('/network/1')
-        self.assertTrue('/network/1' in registry.RESOURCES.keys())
+        self.assertTrue('/network/1' in self.registry.get_resource_keys())
 
         headers = {'Content-Type': 'text/occi',
                    'Category': parser.get_category_str(NETWORKINTERFACE),
@@ -648,8 +669,8 @@ class TestResourceCapabilites(unittest.TestCase):
         request = create_request('PUT', headers, '')
         handler = ResourceWrapper(self.app, request)
         handler.put('/network/link/1')
-        self.assertTrue('/network/link/1' in registry.RESOURCES.keys())
-        compute = registry.RESOURCES['/compute/1']
+        self.assertTrue('/network/link/1' in self.registry.get_resource_keys())
+        compute = self.registry.get_resource('/compute/1')
         self.assertTrue(len(compute.links) == 1)
         heads, body = handler.get_output()
         self.assertTrue('/network/link/1' in heads['Location'])
@@ -663,7 +684,7 @@ class TestResourceCapabilites(unittest.TestCase):
         request = create_request('PUT', headers, '')
         handler = ResourceWrapper(self.app, request)
         handler.put('/compute/1')
-        self.assertTrue('/compute/1' in registry.RESOURCES.keys())
+        self.assertTrue('/compute/1' in self.registry.get_resource_keys())
 
         headers = {'Accept': 'text/occi'}
         request = create_request('GET', headers, '')
@@ -683,7 +704,7 @@ class TestResourceCapabilites(unittest.TestCase):
         request = create_request('PUT', headers, '')
         handler = ResourceWrapper(self.app, request)
         handler.put('/compute/1')
-        self.assertTrue('/compute/1' in registry.RESOURCES.keys())
+        self.assertTrue('/compute/1' in self.registry.get_resource_keys())
 
         headers = {'Content-Type': 'text/occi',
                    'X-Occi-Attribute': 'occi.compute.cores="2"'}
@@ -691,7 +712,7 @@ class TestResourceCapabilites(unittest.TestCase):
         handler = ResourceWrapper(self.app, request)
         handler.post('/compute/1')
 
-        compute = registry.RESOURCES['/compute/1']
+        compute = self.registry.get_resource('/compute/1')
         self.assertTrue('occi.compute.cores' in compute.attributes.keys())
         heads, body = handler.get_output()
         self.assertTrue('/compute/1' in heads['Location'])
@@ -706,7 +727,7 @@ class TestResourceCapabilites(unittest.TestCase):
         request = create_request('PUT', headers, '')
         handler = ResourceWrapper(self.app, request)
         handler.put('/compute/1')
-        self.assertTrue('/compute/1' in registry.RESOURCES.keys())
+        self.assertTrue('/compute/1' in self.registry.get_resource_keys())
 
         headers = {'Content-Type': 'text/occi',
                    'Category': parser.get_category_str(COMPUTE),
@@ -715,7 +736,7 @@ class TestResourceCapabilites(unittest.TestCase):
         handler = ResourceWrapper(self.app, request)
         handler.put('/compute/1')
 
-        compute = registry.RESOURCES['/compute/1']
+        compute = self.registry.get_resource('/compute/1')
         self.assertTrue('occi.compute.memory' not in compute.attributes.keys())
         self.assertTrue('occi.compute.cores' in compute.attributes.keys())
 
@@ -732,12 +753,12 @@ class TestResourceCapabilites(unittest.TestCase):
         request = create_request('PUT', headers, '')
         handler = ResourceWrapper(self.app, request)
         handler.put('/compute/1')
-        self.assertTrue('/compute/1' in registry.RESOURCES.keys())
+        self.assertTrue('/compute/1' in self.registry.get_resource_keys())
 
         request = create_request('DELETE', {}, '')
         handler = ResourceWrapper(self.app, request)
         handler.delete('/compute/1')
-        self.assertTrue('/compute/1' not in registry.RESOURCES.keys())
+        self.assertTrue('/compute/1' not in self.registry.get_resource_keys())
 
     def test_trigger_action_for_sanity(self):
         '''
@@ -748,7 +769,7 @@ class TestResourceCapabilites(unittest.TestCase):
         request = create_request('PUT', headers, '')
         handler = ResourceWrapper(self.app, request)
         handler.put('/compute/3')
-        self.assertTrue('/compute/3' in registry.RESOURCES.keys())
+        self.assertTrue('/compute/3' in self.registry.get_resource_keys())
 
         headers = {'Content-Type': 'text/occi',
                    'Category': parser.get_category_str(START)}
@@ -757,7 +778,7 @@ class TestResourceCapabilites(unittest.TestCase):
         handler = ResourceWrapper(self.app, request)
         handler.post('/compute/3')
 
-        compute = registry.RESOURCES['/compute/3']
+        compute = self.registry.get_resource('/compute/3')
         self.assertTrue(compute.attributes['occi.compute.state']
                         == 'active')
 
@@ -767,24 +788,29 @@ class TestLinkHandling(unittest.TestCase):
     Tests links and do request in body for a change :-)
     '''
 
+    registry = NonePersistentRegistry()
+
     def setUp(self):
         self.app = Application([(r"(.*)", ResourceWrapper)])
-        registry.RENDERINGS['text/plain'] = TextPlainRendering()
-        registry.RENDERINGS['text/occi'] = TextOcciRendering()
+        self.registry.set_renderer('text/plain',
+                                   TextPlainRendering(self.registry))
+        self.registry.set_renderer('text/occi',
+                                   TextOcciRendering(self.registry))
 
-        registry.BACKENDS = {COMPUTE: SimpleComputeBackend(),
-                             NETWORK: KindBackend(),
-                             NETWORKINTERFACE: KindBackend(),
-                             START: SimpleComputeBackend()}
+        self.registry.set_backend(COMPUTE, SimpleComputeBackend())
+        self.registry.set_backend(NETWORK, KindBackend())
+        self.registry.set_backend(NETWORKINTERFACE, KindBackend())
+        self.registry.set_backend(START, SimpleComputeBackend())
 
         self.compute = Resource('/compute/1', COMPUTE, [])
         self.network = Resource('/network/1', NETWORK, [IPNETWORK])
 
-        registry.RESOURCES = {'/compute/1': self.compute,
-                              '/network/1': self.network}
+        self.registry.add_resource('/compute/1', self.compute)
+        self.registry.add_resource('/network/1', self.network)
 
     def tearDown(self):
-        registry.RESOURCES = {}
+        for item in self.registry.get_resources():
+            self.registry.delete_resource(item.identifier)
 
     #==========================================================================
     # Sanity
@@ -806,10 +832,10 @@ class TestLinkHandling(unittest.TestCase):
         request = create_request('PUT', headers, '')
         handler = ResourceWrapper(self.app, request)
         handler.put('/compute/2')
-        self.assertTrue('/compute/2' in registry.RESOURCES.keys())
-        self.assertTrue(len(registry.RESOURCES) == 4)
+        self.assertTrue('/compute/2' in self.registry.get_resource_keys())
+        self.assertTrue(len(self.registry.get_resources()) == 4)
 
-        compute = registry.RESOURCES['/compute/2']
+        compute = self.registry.get_resource('/compute/2')
         self.assertTrue(len(compute.links) == 1)
 
         request = create_request('GET', {}, '')
@@ -830,9 +856,9 @@ class TestLinkHandling(unittest.TestCase):
         request = create_request('PUT', headers, body)
         handler = ResourceWrapper(self.app, request)
         handler.put('/link/2')
-        self.assertTrue('/link/2' in registry.RESOURCES.keys())
+        self.assertTrue('/link/2' in self.registry.get_resource_keys())
 
-        link = registry.RESOURCES['/link/2']
+        link = self.registry.get_resource('/link/2')
         self.assertTrue(link in link.source.links)
 
         request = create_request('GET', {}, '')
@@ -848,6 +874,8 @@ class TestMisc(unittest.TestCase):
     Several other tests...
     '''
 
+    registry = NonePersistentRegistry()
+
     def setUp(self):
         self.app = Application([(r"(.*)", ResourceWrapper)])
 
@@ -855,7 +883,8 @@ class TestMisc(unittest.TestCase):
         '''
         Test retrieval of Error codes...
         '''
-        handler = BaseHandler(self.app, create_request('GET', {}, ''))
+        handler = BaseHandler(self.app, create_request('GET', {}, ''),
+                              registry=self.registry)
         handler.get_error_html(200)
 
 
@@ -863,10 +892,10 @@ def create_request(verb, headers=None, body=None, uri=None):
     '''
     Creates a HTTP request object ready to be used.
 
-    @param very: Either GET, POST, PUT or DELETE.
-    @param headers: The HTTP headers.
-    @param body: The HTTP body.
-    @param uri: The URI to operate on.
+    very -- Either GET, POST, PUT or DELETE.
+    headers -- The HTTP headers.
+    body -- The HTTP body.
+    uri -- The URI to operate on.
     '''
     if headers is None:
         headers = {}

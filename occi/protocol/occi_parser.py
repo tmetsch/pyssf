@@ -23,7 +23,6 @@ Created on Jun 28, 2011
 @author: tmetsch
 '''
 
-from occi import registry
 from occi.core_model import Category, Link, Mixin
 
 #==============================================================================
@@ -31,7 +30,7 @@ from occi.core_model import Category, Link, Mixin
 #==============================================================================
 
 
-def get_category(category_string, is_mixin=False):
+def get_category(category_string, categories, is_mixin=False):
     '''
     Create a Category from a string rendering.
 
@@ -40,8 +39,9 @@ def get_category(category_string, is_mixin=False):
     If is_mixin is set to true it will not match with the registry and just
     return a Mixin.
 
-    @param category_string: A string rendering of a category.
-    @param is_mixin: Mixin will be created and no matching will be done.
+    category_string -- A string rendering of a category.
+    categories -- A list of registered categories.
+    is_mixin -- Mixin will be created and no matching will be done.
     '''
     # find term
     term = category_string[:category_string.find(';')].strip()
@@ -57,7 +57,7 @@ def get_category(category_string, is_mixin=False):
 
     # return the category from registry...
     tmp = Category(scheme, term, '', {}, '')
-    for item in registry.BACKENDS.keys():
+    for item in categories:
         if tmp == item:
             del(tmp)
             return item
@@ -70,7 +70,7 @@ def get_category_str(category):
     '''
     Create a string rendering for a Category.
 
-    @param category: A category.
+    category -- A category.
     '''
     tmp = ''
     tmp += category.term
@@ -103,14 +103,15 @@ def get_category_str(category):
     return tmp
 
 
-def get_link(link_string, source):
+def get_link(link_string, source, registry):
     '''
     Create a Link from a string rendering.
 
     Also note that the link_id is set but is not yet registered as resource.
 
-    @param link_string: A string rendering of a link.
-    @param source: The source entity.
+    link_string -- A string rendering of a link.
+    source -- The source entity.
+    registry -- Registry used for this call.
     '''
     tmp = link_string.find('<') + 1
     target_id = link_string[tmp:link_string.rfind('>', tmp)].strip()
@@ -126,7 +127,8 @@ def get_link(link_string, source):
         raise AttributeError('Could not determine the Category of the Link.')
     tempus = tmp_category.split('#')
     link_category = get_category(tempus[1].strip() + ';scheme="'
-                                 + tempus[0].strip() + '#"')
+                                 + tempus[0].strip() + '#"',
+                                 registry.get_categories())
 
     attributes = {}
     attr_begin = link_string.find('category="') + 12 + len(tmp_category)
@@ -137,7 +139,7 @@ def get_link(link_string, source):
             attributes[tmp[0].strip()] = tmp[1].rstrip('"').lstrip('"').strip()
 
     try:
-        target = registry.RESOURCES[target_id]
+        target = registry.get_resource(target_id)
     except KeyError:
         raise AttributeError('The target for the link cannot be found: '
                              + target_id)
@@ -151,7 +153,7 @@ def get_link_str(link):
     '''
     Create a string rendering for a Link.
 
-    @param link: A link.
+    link -- A link.
     '''
     tmp = '<' + link.target.identifier + '>'
     tmp = tmp + '; rel="' + str(link.target.kind) + '"'
@@ -202,8 +204,8 @@ def find_in_string(string, name):
     Search for string which is surrounded by '<name>=' and ';'. Raises
     AttributeError if value cannot be found.
 
-    @param string: The string to look into.
-    @param name: The name of the value to look for.
+    string -- The string to look into.
+    name -- The name of the value to look for.
     '''
     begin = string.find(name + '=')
     end = string.find(';', begin)

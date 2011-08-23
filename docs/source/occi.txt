@@ -90,6 +90,20 @@ types; or to implement a backend for each OCCI type::
 After running this example the service will be up and running on port 8888.
 You can visit it by going to localhost:8888.
 
+Implementing a Registry
+-----------------------
+
+(Optional) The implementation of a registry is optional. By default the
+service will use a non persistent registry which uses dictionaries. This might
+be sub-optimal since their are many lookups needed. The use of a simple
+Database (like Python's build-in sqlite) might be a faster and better solution
+for large deployments.
+
+To implement a registry implement the routines from the abstract class
+'Registry'. When instantiating the service provide the registry::
+
+    service = OCCI(registry=MyRegistry())
+
 Implementing Backends
 ---------------------
 

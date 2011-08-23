@@ -28,12 +28,49 @@ Created on Jul 4, 2011
 # disabling 'Method could be func' pylint check (naw...)
 # pylint: disable=C0103,R0904,R0201
 
-from occi import registry
 from occi.backend import KindBackend, ActionBackend, MixinBackend
 from occi.core_model import Kind, Resource, Action, Mixin
 from occi.protocol.occi_rendering import Rendering
+from occi.registry import NonePersistentRegistry, Registry
 from tornado.web import HTTPError
 import unittest
+
+
+class TestAbstractClass(unittest.TestCase):
+    '''
+    Tests the abstract Registry class.
+    '''
+
+    def test_not_implemented(self):
+        '''
+        Test if NotImplementedErrors are thrown.
+        '''
+        self.assertRaises(NotImplementedError, Registry().get_renderer, None)
+        self.assertRaises(NotImplementedError, Registry().set_renderer, None,
+                          None)
+        self.assertRaises(NotImplementedError, Registry().get_backend, None)
+        self.assertRaises(NotImplementedError, Registry().get_all_backends,
+                          None)
+        self.assertRaises(NotImplementedError, Registry().set_backend, None,
+                          None)
+        self.assertRaises(NotImplementedError, Registry().delete_mixin, None)
+        self.assertRaises(NotImplementedError, Registry().get_category, None)
+        self.assertRaises(NotImplementedError, Registry().get_categories)
+        self.assertRaises(NotImplementedError, Registry().get_resource, None)
+        self.assertRaises(NotImplementedError, Registry().add_resource, None,
+                          None)
+        self.assertRaises(NotImplementedError, Registry().delete_resource,
+                          None)
+        self.assertRaises(NotImplementedError, Registry().get_resource_keys)
+        self.assertRaises(NotImplementedError, Registry().get_resources)
+
+    def test_hostname_for_sanity(self):
+        '''
+        Test if hostname can be get and set.
+        '''
+        reg = Registry()
+        reg.set_hostname('foo')
+        self.assertEqual('foo', reg.get_hostname())
 
 
 class TestBackendsRegistry(unittest.TestCase):
@@ -41,18 +78,24 @@ class TestBackendsRegistry(unittest.TestCase):
     Test for the registry.
     '''
 
+    registry = NonePersistentRegistry()
+
     def setUp(self):
         self.kind1 = Kind('http://example.com#', '1')
         self.kind2 = Kind('http://example.com#', '2')
         self.action = Action('http://example.com#', 'action')
         self.mixin = Mixin('http://example.com#', 'mixin')
 
-        registry.BACKENDS = {self.kind1: KindBackend(),
-                             self.kind2: DummyBackend(),
-                             self.action: ActionBackend(),
-                             self.mixin: MixinBackend()}
+        self.registry.set_backend(self.kind1, KindBackend())
+        self.registry.set_backend(self.kind2, DummyBackend())
+        self.registry.set_backend(self.action, ActionBackend())
+        self.registry.set_backend(self.mixin, MixinBackend())
 
         self.entity = Resource('foo', self.kind1, [self.kind2])
+
+    def tearDown(self):
+        for item in self.registry.get_categories():
+            self.registry.delete_mixin(item)
 
     #==========================================================================
     # Success
@@ -62,10 +105,10 @@ class TestBackendsRegistry(unittest.TestCase):
         '''
         Test if backend can be retrieved...
         '''
-        registry.get_backend(self.kind1)
-        registry.get_backend(self.kind2)
-        registry.get_backend(self.action)
-        registry.get_backend(self.mixin)
+        self.registry.get_backend(self.kind1)
+        self.registry.get_backend(self.kind2)
+        self.registry.get_backend(self.action)
+        self.registry.get_backend(self.mixin)
 
     #==========================================================================
     # Failure
@@ -75,7 +118,7 @@ class TestBackendsRegistry(unittest.TestCase):
         '''
         Test if backend can be retrieved...
         '''
-        self.assertRaises(AttributeError, registry.get_backend,
+        self.assertRaises(AttributeError, self.registry.get_backend,
                           Kind('foo', 'bar'))
 
     #==========================================================================
@@ -86,8 +129,8 @@ class TestBackendsRegistry(unittest.TestCase):
         '''
         Test if backend can be retrieved...
         '''
-        back1 = registry.get_backend(self.kind1)
-        back2 = registry.get_backend(self.kind2)
+        back1 = self.registry.get_backend(self.kind1)
+        back2 = self.registry.get_backend(self.kind2)
         self.assertTrue(isinstance(back1, KindBackend))
         self.assertTrue(isinstance(back2, DummyBackend))
 
@@ -95,7 +138,7 @@ class TestBackendsRegistry(unittest.TestCase):
         '''
         Test if all backends can be retrieved...
         '''
-        backs = registry.get_all_backends(self.entity)
+        backs = self.registry.get_all_backends(self.entity)
         self.assertTrue(len(backs) == 2)
 
 
@@ -104,30 +147,43 @@ class TestParserRegistry(unittest.TestCase):
     Test if parser can be found...
     '''
 
+    registry = NonePersistentRegistry()
+
     def setUp(self):
-        registry.RENDERINGS = {'text/plain': DummyRendering,
-                               'text/occi': DummyRendering}
+        self.registry.set_renderer('text/plain', DummyRendering(self.registry))
+        self.registry.set_renderer('text/occi', DummyRendering(self.registry))
+
+    def tearDown(self):
+        for item in self.registry.get_categories():
+            self.registry.delete_mixin(item)
 
     def test_get_parser_for_success(self):
         '''
         Test retrieval of parsers.
         '''
-        registry.get_renderer('text/plain')
-        registry.get_renderer('text/occi')
+        self.registry.get_renderer('text/plain')
+        self.registry.get_renderer('text/occi')
 
     def test_get_parser_for_failure(self):
         '''
         Test failure handling of retrieval.
         '''
-        self.assertRaises(HTTPError, registry.get_renderer, 'foo')
+        self.assertRaises(HTTPError, self.registry.get_renderer, 'foo')
+
+    def test_set_parser_for_failure(self):
+        '''
+        Test failure handling of setting a renderer.
+        '''
+        self.assertRaises(AttributeError, self.registry.set_renderer, 'foo',
+                          None)
 
     def test_get_parser_for_sanity(self):
         '''
         Some sanity checks.
         '''
-        parser1 = registry.get_renderer('text/plain')
-        parser2 = registry.get_renderer('text/plain;q=0.9')
-        parser3 = registry.get_renderer('*/*')
+        parser1 = self.registry.get_renderer('text/plain')
+        parser2 = self.registry.get_renderer('text/plain;q=0.9')
+        parser3 = self.registry.get_renderer('*/*')
 
         self.assertEquals(parser1, parser3)
         self.assertEquals(parser2, parser3)
@@ -138,25 +194,71 @@ class CategoryRegistryTest(unittest.TestCase):
     Test the capabilities to retrieve categories.
     '''
 
+    registry = NonePersistentRegistry()
+
     def setUp(self):
         self.kind1 = Kind('http://example.com#', '1')
         self.kind2 = Kind('http://example.com#', '2', location='/foo/')
 
-        registry.BACKENDS = {self.kind1: KindBackend(),
-                             self.kind2: DummyBackend()}
+        self.registry.set_backend(self.kind1, KindBackend())
+        self.registry.set_backend(self.kind2, DummyBackend())
+
+    def tearDown(self):
+        for item in self.registry.get_categories():
+            self.registry.delete_mixin(item)
 
     def test_get_category_for_sanity(self):
         '''
         Test if the category can be retrieved from a URN.
         '''
-        result = registry.get_category('/1/')
+        result = self.registry.get_category('/1/')
         self.assertTrue(self.kind1 == result)
 
-        result = registry.get_category('/foo/')
+        result = self.registry.get_category('/foo/')
         self.assertTrue(self.kind2 == result)
 
-        result = registry.get_category('/bar/')
+        result = self.registry.get_category('/bar/')
         self.assertTrue(result == None)
+
+
+class ResourcesTest(unittest.TestCase):
+    '''
+    Tests the reigstry's resource handling.
+    '''
+
+    registry = NonePersistentRegistry()
+
+    def setUp(self):
+        self.res1 = Resource('foo', None, None)
+        self.res2 = Resource('bar', None, None)
+
+    def tearDown(self):
+        for resource in self.registry.get_resources():
+            self.registry.delete_resource(resource.identifier)
+
+    def test_get_resource_for_sanity(self):
+        '''
+        Test if added resource can be retrieved.
+        '''
+        self.registry.add_resource('foo', self.res1)
+        self.assertEquals(self.res1, self.registry.get_resource('foo'))
+
+    def test_delete_resource_for_sanity(self):
+        '''
+        Test if delete resource cannot be retrieved.
+        '''
+        self.registry.add_resource('foo', self.res1)
+        self.registry.delete_resource('foo')
+        self.assertRaises(KeyError, self.registry.get_resource, 'foo')
+
+    def test_resources_for_sanity(self):
+        '''
+        Test is all resources and all keys can be retrieved.
+        '''
+        self.registry.add_resource('foo', self.res1)
+        self.registry.add_resource('bar', self.res2)
+        self.assertTrue(len(self.registry.get_resources()) == 2)
+        self.assertTrue(len(self.registry.get_resource_keys()) == 2)
 
 
 class DummyBackend(KindBackend):
@@ -173,6 +275,17 @@ class DummyRendering(Rendering):
     '''
 
     # disabling 'Not overridden' pylint check (not needed here)
+    # pylint: disable=W0223
+
+    pass
+
+
+class DummyRegistry(Registry):
+    '''
+    Just here to satify pylint and so Registry os referenced more than once...
+    '''
+
+    # disabling 'Not implemented' pylint check (well wedon't need it:))
     # pylint: disable=W0223
 
     pass

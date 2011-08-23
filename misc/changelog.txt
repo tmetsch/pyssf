@@ -2,7 +2,7 @@
 Version 0.4.1
 -------------
 
-
+R,S610,Implementation of user replaceable registry (Feature request 3388322)
 
 Version 0.4.0
 -------------

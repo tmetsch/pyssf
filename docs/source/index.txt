@@ -29,7 +29,8 @@ create service offerings for Grids, Clusters, HPC and Clouds.
 
 All Software presented here falls under an Open Source License - Although
 thoroughly tested (100% code/documentation coverage) & worked hard on
-`PEP8 <http://www.python.org/dev/peps/pep-0008/>`_ and pylint compliance
+`PEP8 <http://www.python.org/dev/peps/pep-0008/>`_,
+`PEP257 <http://www.python.org/dev/peps/pep-0257/>`_ and pylint compliance
 (See the report) we cannot guarantee the absence of bugs - use on your own
 risk. But we do value your feedback! Feel free to visit the SourceForge page
 and submit issues, features request, ask for support or leave a friendly note.

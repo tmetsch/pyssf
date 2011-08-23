@@ -27,7 +27,8 @@ Created on Jun 27, 2011
 # disabling 'Too many public methods' pylint check (tornado's fault)
 # pylint: disable=W0221, R0904
 
-from occi import registry, workflow
+from occi import VERSION, workflow
+from occi.registry import NonePersistentRegistry
 from tornado.web import HTTPError
 import sys
 import tornado.web
@@ -42,12 +43,21 @@ class BaseHandler(tornado.web.RequestHandler):
     General request handler.
     '''
 
-    version = 'pyssf OCCI 1/1'
+    def initialize(self, registry):
+        self.registry = registry
+        if self.registry.get_hostname() == '':
+            self.registry.set_hostname(self.request.protocol + '://' +
+                                       self.request.host)
 
     def __init__(self, application, request, **kwargs):
-        if registry.HOST == '':
-            registry.HOST = request.protocol + '://' + request.host
         super(BaseHandler, self).__init__(application, request, **kwargs)
+        # This ensures that at least one registry is loaded in case initialize
+        # is not called for some reason...
+        self.registry = NonePersistentRegistry()
+
+        if self.registry.get_hostname() == '':
+            self.registry.set_hostname(self.request.protocol + '://' +
+                                       self.request.host)
 
     def extract_http_data(self):
         '''
@@ -77,23 +87,24 @@ class BaseHandler(tornado.web.RequestHandler):
         '''
         Returns the proper rendering parser.
 
-        @param content_type: String with either either Content-Type or Accept.
+        content_type -- String with either either Content-Type or Accept.
         '''
         try:
-            return registry.get_renderer(self.request.headers[content_type])
+            return self.registry.get_renderer(
+                                            self.request.headers[content_type])
         except KeyError:
-            return registry.get_renderer(registry.DEFAULT_MIME_TYPE)
+            return self.registry.get_renderer(self.registry.get_default_type())
 
     def response(self, status, mime_type, headers, body='OK'):
         '''
         Will create a response and send it to the client.
 
-        @param status: The status code.
-        @param mime_type: Sets the Content-Type of the response.
-        @param headers: The HTTP headers.
-        @param body: The text for the body (default: ok).
+        status -- The status code.
+        mime_type -- Sets the Content-Type of the response.
+        headers -- The HTTP headers.
+        body -- The text for the body (default: ok).
         '''
-        self.set_header('Server', self.version)
+        self.set_header('Server', VERSION)
         self.set_header('Content-Type', mime_type)
         self.set_status(status)
         if headers is not None:
@@ -103,8 +114,8 @@ class BaseHandler(tornado.web.RequestHandler):
         self.finish('\n')
 
     def get_error_html(self, status_code, **kwargs):
-        self.set_header('Server', self.version)
-        self.set_header('Content-Type', registry.DEFAULT_MIME_TYPE)
+        self.set_header('Server', VERSION)
+        self.set_header('Content-Type', self.registry.get_default_type())
         exception = sys.exc_info()[1]
         msg = str(exception)
         self.set_status(status_code)
@@ -142,7 +153,7 @@ class BaseHandler(tornado.web.RequestHandler):
         '''
         Retrieves the entity which was rendered within the request.
 
-        @param def_kind: Indicates if the request can be incomplete (False).
+        def_kind -- Indicates if the request can be incomplete (False).
         '''
         headers, body = self.extract_http_data()
         rendering = self.get_renderer(CONTENT_TYPE)
@@ -177,7 +188,7 @@ class BaseHandler(tornado.web.RequestHandler):
         '''
         Renders a single entity to the client.
 
-        @param entity: The entity which should be rendered.
+        entity -- The entity which should be rendered.
         '''
         rendering = self.get_renderer(ACCEPT)
 
@@ -189,7 +200,7 @@ class BaseHandler(tornado.web.RequestHandler):
         '''
         Renders a list of entities to the client.
 
-        @param entities: The entities which should be rendered.
+        entities -- The entities which should be rendered.
         '''
         rendering = self.get_renderer(ACCEPT)
 
@@ -201,7 +212,7 @@ class BaseHandler(tornado.web.RequestHandler):
         '''
         Renders a list of categories to the client.
 
-        @param categories: The categories which should be rendered.
+        categories -- The categories which should be rendered.
         '''
         rendering = self.get_renderer(ACCEPT)
 
@@ -217,9 +228,9 @@ class ResourceHandler(BaseHandler):
 
     def get(self, key):
         try:
-            entity = registry.RESOURCES[key]
+            entity = self.registry.get_resource(key)
 
-            workflow.retrieve_entity(entity)
+            workflow.retrieve_entity(entity, self.registry)
 
             self.render_entity(entity)
         except KeyError as key:
@@ -229,12 +240,12 @@ class ResourceHandler(BaseHandler):
         if len(self.get_arguments('action')) > 0:
             # action
             try:
-                entity = registry.RESOURCES[key]
+                entity = self.registry.get_resource(key)
                 action = self.parse_action()
 
-                workflow.action_entity(entity, action)
+                workflow.action_entity(entity, action, self.registry)
 
-                self.response(200, registry.DEFAULT_MIME_TYPE, None)
+                self.response(200, self.registry.get_default_type(), None)
             except AttributeError as attr:
                 raise HTTPError(400, str(attr))
             except KeyError as key:
@@ -242,12 +253,12 @@ class ResourceHandler(BaseHandler):
         else:
             # update
             try:
-                old = registry.RESOURCES[key]
+                old = self.registry.get_resource(key)
                 new = self.parse_entity(def_kind=old.kind)
 
-                workflow.update_entity(old, new)
+                workflow.update_entity(old, new, self.registry)
 
-                self.response(201, registry.DEFAULT_MIME_TYPE,
+                self.response(201, self.registry.get_default_type(),
                               {'Location': self.request.protocol
                                            + '://' + self.request.host + key})
             except AttributeError as attr:
@@ -256,14 +267,14 @@ class ResourceHandler(BaseHandler):
                 raise HTTPError(404, str(key))
 
     def put(self, key):
-        if key in registry.RESOURCES.keys():
+        if key in self.registry.get_resource_keys():
             # replace...
             try:
-                old = registry.RESOURCES[key]
+                old = self.registry.get_resource(key)
                 new = self.parse_entity()
 
-                workflow.replace_entity(old, new)
-                self.response(201, registry.DEFAULT_MIME_TYPE,
+                workflow.replace_entity(old, new, self.registry)
+                self.response(201, self.registry.get_default_type(),
                               {'Location': self.request.protocol
                                            + '://' + self.request.host + key})
             except AttributeError as attr:
@@ -273,9 +284,9 @@ class ResourceHandler(BaseHandler):
             try:
                 entity = self.parse_entity()
 
-                workflow.create_entity(key, entity)
+                workflow.create_entity(key, entity, self.registry)
 
-                self.response(201, registry.DEFAULT_MIME_TYPE,
+                self.response(201, self.registry.get_default_type(),
                               {'Location': self.request.protocol
                                            + '://' + self.request.host + key})
             except AttributeError as attr:
@@ -284,11 +295,11 @@ class ResourceHandler(BaseHandler):
     def delete(self, key):
         # delete
         try:
-            entity = registry.RESOURCES[key]
+            entity = self.registry.get_resource(key)
 
-            workflow.delete_entity(entity)
+            workflow.delete_entity(entity, self.registry)
 
-            self.response(200, registry.DEFAULT_MIME_TYPE, None)
+            self.response(200, self.registry.get_default_type(), None)
         except AttributeError as attr:
             raise HTTPError(400, str(attr))
         except KeyError as key:
@@ -307,7 +318,7 @@ class CollectionHandler(BaseHandler):
                 key += '/'
 
             categories, attributes = self.parse_filter()
-            entities = workflow.get_entities_under_path(key)
+            entities = workflow.get_entities_under_path(key, self.registry)
             result = workflow.filter_entities(entities, categories, attributes)
             self.render_entities(result, key)
         except AttributeError as attr:
@@ -320,11 +331,11 @@ class CollectionHandler(BaseHandler):
             # action
             try:
                 action = self.parse_action()
-                entities = workflow.get_entities_under_path(key)
+                entities = workflow.get_entities_under_path(key, self.registry)
                 for entity in entities:
-                    workflow.action_entity(entity, action)
+                    workflow.action_entity(entity, action, self.registry)
 
-                self.response(200, registry.DEFAULT_MIME_TYPE, None)
+                self.response(200, self.registry.get_default_type(), None)
             except AttributeError as attr:
                 raise HTTPError(400, str(attr))
         elif len(self.parse_entities()) == 0:
@@ -332,9 +343,9 @@ class CollectionHandler(BaseHandler):
             try:
                 entity = self.parse_entity()
 
-                workflow.create_entity(key, entity)
+                workflow.create_entity(key, entity, self.registry)
 
-                self.response(201, registry.DEFAULT_MIME_TYPE,
+                self.response(201, self.registry.get_default_type(),
                               {'Location': self.request.protocol
                                            + '://' + self.request.host
                                            + key})
@@ -343,11 +354,13 @@ class CollectionHandler(BaseHandler):
         elif len(self.parse_entities()) > 0:
             # update
             try:
-                mixin = registry.get_category(key)
+                mixin = self.registry.get_category(key)
                 new_entities = self.parse_entities()
-                old_entities = workflow.get_entities_under_path(key)
+                old_entities = workflow.get_entities_under_path(key,
+                                                                self.registry)
                 workflow.update_collection(mixin, old_entities,
-                                           new_entities)
+                                           new_entities,
+                                           self.registry)
             except AttributeError as attr:
                 raise HTTPError(400, str(attr))
 
@@ -356,10 +369,11 @@ class CollectionHandler(BaseHandler):
         try:
             if key == '' or key[-1] != '/':
                 key += '/'
-            mixin = registry.get_category(key)
+            mixin = self.registry.get_category(key)
             new_entities = self.parse_entities()
-            old_entities = workflow.get_entities_under_path(key)
-            workflow.replace_collection(mixin, old_entities, new_entities)
+            old_entities = workflow.get_entities_under_path(key, self.registry)
+            workflow.replace_collection(mixin, old_entities, new_entities,
+                                        self.registry)
         except AttributeError as attr:
             raise HTTPError(400, str(attr))
 
@@ -368,17 +382,17 @@ class CollectionHandler(BaseHandler):
             # delete entities
             if key == '' or key[-1] != '/':
                 key += '/'
-            entities = workflow.get_entities_under_path(key)
+            entities = workflow.get_entities_under_path(key, self.registry)
             for entity in entities:
-                workflow.delete_entity(entity)
+                workflow.delete_entity(entity, self.registry)
 
-            self.response(200, registry.DEFAULT_MIME_TYPE, None)
+            self.response(200, self.registry.get_default_type(), None)
         elif len(self.parse_entities()) > 0:
             # remove from collection
             try:
-                mixin = registry.get_category(key)
+                mixin = self.registry.get_category(key)
                 entities = self.parse_entities()
-                workflow.delete_from_collection(mixin, entities)
+                workflow.delete_from_collection(mixin, entities, self.registry)
             except AttributeError as attr:
                 raise HTTPError(400, str(attr))
 
@@ -395,7 +409,7 @@ class QueryHandler(BaseHandler):
         # retrieve (filter)
         try:
             categories, attributes = self.parse_filter()
-            result = workflow.filter_categories(categories)
+            result = workflow.filter_categories(categories, self.registry)
             self.render_categories(result)
         except AttributeError as attr:
             raise HTTPError(400, str(attr))
@@ -405,7 +419,7 @@ class QueryHandler(BaseHandler):
         try:
             mixins = self.parse_mixins()
 
-            workflow.append_mixins(mixins)
+            workflow.append_mixins(mixins, self.registry)
 
             self.response(200, self.request.headers[ACCEPT], None)
         except AttributeError as attr:
@@ -416,8 +430,8 @@ class QueryHandler(BaseHandler):
         try:
             categories, attributes = self.parse_filter()
 
-            workflow.remove_mixins(categories)
+            workflow.remove_mixins(categories, self.registry)
 
-            self.response(200, registry.DEFAULT_MIME_TYPE, None)
+            self.response(200, self.registry.get_default_type(), None)
         except AttributeError as attr:
             raise HTTPError(400, str(attr))

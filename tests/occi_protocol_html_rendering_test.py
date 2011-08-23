@@ -29,6 +29,7 @@ Created on Jul 5, 2011
 
 from occi.core_model import Resource, Kind, Link, Action, Mixin
 from occi.protocol.html_rendering import HTMLRendering
+from occi.registry import NonePersistentRegistry
 import unittest
 
 
@@ -37,7 +38,7 @@ class TestHTMLRendering(unittest.TestCase):
     Just some simple calls on the HTML rendering.
     '''
 
-    parser = HTMLRendering()
+    parser = HTMLRendering(NonePersistentRegistry())
 
     def setUp(self):
         action = Action('http://example.com/foo#', 'action')
@@ -62,7 +63,8 @@ class TestHTMLRendering(unittest.TestCase):
         '''
         Test init...
         '''
-        parser = HTMLRendering(css='body {background: #d00;}')
+        parser = HTMLRendering(NonePersistentRegistry(),
+                               css='body {background: #d00;}')
         self.assertEquals(parser.css, 'body {background: #d00;}')
 
     def test_from_entity_for_success(self):
