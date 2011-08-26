@@ -1,4 +1,9 @@
 
+Version 0.4.2
+-------------
+
+Bugfix release
+
 Version 0.4.1
 -------------
 

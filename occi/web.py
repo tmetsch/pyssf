@@ -343,12 +343,13 @@ class CollectionHandler(BaseHandler):
             try:
                 entity = self.parse_entity()
 
-                workflow.create_entity(key, entity, self.registry)
+                workflow.create_entity(workflow.create_id(entity.kind),
+                                       entity, self.registry)
 
                 self.response(201, self.registry.get_default_type(),
                               {'Location': self.request.protocol
                                            + '://' + self.request.host
-                                           + key})
+                                           + entity.identifier})
             except AttributeError as attr:
                 raise HTTPError(400, str(attr))
         elif len(self.parse_entities()) > 0:
