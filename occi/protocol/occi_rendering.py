@@ -24,7 +24,7 @@ Created on Jun 28, 2011
 '''
 
 from occi.core_model import Resource, Link
-import occi_parser as parser
+import occi.protocol.occi_parser as parser
 
 
 class HTTPData(object):
