@@ -138,7 +138,8 @@ currently applicable actions in the 'actions' list of an entity.
 When Backends get called
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-The following listing shows when and which function is called on a KindBackend:
+The following listing shows when and which function is called on a KindBackend
+or MixinBackend:
 
 ========  ====================================================================
 Routine   Description
@@ -157,19 +158,6 @@ replace   Called when a resource or link get replaced. Also see 'update' - but
           this time the new entity is a complety representation.
 delete    Called when a resource or link get deleted.
 ========  ====================================================================
-
-The following routines are called on Backends deriving from MixinBackend:
-
-============  ================================================================
-Routine       Description
-============  ================================================================
-add_mixin     Called when a mixin is remove from the resource. Implementors
-              should ensure that the capabilities (actions, attributes)
-              defined by the mixin get added to the entity.
-remove_mixin  Called when the mixin is removed from an entity. Implementors
-              should ensure that the capabilities (actions, attributes)
-              defined by the mixin get removed from the entity.
-============  ================================================================
 
 The following routines are called on Backends deriving from Action Backend:
 

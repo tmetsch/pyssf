@@ -1,5 +1,2 @@
 include setup.py
-include bin/demo-occi.sh
-include misc/style.css
-recursive-include pyocci/ *.py
-recursive-include ssf/ *.py
+recursive-include occi *.py

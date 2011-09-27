@@ -44,7 +44,7 @@ case "$1" in
 
   doc)
     $0 build
-  cd docs
+    cd docs
     make clean
     cd ..
     $0 coverage

@@ -227,8 +227,8 @@ class NonePersistentRegistry(Registry):
                 back = self.BACKENDS2[re_cat]
                 if repr(re_cat) == 'kind' and isinstance(back, KindBackend):
                     return back
-                elif repr(re_cat) == 'action' and isinstance(back,
-                                                             ActionBackend):
+                if repr(re_cat) == 'action' and isinstance(back,
+                                                           ActionBackend):
                     return back
                 if repr(re_cat) == 'mixin' and isinstance(back, MixinBackend):
                     return back

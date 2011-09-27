@@ -85,7 +85,7 @@ IPNETWORK_ATTRIBUTES = {'occi.network.address': '',
                         'occi.network.allocation': ''}
 
 IPNETWORK = Mixin('http://schemas.ogf.org/occi/infrastructure/network#',
-                  'ipnetworking', attributes=IPNETWORK_ATTRIBUTES)
+                  'ipnetwork', attributes=IPNETWORK_ATTRIBUTES)
 
 #==============================================================================
 # Storage
@@ -95,16 +95,16 @@ ONLINE = Action('http://schemas.ogf.org/occi/infrastructure/storage/action#',
                 'online', 'Bring storage online')
 
 OFFLINE = Action('http://schemas.ogf.org/occi/infrastructure/storage/action#',
-              'online', 'Bring storage offline')
+              'offline', 'Bring storage offline')
 
 BACKUP = Action('http://schemas.ogf.org/occi/infrastructure/storage/action#',
-                'online', 'Backup storage resource')
+                'backup', 'Backup storage resource')
 
 SNAPSHOT = Action('http://schemas.ogf.org/occi/infrastructure/storage/action#',
-                  'online', 'Make a snapshot of storage resource')
+                  'snapshot', 'Make a snapshot of storage resource')
 
 RESIZE = Action('http://schemas.ogf.org/occi/infrastructure/storage/action#',
-                'online', 'Resize storage resource', {'size': 'required'})
+                'resize', 'Resize storage resource', {'size': 'required'})
 
 STORAGE_ATTRIBUTES = {'occi.storage.size': '',
                       'occi.storage.state': 'immutable'}

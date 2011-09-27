@@ -79,7 +79,7 @@ class HTMLRendering(Rendering):
             color: #444; \
            } \
            table { \
-            margin: 0 0 0 1em; \
+            margin: 0 0 1em 1em; \
            } \
            table ul { \
             margin: 0.3em; \
@@ -138,7 +138,7 @@ class HTMLRendering(Rendering):
         if len(entity.mixins) > 0:
             tmp += '\t\t\t<h2>Mixins</h2><ul>'
             for item in entity.mixins:
-                tmp += '<li>' + str(entity.kind) + '</li>'
+                tmp += '<li>' + str(item) + '</li>'
             tmp += '</ul>\n'
 
         entity.attributes['occi.core.id'] = entity.identifier

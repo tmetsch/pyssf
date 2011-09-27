@@ -107,17 +107,3 @@ class TestActionBackend(unittest.TestCase):
         '''
         back = ActionBackend()
         back.action(None, None)
-
-
-class TestMixinBackend(unittest.TestCase):
-    '''
-    Test the Action backend...
-    '''
-
-    def test_simple_calls(self):
-        '''
-        Test if default pass...
-        '''
-        back = MixinBackend()
-        back.add_entity(None)
-        back.remove_entity(None)

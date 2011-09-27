@@ -16,10 +16,40 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
 '''
+The Service Sharing Facility.
+
 Created on Jun 28, 2010
 
 @author: tmetsch
 '''
 
+from occi.service import OCCI
+from ssf.negotiation_service import AGREEMENT, AgreementHandler
+import logging
+
+
+class SSF(object):
+    '''
+    Service Sharing Facility.
+    '''
+
+    logger = logging.getLogger()
+
+    PORT = 8888
+
+    def __init__(self):
+        logging.basicConfig(level=logging.DEBUG,
+                            format="%(asctime)s [%(levelname)-7s] %(message)s")
+        self.logger.info('Welcome to SSF')
+        self.service = OCCI()
+
+    def start(self):
+        '''
+        Start the service.
+        '''
+        self.service.register_backend(AGREEMENT, AgreementHandler())
+        self.logger.info('Starting Negotiation Service on port %i', self.PORT)
+        self.service.start(self.PORT)
+
 if __name__ == '__main__':
-    print("Welcome to SSF.")
+    SSF().start()

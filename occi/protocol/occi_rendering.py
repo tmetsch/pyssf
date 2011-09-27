@@ -228,8 +228,16 @@ def _to_entity(data, def_kind, registry):
                                                 registry))
     elif Link.kind in kind.related:
         try:
-            source = registry.get_resource(attributes['occi.core.source'])
-            target = registry.get_resource(attributes['occi.core.target'])
+            source_attr = attributes['occi.core.source']
+            target_attr = attributes['occi.core.target']
+
+            if source_attr.find(registry.get_hostname()) == 0:
+                source_attr = source_attr.replace(registry.get_hostname(), '')
+            if target_attr.find(registry.get_hostname()) == 0:
+                target_attr = target_attr.replace(registry.get_hostname(), '')
+
+            source = registry.get_resource(source_attr)
+            target = registry.get_resource(target_attr)
         except KeyError:
             raise AttributeError('Both occi.core.[source, target]'
                                  + ' attributes need to be resources.')
@@ -282,9 +290,9 @@ def _from_entity(entity):
     data.links = link_str_list
 
     # attributes
-    for attribute in entity.attributes:
-        attributes.append(attribute + '="'
-                          + entity.attributes[attribute] + '"')
+    for attr in entity.attributes:
+        attributes.append(attr + '="'
+                          + entity.attributes[attr] + '"')
 
     data.attributes = attributes
 
@@ -301,6 +309,9 @@ def _to_entities(data, registry):
     result = []
     for item in data.locations:
         try:
+            if item.find(registry.get_hostname()) == 0:
+                item = item.replace(registry.get_hostname(), '')
+
             result.append(registry.get_resource(item.strip()))
         except KeyError:
             raise AttributeError('Could not find the resource with id: '

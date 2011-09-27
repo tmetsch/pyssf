@@ -162,30 +162,14 @@ class ActionBackend(object):
         pass
 
 
-class MixinBackend(object):
+class MixinBackend(KindBackend):
     '''
     A prototype backend which essentially does nothing.
 
     Use this Backend for Mixin types.
     '''
 
-    def add_entity(self, entity):
-        '''
-        This routine is called when the mixin which is handled by this backend
-        get added to an entity.
-
-        entity -- The entity which has been added the mixin.
-        '''
-        pass
-
-    def remove_entity(self, entity):
-        '''
-        This routine is called when the mixin which is handled by this backend
-        is removed from the entity.
-
-        entity -- The entity which has no longer the mixin.
-        '''
-        pass
+    pass
 
 
 class UserDefinedMixinBackend(MixinBackend):

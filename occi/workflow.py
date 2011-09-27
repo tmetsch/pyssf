@@ -196,7 +196,7 @@ def update_collection(mixin, old_entities, new_entities, registry):
     for entity in unique(new_entities, old_entities):
         entity.mixins.append(mixin)
         backend = registry.get_backend(mixin)
-        backend.add_entity(entity)
+        backend.create(entity)
     del(new_entities)
 
 
@@ -218,10 +218,10 @@ def replace_collection(mixin, old_entities, new_entities, registry):
     for entity in unique(new_entities, old_entities):
         entity.mixins.append(mixin)
         backend = registry.get_backend(mixin)
-        backend.add_entity(entity)
+        backend.create(entity)
     for entity in unique(old_entities, new_entities):
         backend = registry.get_backend(mixin)
-        backend.remove_entity(entity)
+        backend.delete(entity)
         entity.mixins.remove(mixin)
     del(new_entities)
 
@@ -238,9 +238,10 @@ def delete_from_collection(mixin, entities, registry):
         raise AttributeError('This operation is only supported on Collections'
                              + ' of Mixins.')
 
+    print entities, registry.get_resources()
     for entity in intersect(entities, registry.get_resources()):
         backend = registry.get_backend(mixin)
-        backend.remove_entity(entity)
+        backend.delete(entity)
         entity.mixins.remove(mixin)
 
 

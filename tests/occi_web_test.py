@@ -715,7 +715,6 @@ class TestResourceCapabilites(unittest.TestCase):
         compute = self.registry.get_resource('/compute/1')
         self.assertTrue('occi.compute.cores' in compute.attributes.keys())
         heads, body = handler.get_output()
-        self.assertTrue('/compute/1' in heads['Location'])
 
     def test_replace_for_sanity(self):
         '''
@@ -741,7 +740,6 @@ class TestResourceCapabilites(unittest.TestCase):
         self.assertTrue('occi.compute.cores' in compute.attributes.keys())
 
         heads, body = handler.get_output()
-        self.assertTrue('/compute/1' in heads['Location'])
 
     def test_delete_for_sanity(self):
         '''

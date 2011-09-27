@@ -139,6 +139,8 @@ def get_link(link_string, source, registry):
             attributes[tmp[0].strip()] = tmp[1].rstrip('"').lstrip('"').strip()
 
     try:
+        if target_id.find(registry.get_hostname()) == 0:
+            target_id = target_id.replace(registry.get_hostname(), '')
         target = registry.get_resource(target_id)
     except KeyError:
         raise AttributeError('The target for the link cannot be found: '

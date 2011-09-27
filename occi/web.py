@@ -258,9 +258,7 @@ class ResourceHandler(BaseHandler):
 
                 workflow.update_entity(old, new, self.registry)
 
-                self.response(201, self.registry.get_default_type(),
-                              {'Location': self.request.protocol
-                                           + '://' + self.request.host + key})
+                self.response(200, self.registry.get_default_type(), {})
             except AttributeError as attr:
                 raise HTTPError(400, str(attr))
             except KeyError as key:
@@ -274,9 +272,7 @@ class ResourceHandler(BaseHandler):
                 new = self.parse_entity()
 
                 workflow.replace_entity(old, new, self.registry)
-                self.response(201, self.registry.get_default_type(),
-                              {'Location': self.request.protocol
-                                           + '://' + self.request.host + key})
+                self.response(200, self.registry.get_default_type(), {})
             except AttributeError as attr:
                 raise HTTPError(400, str(attr))
         else:
@@ -379,10 +375,10 @@ class CollectionHandler(BaseHandler):
             raise HTTPError(400, str(attr))
 
     def delete(self, key):
+        if key == '' or key[-1] != '/':
+            key += '/'
         if len(self.parse_entities()) == 0:
             # delete entities
-            if key == '' or key[-1] != '/':
-                key += '/'
             entities = workflow.get_entities_under_path(key, self.registry)
             for entity in entities:
                 workflow.delete_entity(entity, self.registry)
@@ -422,7 +418,7 @@ class QueryHandler(BaseHandler):
 
             workflow.append_mixins(mixins, self.registry)
 
-            self.response(200, self.request.headers[ACCEPT], None)
+            self.render_categories(mixins)
         except AttributeError as attr:
             raise HTTPError(400, str(attr))
 

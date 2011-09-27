@@ -63,8 +63,6 @@ class TestService(unittest.TestCase):
         back1 = MixinBackend()
         back2 = ActionBackend()
         self.assertRaises(AttributeError, self.service.register_backend,
-                          COMPUTE, back1)
-        self.assertRaises(AttributeError, self.service.register_backend,
                           COMPUTE, back2)
         try:
             OCCI(registry=dict())

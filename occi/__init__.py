@@ -23,4 +23,4 @@ Created on Jun 27, 2011
 @author: tmetsch
 '''
 
-VERSION = 'pyssf OCCI 1/1'
+VERSION = 'pyssf OCCI/1.1'
