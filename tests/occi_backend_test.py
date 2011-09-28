@@ -29,7 +29,7 @@ Created on Jul 5, 2011
 # pylint: disable=C0103,R0904,R0201
 
 from occi import backend
-from occi.backend import KindBackend, ActionBackend, MixinBackend
+from occi.backend import KindBackend, ActionBackend
 from occi.core_model import Kind, Resource, Link, Action
 import unittest
 

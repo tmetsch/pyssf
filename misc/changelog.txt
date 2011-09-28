@@ -1,4 +1,9 @@
 
+Version 0.4.3
+-------------
+
+Minor tweaks to the OCCI interface
+
 Version 0.4.2
 -------------
 

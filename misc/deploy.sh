@@ -73,6 +73,7 @@ case "$1" in
     hg commit
     xmessage "Password required"
     hg push
+    hg push git+ssh://git@github.com:tmetsch/pyssf.git
     xmessage "Password required"
     scp -r docs/build/html/* $USER,pyssf@web.sf.net:/home/groups/p/py/pyssf/htdocs
     ;;

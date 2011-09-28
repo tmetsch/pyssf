@@ -62,7 +62,7 @@ types; or to implement a backend for each OCCI type::
         '''
         TODO: This needs to be implemented!
 
-        Will implement add_entity and remove_entity...
+        Will implement create, retrieve, update, delete, replace
         '''
 
         pass
@@ -89,6 +89,9 @@ types; or to implement a backend for each OCCI type::
 
 After running this example the service will be up and running on port 8888.
 You can visit it by going to localhost:8888.
+
+For a more detailed example see the file run_iaas_service.py in the misc
+folder.
 
 Implementing a Registry
 -----------------------

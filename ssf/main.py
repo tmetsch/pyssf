@@ -43,6 +43,12 @@ class SSF(object):
         self.logger.info('Welcome to SSF')
         self.service = OCCI()
 
+    def setup(self):
+        '''
+        Initialize the service.
+        '''
+        pass
+
     def start(self):
         '''
         Start the service.

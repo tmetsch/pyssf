@@ -1,2 +1,3 @@
 include setup.py
+include misc/run_iaas_service.py
 recursive-include occi *.py

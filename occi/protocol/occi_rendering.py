@@ -191,7 +191,8 @@ def _to_entity(data, def_kind, registry):
     '''
 
     # disable 'Too many local vars' pylint check (It's a bit ugly but will do)
-    # pylint: disable=R0914
+    # disable 'Too many branches' pylint check (Needs to be improved)
+    # pylint: disable=R0914,R0912
 
     kind = None
     mixins = []

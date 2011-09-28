@@ -60,10 +60,9 @@ class TestService(unittest.TestCase):
         '''
         Test registration.
         '''
-        back1 = MixinBackend()
-        back2 = ActionBackend()
+        back = ActionBackend()
         self.assertRaises(AttributeError, self.service.register_backend,
-                          COMPUTE, back2)
+                          COMPUTE, back)
         try:
             OCCI(registry=dict())
         except AttributeError:

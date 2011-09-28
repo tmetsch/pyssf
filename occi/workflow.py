@@ -238,7 +238,6 @@ def delete_from_collection(mixin, entities, registry):
         raise AttributeError('This operation is only supported on Collections'
                              + ' of Mixins.')
 
-    print entities, registry.get_resources()
     for entity in intersect(entities, registry.get_resources()):
         backend = registry.get_backend(mixin)
         backend.delete(entity)

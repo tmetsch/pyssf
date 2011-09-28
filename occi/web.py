@@ -245,7 +245,7 @@ class ResourceHandler(BaseHandler):
 
                 workflow.action_entity(entity, action, self.registry)
 
-                self.response(200, self.registry.get_default_type(), None)
+                self.render_entity(entity)
             except AttributeError as attr:
                 raise HTTPError(400, str(attr))
             except KeyError as key:
@@ -258,7 +258,7 @@ class ResourceHandler(BaseHandler):
 
                 workflow.update_entity(old, new, self.registry)
 
-                self.response(200, self.registry.get_default_type(), {})
+                self.render_entity(old)
             except AttributeError as attr:
                 raise HTTPError(400, str(attr))
             except KeyError as key:
@@ -272,7 +272,8 @@ class ResourceHandler(BaseHandler):
                 new = self.parse_entity()
 
                 workflow.replace_entity(old, new, self.registry)
-                self.response(200, self.registry.get_default_type(), {})
+
+                self.render_entity(old)
             except AttributeError as attr:
                 raise HTTPError(400, str(attr))
         else:
@@ -316,6 +317,7 @@ class CollectionHandler(BaseHandler):
             categories, attributes = self.parse_filter()
             entities = workflow.get_entities_under_path(key, self.registry)
             result = workflow.filter_entities(entities, categories, attributes)
+
             self.render_entities(result, key)
         except AttributeError as attr:
             raise HTTPError(400, str(attr))
@@ -358,6 +360,8 @@ class CollectionHandler(BaseHandler):
                 workflow.update_collection(mixin, old_entities,
                                            new_entities,
                                            self.registry)
+
+                self.response(200, self.registry.get_default_type(), None)
             except AttributeError as attr:
                 raise HTTPError(400, str(attr))
 
@@ -371,6 +375,8 @@ class CollectionHandler(BaseHandler):
             old_entities = workflow.get_entities_under_path(key, self.registry)
             workflow.replace_collection(mixin, old_entities, new_entities,
                                         self.registry)
+
+            self.response(200, self.registry.get_default_type(), None)
         except AttributeError as attr:
             raise HTTPError(400, str(attr))
 
@@ -390,6 +396,8 @@ class CollectionHandler(BaseHandler):
                 mixin = self.registry.get_category(key)
                 entities = self.parse_entities()
                 workflow.delete_from_collection(mixin, entities, self.registry)
+
+                self.response(200, self.registry.get_default_type(), None)
             except AttributeError as attr:
                 raise HTTPError(400, str(attr))
 
@@ -406,7 +414,9 @@ class QueryHandler(BaseHandler):
         # retrieve (filter)
         try:
             categories, attributes = self.parse_filter()
+
             result = workflow.filter_categories(categories, self.registry)
+
             self.render_categories(result)
         except AttributeError as attr:
             raise HTTPError(400, str(attr))
