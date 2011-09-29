@@ -25,6 +25,7 @@ Created on Jun 28, 2011
 
 from occi.core_model import Resource, Link
 import occi.protocol.occi_parser as parser
+import shlex
 
 
 class HTTPData(object):
@@ -153,7 +154,10 @@ def _extract_data_from_headers(headers):
     if 'Category' in headers.keys():
         data.categories = headers['Category'].split(',')
     if 'X-OCCI-Attribute' in headers.keys():
-        data.attributes = headers['X-OCCI-Attribute'].split(',')
+        split = shlex.shlex(headers['X-OCCI-Attribute'], posix=True)
+        split.whitespace += ','
+        split.whitespace_split = True
+        data.attributes = list(split)
     if 'X-OCCI-Location' in headers.keys():
         data.locations = headers['X-OCCI-Location'].split(',')
     if 'Link' in headers.keys():
@@ -499,8 +503,10 @@ def _extract_values(entry, key):
     if tmp.find(',') == -1:
         items.append(tmp)
     else:
-        for item in tmp.split(','):
-            items.append(item)
+        split = shlex.shlex(tmp, posix=True)
+        split.whitespace += ','
+        split.whitespace_split = True
+        items.extend(list(split))
     return items
 
 

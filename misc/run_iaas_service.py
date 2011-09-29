@@ -67,11 +67,12 @@ class ComputeBackend(MyBackend):
         # adding some default dummy values:
         if 'occi.compute.hostname' not in entity.attributes:
             entity.attributes['occi.compute.hostname'] = 'dummy'
+        if 'occi.compute.memory' not in entity.attributes:
+            entity.attributes['occi.compute.memory'] = '2'
         # rest is set by SERVICE provider...
         entity.attributes['occi.compute.architecture'] = 'x86'
         entity.attributes['occi.compute.cores'] = '2'
         entity.attributes['occi.compute.speed'] = '1'
-        entity.attributes['occi.compute.memory'] = '2'
 
         # trigger your management framework to start the compute instance...
         entity.attributes['occi.compute.state'] = 'inactive'
