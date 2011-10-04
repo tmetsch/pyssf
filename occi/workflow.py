@@ -24,7 +24,7 @@ Created on Jun 30, 2011
 '''
 
 from occi.backend import UserDefinedMixinBackend
-from occi.core_model import Resource, Link, Mixin, Category
+from occi.core_model import Resource, Link, Mixin
 from tornado.web import HTTPError
 import uuid
 
@@ -337,18 +337,15 @@ def append_mixins(mixins, registry):
             raise AttributeError('Needs to be of type Mixin.')
         if registry.get_category(mixin.location):
             raise AttributeError('Location overlaps with existing one.')
-        cat = Category(mixin.scheme, mixin.term, '', {}, '')
 
         try:
             registry.get_backend(mixin)
         except AttributeError:
             pass
         else:
-            del(cat)
             raise AttributeError('Category with same term, scheme already' +
                                  ' exists.')
 
-        del(cat)
         registry.set_backend(mixin, UserDefinedMixinBackend())
 
 

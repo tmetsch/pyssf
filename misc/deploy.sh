@@ -50,7 +50,11 @@ case "$1" in
     $0 coverage
     mkdir docs/build/html/lint/
     pylint -d I0011 -i y -f html ssf occi tests &> docs/build/html/lint/index.html
+    echo '\n +--> PEP8 output:\n'
     pep8 --show-source --show-pep8 --statistics --count ssf occi tests
+    echo '\n +--> pyflakes output:\n'
+    pyflakes occi ssf
+    echo '\n +--> Code checking finished!\n'
     cd docs
     make html
     cd ..
@@ -75,7 +79,7 @@ case "$1" in
     hg push
     hg push git+ssh://git@github.com:tmetsch/pyssf.git
     xmessage "Password required"
-    scp -r docs/build/html/* $USER,pyssf@web.sf.net:/home/groups/p/py/pyssf/htdocs
+    scp -r docs/build/html/* $USER,pyssf@web.sf.net:/home/project-web/pyssf/htdocs
     ;;
 
   pypi)
