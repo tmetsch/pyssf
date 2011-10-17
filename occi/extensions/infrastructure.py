@@ -144,7 +144,7 @@ IPNETWORKINTERFACE = Mixin('http://schemas.ogf.org/occi/infrastructure/' \
                            [],
                            'L3/L4 capabilities for L2 Network Interface',
                            IPNETWORKINTERFACE_ATTRIBUTES,
-                           '/network/interface/ip')
+                           '/network/interface/ip/')
 
 STORAGELINK_ATTRIBUTES = {'occi.storagelink.deviceid': '',
                           'occi.storagelink.mountpoint': '',
