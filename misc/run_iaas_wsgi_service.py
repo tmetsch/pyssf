@@ -30,7 +30,7 @@ from occi.extensions.infrastructure import START, STOP, SUSPEND, RESTART, UP, \
     DOWN, ONLINE, BACKUP, SNAPSHOT, RESIZE, OFFLINE, NETWORK, \
     NETWORKINTERFACE, COMPUTE, STORAGE, IPNETWORK, IPNETWORKINTERFACE, \
     STORAGELINK
-from occi.wsgi import WSGIApplication
+from occi.wsgi import Application
 from wsgiref.simple_server import make_server
 from wsgiref.validate import validator
 
@@ -274,7 +274,7 @@ if __name__ == '__main__':
 # When using own registry and custom HTMLRendering:
 #    registry = NonePersistentRegistry()
 #    renderings = {'text/html': HTMLRendering(registry)}
-    app = WSGIApplication()
+    app = Application()
 
     COMPUTE_BACKEND = ComputeBackend()
     NETWORK_BACKEND = NetworkBackend()
