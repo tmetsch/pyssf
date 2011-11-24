@@ -25,6 +25,7 @@ strictly bound to that).
 
 The package here provides an OCCI compatible service and takes care of:
 
+  * A WSGI application which can run on most web frameworks for Python
   * An OCCI compatible interface (Support text/occi, text/plain and
     text/uri-list)
   * A dynamically updated capabilities query interface
@@ -45,7 +46,7 @@ types; or to implement a backend for each OCCI type::
 
     from occi.backend import ActionBackend, KindBackend
     from occi.core_model import Action, Kind, Mixin, Resource
-    from occi.service import OCCI
+    from occi.wsgi import Application
 
 
     class MyBackend(KindBackend, ActionBackend):
@@ -82,32 +83,65 @@ types; or to implement a backend for each OCCI type::
         kind_backend = MyBackend()
         mixin_backend = MyMixinBackend()
 
-        service = OCCI()
-        service.register_backend(mykind, backend)
-        service.register_backend(mymixin, mixin_backend)
-        service.start(8888)
+        app = Application()
+        app.register_backend(mykind, backend)
+        app.register_backend(mymixin, mixin_backend)
+
+The OCCI service itself is an `WSGI <http://www.wsgi.org/>`_ application which
+can run on most Web servers our there. And now that the WSGI application is
+defined (as *app*) we only need to run it. This can be done with the *wsgiref*
+implementation which comes with the standard Python distribution::
+
+    httpd = make_server('', 8888, app)
+    httpd.serve_forever()
+
+Or if you would like to use other frameworks such as
+`Tornado <http://www.tornadoweb.org/>`_ (Or any other which supports the WSGI
+framework)::
+
+    container = tornado.wsgi.WSGIContainer(app)
+    http_server = tornado.httpserver.HTTPServer(container)
+    http_server.listen(8888)
+    tornado.ioloop.IOLoop.instance().start()
 
 After running this example the service will be up and running on port 8888.
 You can visit it by going to localhost:8888.
 
-For a more detailed example see the file run_iaas_service.py in the misc
+For a more detailed example see the file *run_iaas_wsgi_service.py* in the misc
 folder.
 
-Implementing a Registry
------------------------
+Implementing a self written registry
+------------------------------------
 
-(Optional) The implementation of a registry is optional. By default the
-service will use a non persistent registry which uses dictionaries. This might
-be sub-optimal since their are many lookups needed. The use of a simple
-Database (like Python's build-in sqlite) might be a faster and better solution
-for large deployments.
+(Optional) The implementation of a registry is optional. The registry is a
+container for the current resources and renderings which are available within
+the service. By default the service will use a non persistent registry which
+uses dictionaries. This might be sub-optimal since their are many lookups
+needed. The use of a simple Database (like Python's build-in sqlite) might be
+a faster and better solution for large deployments.
 
-To implement a registry implement the routines from the abstract class
-'Registry'. When instantiating the service provide the registry::
+To defined an own registry implement the routines from the abstract class
+*Registry*. When instantiating the service provide the registry::
 
-    service = OCCI(registry=MyRegistry())
+    app = Application(registry=MyRegistry())
 
-Implementing Backends
+Defining your own or other renderings
+-------------------------------------
+
+(Optional) You can add your own set of Renderings to your Service if you like.
+For example to add support for OVF or JSON feel free to add those rendering on
+your own::
+
+    my_registry = NonePersistentRegistry()
+    renderings = {'text/json': JsonRendering(registry)}
+    app = Application(renderings=renderings)
+
+Please note that your rendering implementation should derive from the
+*Rendering* class. You do not necessarily need to implement all functions
+defined in that class but you are encouraged to do so. For more details review
+the OCCI and HTML rendering which come along within this package.
+
+Implementing backends
 ---------------------
 
 .. note::
@@ -207,6 +241,7 @@ Notes on Backend Implementations
     the provided resources.
 
 .. note::
-    It is recommended to throw AttributeError on any errors in Backends. Those
-    Errors will be translated into the HTTP Error: Bad Request.
+    It is recommended to throw either AttributeError or HTTPErrors on any
+    exceptions in the Backends. Those Errors will be translated into the
+    corresponding HTTP errors.
 

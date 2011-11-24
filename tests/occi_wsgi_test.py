@@ -15,15 +15,6 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
-from occi.backend import ActionBackend, KindBackend, MixinBackend
-from occi.extensions.infrastructure import COMPUTE, IPNETWORKINTERFACE, START
-from occi.protocol.html_rendering import HTMLRendering
-from occi.protocol.occi_rendering import TextOcciRendering, \
-    TextUriListRendering, TextPlainRendering
-from occi.registry import NonePersistentRegistry
-from occi.wsgi import Application
-import unittest
-import wsgiref
 '''
 Test for the wsgi module.
 
@@ -32,10 +23,31 @@ Created on Nov 24, 2011
 @author: tmetsch
 '''
 
+# disabling 'Too many public methods' pylint check (unittest's fault)
+# disabling 'Method could be func' pylint check (naw...)
+# disabling 'Too few public methods' pylint check (for the mock obj.)
+# disabling 'Invalid name' pylint check (We need longer names here)
+# pylint: disable=R0904,R0201,R0903,C0103
+
+from occi.backend import ActionBackend, KindBackend, MixinBackend
+from occi.extensions.infrastructure import COMPUTE, IPNETWORKINTERFACE, START
+from occi.protocol.html_rendering import HTMLRendering
+from occi.protocol.occi_rendering import TextOcciRendering, \
+    TextUriListRendering, TextPlainRendering
+from occi.registry import NonePersistentRegistry
+from occi.wsgi import Application
+import unittest
+
 
 class MockResponse(object):
+    '''
+    A simple mock object...
+    '''
 
     def __call__(self, stat, heads):
+        '''
+        Makes the mock callable...
+        '''
         pass
 
 

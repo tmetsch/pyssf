@@ -30,14 +30,15 @@ create service offerings for Grids, Clusters, HPC and Clouds.
 All Software presented here falls under an Open Source License - Although
 thoroughly tested (100% code/documentation coverage) & worked hard on
 `PEP8 <http://www.python.org/dev/peps/pep-0008/>`_,
-`PEP257 <http://www.python.org/dev/peps/pep-0257/>`_ and pylint compliance
-(See the report) we cannot guarantee the absence of bugs - use on your own
-risk. But we do value your feedback! Feel free to visit the SourceForge page
-and submit issues, features request, ask for support or leave a friendly note.
+`PEP257 <http://www.python.org/dev/peps/pep-0257/>`_, pyflakes and pylint
+compliance (See the reports) we cannot guarantee the absence of bugs - use on
+your own risk. But we do value your feedback! Feel free to visit the
+SourceForge page and submit issues, features request, ask for support or leave
+a friendly note.
 
 This tool-suite contains an `OCCI <http://www.occi-wg.org>`_ compatible
-implementation and is available on
-`pypi <http://pypi.python.org/pypi/pyssf>`_. The support for submitting jobs
+implementation (as `WSGI <http://www.wsgi.org/>`_ application) and is available
+on `pypi <http://pypi.python.org/pypi/pyssf>`_. The support for submitting jobs
 through DRMAA using an RESTful OCCI compatible interface is currently updated.
 We are working on service for automatic negotiation of SLAs.
 

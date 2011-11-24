@@ -43,9 +43,6 @@ RETURN_CODES = {201: '201 Created',
                 406: '406 Not Acceptable',
                 500: '500 Internal Server Error'}
 
-# TODO: document use of this
-# TODO: document error handling
-
 
 def _parse_headers(environ):
     '''
