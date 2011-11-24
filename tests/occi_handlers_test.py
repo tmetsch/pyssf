@@ -248,7 +248,7 @@ class TestCollectionCapabilites(unittest.TestCase):
         '''
         headers = {CONTENT_TYPE: 'text/occi',
                    CATEGORY: 'asdf'}
-        handler = CollectionHandler(self.registry, headers, '', [])
+        handler = CollectionHandler(self.registry, headers, '', ())
         self.assertRaises(HTTPError, handler.get, '')
 
     def test_action_for_failure(self):
@@ -267,7 +267,7 @@ class TestCollectionCapabilites(unittest.TestCase):
         '''
         headers = {CONTENT_TYPE: 'text/occi',
                    LOCATION: self.compute.identifier}
-        handler = CollectionHandler(self.registry, headers, '', [])
+        handler = CollectionHandler(self.registry, headers, '', ())
         self.assertRaises(HTTPError, handler.post, '/bla')
 
     def test_remove_entities_from_collection_for_failure(self):
@@ -276,12 +276,12 @@ class TestCollectionCapabilites(unittest.TestCase):
         '''
         headers = {CONTENT_TYPE: 'text/occi',
                    LOCATION: self.compute.identifier}
-        handler = CollectionHandler(self.registry, headers, '', [])
+        handler = CollectionHandler(self.registry, headers, '', ())
         self.assertRaises(HTTPError, handler.delete, '/bla/')
 
         headers = {CONTENT_TYPE: 'text/xml',
                    LOCATION: self.compute.identifier}
-        handler = CollectionHandler(self.registry, headers, '', [])
+        handler = CollectionHandler(self.registry, headers, '', ())
         self.assertRaises(HTTPError, handler.delete, '/bla/')
 
     def test_replace_mixin_collection_for_failure(self):
@@ -290,7 +290,7 @@ class TestCollectionCapabilites(unittest.TestCase):
         '''
         headers = {CONTENT_TYPE: 'text/occi',
                    LOCATION: self.network.identifier}
-        handler = CollectionHandler(self.registry, headers, '', [])
+        handler = CollectionHandler(self.registry, headers, '', ())
         self.assertRaises(HTTPError, handler.put, '/bla')
 
     def test_create_entity_for_failure(self):
@@ -299,12 +299,12 @@ class TestCollectionCapabilites(unittest.TestCase):
         '''
         headers = {CONTENT_TYPE: 'text/xml',
                    'Categories': parser.get_category_str(COMPUTE)}
-        handler = CollectionHandler(self.registry, headers, '', [])
+        handler = CollectionHandler(self.registry, headers, '', ())
         self.assertRaises(HTTPError, handler.post, '/compute')
 
         headers = {CONTENT_TYPE: 'text/occi',
                    'Categories': parser.get_category_str(COMPUTE)}
-        handler = CollectionHandler(self.registry, headers, '', [])
+        handler = CollectionHandler(self.registry, headers, '', ())
         self.assertRaises(HTTPError, handler.post, '/compute')
 
     #==========================================================================
@@ -316,7 +316,7 @@ class TestCollectionCapabilites(unittest.TestCase):
         Test GET with uri-list
         '''
         headers = {ACCEPT: 'text/uri-list'}
-        handler = CollectionHandler(self.registry, headers, '', [])
+        handler = CollectionHandler(self.registry, headers, '', ())
         status, headers, body = handler.get('/')
         self.assertTrue(headers[CONTENT_TYPE] == 'text/uri-list')
         self.assertTrue(len(body) == 98)
@@ -326,7 +326,7 @@ class TestCollectionCapabilites(unittest.TestCase):
         Test GET with uri-list
         '''
         headers = {ACCEPT: 'text/occi'}
-        handler = CollectionHandler(self.registry, headers, '', [])
+        handler = CollectionHandler(self.registry, headers, '', ())
         status, headers, body = handler.get('/compute/')
         self.assertTrue(headers[CONTENT_TYPE] == 'text/occi')
         self.assertTrue(self.compute.identifier in headers['X-OCCI-Location'])
@@ -381,7 +381,7 @@ class TestCollectionCapabilites(unittest.TestCase):
         headers = {CONTENT_TYPE: 'text/occi',
                    LOCATION: self.compute.identifier}
 
-        handler = CollectionHandler(self.registry, headers, '', [])
+        handler = CollectionHandler(self.registry, headers, '', ())
         handler.post('/mystuff/')
         self.assertTrue(self.mixin in self.compute.mixins)
 
@@ -392,13 +392,13 @@ class TestCollectionCapabilites(unittest.TestCase):
         headers = {CONTENT_TYPE: 'text/occi',
                    LOCATION: self.compute.identifier}
 
-        handler = CollectionHandler(self.registry, headers, '', [])
+        handler = CollectionHandler(self.registry, headers, '', ())
         handler.post('/mystuff/')
 
         headers = {CONTENT_TYPE: 'text/occi',
                    LOCATION: self.compute.identifier}
 
-        handler = CollectionHandler(self.registry, headers, '', [])
+        handler = CollectionHandler(self.registry, headers, '', ())
         handler.delete('/mystuff/')
         self.assertTrue(self.mixin not in self.compute.mixins)
 
@@ -409,13 +409,13 @@ class TestCollectionCapabilites(unittest.TestCase):
         headers = {CONTENT_TYPE: 'text/occi',
                    LOCATION: self.compute.identifier}
 
-        handler = CollectionHandler(self.registry, headers, '', [])
+        handler = CollectionHandler(self.registry, headers, '', ())
         handler.post('/mystuff/')
 
         headers = {CONTENT_TYPE: 'text/occi',
                    LOCATION: self.network.identifier}
 
-        handler = CollectionHandler(self.registry, headers, '', [])
+        handler = CollectionHandler(self.registry, headers, '', ())
         handler.put('/mystuff/')
         self.assertTrue(self.mixin not in self.compute.mixins)
         self.assertTrue(self.mixin in self.network.mixins)
@@ -426,7 +426,7 @@ class TestCollectionCapabilites(unittest.TestCase):
         '''
         headers = {CONTENT_TYPE: 'text/occi',
                    CATEGORY: parser.get_category_str(COMPUTE)}
-        handler = CollectionHandler(self.registry, headers, '', [])
+        handler = CollectionHandler(self.registry, headers, '', ())
         handler.post('/compute/')
         self.assertTrue(len(self.registry.get_resources()) == 4)
 
@@ -478,18 +478,18 @@ class TestResourceCapabilites(unittest.TestCase):
         '''
         headers = {CONTENT_TYPE: 'text/occi',
                    ATTRIBUTE: 'occi.compute.cores="2"'}
-        handler = ResourceHandler(self.registry, headers, '', [])
+        handler = ResourceHandler(self.registry, headers, '', ())
         self.assertRaises(HTTPError, handler.post, '/bla')
 
         headers = {CONTENT_TYPE: 'text/occi',
                    CATEGORY: parser.get_category_str(COMPUTE)}
-        handler = ResourceHandler(self.registry, headers, '', [])
+        handler = ResourceHandler(self.registry, headers, '', ())
         handler.put('/compute/1')
         self.assertTrue('/compute/1' in self.registry.get_resource_keys())
 
         headers = {CONTENT_TYPE: 'text/occi',
                    ATTRIBUTE: 'garbage'}
-        handler = ResourceHandler(self.registry, headers, '', [])
+        handler = ResourceHandler(self.registry, headers, '', ())
         self.assertRaises(HTTPError, handler.post, '/compute/1')
 
     def test_replace_for_failure(self):
@@ -499,30 +499,30 @@ class TestResourceCapabilites(unittest.TestCase):
         headers = {CONTENT_TYPE: 'text/occi',
                    CATEGORY: parser.get_category_str(COMPUTE),
                    ATTRIBUTE: 'occi.compute.memory="2.0"'}
-        handler = ResourceHandler(self.registry, headers, '', [])
+        handler = ResourceHandler(self.registry, headers, '', ())
         handler.put('/compute/1')
         self.assertTrue('/compute/1' in self.registry.get_resource_keys())
 
         headers = {CONTENT_TYPE: 'text/occi',
                    CATEGORY: 'garbage'}
-        handler = ResourceHandler(self.registry, headers, '', [])
+        handler = ResourceHandler(self.registry, headers, '', ())
         self.assertRaises(HTTPError, handler.put, '/compute/1')
 
     def test_delete_for_failure(self):
         '''
         Test delete...
         '''
-        handler = ResourceHandler(self.registry, {}, '', [])
+        handler = ResourceHandler(self.registry, {}, '', ())
         self.assertRaises(HTTPError, handler.delete, '/compute/2')
 
         headers = {CONTENT_TYPE: 'text/occi',
                    CATEGORY: parser.get_category_str(COMPUTE),
                    ATTRIBUTE: 'undeletable="true"'}
-        handler = ResourceHandler(self.registry, headers, '', [])
+        handler = ResourceHandler(self.registry, headers, '', ())
         handler.put('/compute/1')
         self.assertTrue('/compute/1' in self.registry.get_resource_keys())
 
-        handler = ResourceHandler(self.registry, headers, '', [])
+        handler = ResourceHandler(self.registry, headers, '', ())
         self.assertRaises(HTTPError, handler.delete, '/compute/1')
 
     def test_trigger_action_for_failure(self):
@@ -531,7 +531,7 @@ class TestResourceCapabilites(unittest.TestCase):
         '''
         headers = {CONTENT_TYPE: 'text/occi',
                    CATEGORY: parser.get_category_str(COMPUTE)}
-        handler = ResourceHandler(self.registry, headers, '', [])
+        handler = ResourceHandler(self.registry, headers, '', ())
         handler.put('/compute/3')
         self.assertTrue('/compute/3' in self.registry.get_resource_keys())
 
@@ -601,13 +601,13 @@ class TestResourceCapabilites(unittest.TestCase):
         '''
         headers = {CONTENT_TYPE: 'text/occi',
                    CATEGORY: parser.get_category_str(COMPUTE)}
-        handler = ResourceHandler(self.registry, headers, '', [])
+        handler = ResourceHandler(self.registry, headers, '', ())
         handler.put('/compute/1')
         self.assertTrue('/compute/1' in self.registry.get_resource_keys())
 
         headers = {CONTENT_TYPE: 'text/occi',
                    ATTRIBUTE: 'occi.compute.cores="2"'}
-        handler = ResourceHandler(self.registry, headers, '', [])
+        handler = ResourceHandler(self.registry, headers, '', ())
         handler.post('/compute/1')
         compute = self.registry.get_resource('/compute/1')
         self.assertTrue('occi.compute.cores' in compute.attributes.keys())
@@ -619,14 +619,14 @@ class TestResourceCapabilites(unittest.TestCase):
         headers = {CONTENT_TYPE: 'text/occi',
                    CATEGORY: parser.get_category_str(COMPUTE),
                    ATTRIBUTE: 'occi.compute.memory="2.0"'}
-        handler = ResourceHandler(self.registry, headers, '', [])
+        handler = ResourceHandler(self.registry, headers, '', ())
         handler.put('/compute/1')
         self.assertTrue('/compute/1' in self.registry.get_resource_keys())
 
         headers = {CONTENT_TYPE: 'text/occi',
                    CATEGORY: parser.get_category_str(COMPUTE),
                    ATTRIBUTE: 'occi.compute.cores="2"'}
-        handler = ResourceHandler(self.registry, headers, '', [])
+        handler = ResourceHandler(self.registry, headers, '', ())
         handler.put('/compute/1')
 
         compute = self.registry.get_resource('/compute/1')

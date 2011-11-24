@@ -217,7 +217,7 @@ class ResourceHandler(BaseHandler):
 
         key -- The resource id.
         '''
-        if len(self.query) > 1:
+        if self.query is not ():
             # action
             try:
                 entity = self.registry.get_resource(key)
@@ -320,7 +320,7 @@ class CollectionHandler(BaseHandler):
 
         key -- The resource id.
         '''
-        if len(self.query) > 1:
+        if self.query is not ():
             # action
             try:
                 action = self.parse_action()

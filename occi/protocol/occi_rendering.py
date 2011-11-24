@@ -372,7 +372,7 @@ def _extract_data_from_headers(headers):
         data.categories = headers[CATEGORY].split(',')
     if ATTRIBUTE in headers.keys():
         split = shlex.shlex(headers[ATTRIBUTE], posix=True)
-        split.whitespace += ','
+        split.whitespace = ','
         split.whitespace_split = True
         data.attributes = list(split)
     if LOCATION in headers.keys():
@@ -510,8 +510,7 @@ def _extract_values(entry, key):
         items.append(tmp)
     else:
         split = shlex.shlex(tmp, posix=True)
-        # TODO: check if we need to remove the +
-        split.whitespace += ','
+        split.whitespace = ','
         split.whitespace_split = True
         items.extend(list(split))
     return items

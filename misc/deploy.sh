@@ -51,7 +51,7 @@ case "$1" in
     mkdir docs/build/html/lint/
     pylint -d I0011 -i y -f html ssf occi tests &> docs/build/html/lint/index.html
     echo '\n +--> PEP8 output:\n'
-    pep8 --show-source --show-pep8 --statistics --count ssf occi tests
+    pep8 --repeat --statistics --count ssf occi tests
     echo '\n +--> pyflakes output:\n'
     pyflakes occi ssf
     echo '\n +--> Code checking finished!\n'
