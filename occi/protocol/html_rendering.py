@@ -55,7 +55,7 @@ class HTMLRendering(Rendering):
             height: 2em; \
            } \
            #header li { \
-            margin: 0.3em 0.5em 0.3em 0.5em; \
+            margin: 0.2em 0.5em 0.3em 0.5em; \
             font-weight: bold; \
             display: inline-block; \
            } \
@@ -66,7 +66,6 @@ class HTMLRendering(Rendering):
            } \
            #header li a:hover { \
             background: #73c167;\
-            border-bottom: 2px solid #73c167; \
            } \
            #breadcrumb { \
             background: #efefea; \
@@ -178,7 +177,7 @@ class HTMLRendering(Rendering):
             tmp += '<ul>\n'
 
         tmp += '\t\t</div>\n\t</body>\n</html>'
-        return {}, tmp
+        return {'Content-Type': self.mime_type}, tmp
 
     def from_entities(self, entities, key):
         tmp = '<html>\n\t<head>\n'
@@ -208,7 +207,7 @@ class HTMLRendering(Rendering):
             tmp += item.identifier + '</a></li>\n'
         tmp += '\t\t</ul></div>\n'
         tmp += '\t</body>\n</html>'
-        return {}, tmp
+        return {'Content-Type': self.mime_type}, tmp
 
     def from_categories(self, categories):
         tmp = '<html>\n\t<head>\n'
@@ -266,4 +265,4 @@ class HTMLRendering(Rendering):
             tmp += '\t\t</table>\n'
 
         tmp += '\t</body>\n</html>'
-        return {}, tmp
+        return {'Content-Type': self.mime_type}, tmp

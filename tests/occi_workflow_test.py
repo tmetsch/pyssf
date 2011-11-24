@@ -30,8 +30,8 @@ Created on Jul 5, 2011
 from occi import workflow
 from occi.backend import KindBackend, MixinBackend, ActionBackend
 from occi.core_model import Resource, Kind, Link, Action, Mixin
+from occi.exceptions import HTTPError
 from occi.registry import NonePersistentRegistry
-from tornado.web import HTTPError
 import unittest
 
 

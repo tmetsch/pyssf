@@ -30,9 +30,9 @@ Created on Jul 4, 2011
 
 from occi.backend import KindBackend, ActionBackend, MixinBackend
 from occi.core_model import Kind, Resource, Action, Mixin
+from occi.exceptions import HTTPError
 from occi.protocol.occi_rendering import Rendering
 from occi.registry import NonePersistentRegistry, Registry
-from tornado.web import HTTPError
 import unittest
 
 

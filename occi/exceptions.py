@@ -15,15 +15,30 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
+'''
+Exception definitions.
 
-# Development requirements
-coverage>=3.5b1
-epydoc>=3.0.1
-nose>=1.0.0
-pep8>=0.6.1
-pylint>=0.23.0
-pyflakes>=0.5.0
-sphinx>=1.0.7
+Created on Nov 24, 2011
 
-# Run-time requirements
-# tornado>=2.0
+@author: tmetsch
+'''
+
+
+class HTTPError(Exception):
+    '''
+    A HTTP Error exception.
+    '''
+
+    def __init__(self, code, msg):
+        '''
+        Creates an HTTP Error.
+
+        code -- the status code.
+        msg -- the error message.
+        '''
+        Exception.__init__(self)
+        self.code = code
+        self.message = msg
+
+    def __str__(self):
+        return repr(self.code) + ' - ' + self.message

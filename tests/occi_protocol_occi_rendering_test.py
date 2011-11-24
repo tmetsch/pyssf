@@ -29,6 +29,7 @@ Created on Jul 5, 2011
 
 from occi.backend import KindBackend, MixinBackend, ActionBackend
 from occi.core_model import Kind, Resource, Link, Mixin, Action
+from occi.handlers import CONTENT_TYPE
 from occi.protocol.occi_rendering import TextOcciRendering, Rendering, \
     TextPlainRendering, TextUriListRendering
 from occi.registry import NonePersistentRegistry
@@ -249,7 +250,7 @@ class TestTextURIListRendering(unittest.TestCase):
         res = Resource('/foo/123', None, [])
         entities = [res]
         heads, body = self.rendering.from_entities(entities, 'foo')
-        self.assertTrue(heads == {})
+        self.assertTrue(heads == {CONTENT_TYPE: self.rendering.mime_type})
         self.assertTrue(res.identifier in body)
 
     def test_not_support_thrown_for_success(self):

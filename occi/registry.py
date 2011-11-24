@@ -28,8 +28,8 @@ Created on Aug 22, 2011
 # pylint: disable=R0922
 
 from occi.backend import KindBackend, ActionBackend, MixinBackend
+from occi.exceptions import HTTPError
 from occi.protocol.occi_rendering import Rendering
-from tornado.web import HTTPError
 
 
 class Registry(object):

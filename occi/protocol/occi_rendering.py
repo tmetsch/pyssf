@@ -24,6 +24,7 @@ Created on Jun 28, 2011
 '''
 
 from occi.core_model import Resource, Link
+from occi.handlers import CATEGORY, ATTRIBUTE, LOCATION, LINK, CONTENT_TYPE
 import occi.protocol.occi_parser as parser
 import shlex
 
@@ -141,49 +142,6 @@ class Rendering(object):
 #==============================================================================
 # text/occi rendering
 #==============================================================================
-
-
-def _extract_data_from_headers(headers):
-    '''
-    Simple method to split out the information from the HTTP headers.
-
-    headers -- The HTTP headers.
-    '''
-    # split out the information
-    data = HTTPData()
-    if 'Category' in headers.keys():
-        data.categories = headers['Category'].split(',')
-    if 'X-OCCI-Attribute' in headers.keys():
-        split = shlex.shlex(headers['X-OCCI-Attribute'], posix=True)
-        split.whitespace += ','
-        split.whitespace_split = True
-        data.attributes = list(split)
-    if 'X-OCCI-Location' in headers.keys():
-        data.locations = headers['X-OCCI-Location'].split(',')
-    if 'Link' in headers.keys():
-        data.links = headers['Link'].split(',')
-    return data
-
-
-def _set_data_to_headers(data):
-    '''
-    Simple method to set all information in the HTTP header.
-
-    data -- The data to set.
-    '''
-    headers = {}
-    body = 'OK'
-
-    if len(data.categories) > 0:
-        headers['Category'] = ', '.join(data.categories)
-    if len(data.links) > 0:
-        headers['Link'] = ', '.join(data.links)
-    if len(data.locations) > 0:
-        headers['X-OCCI-Location'] = ', '.join(data.locations)
-    if len(data.attributes) > 0:
-        headers['X-OCCI-Attribute'] = ', '.join(data.attributes)
-
-    return headers, body
 
 
 def _to_entity(data, def_kind, registry):
@@ -402,6 +360,54 @@ def _get_filter(data, registry):
     return categories, attributes
 
 
+def _extract_data_from_headers(headers):
+    '''
+    Simple method to split out the information from the HTTP headers.
+
+    headers -- The HTTP headers.
+    '''
+    # split out the information
+    data = HTTPData()
+    if CATEGORY in headers.keys():
+        data.categories = headers[CATEGORY].split(',')
+    if ATTRIBUTE in headers.keys():
+        split = shlex.shlex(headers[ATTRIBUTE], posix=True)
+        split.whitespace += ','
+        split.whitespace_split = True
+        data.attributes = list(split)
+    if LOCATION in headers.keys():
+        data.locations = headers[LOCATION].split(',')
+    if LINK in headers.keys():
+        data.links = headers[LINK].split(',')
+    return data
+
+
+def _set_data_to_headers(data, mime_type):
+    '''
+    Simple method to set all information in the HTTP header.
+
+    data -- The data to set.
+    mime_type -- The content type to set.
+    '''
+    headers = {}
+    body = 'OK'
+
+    # We're using different header names here - WSGI will take care of correct
+    # 'translation'
+
+    if len(data.categories) > 0:
+        headers[CATEGORY] = ', '.join(data.categories)
+    if len(data.links) > 0:
+        headers[LINK] = ', '.join(data.links)
+    if len(data.locations) > 0:
+        headers[LOCATION] = ', '.join(data.locations)
+    if len(data.attributes) > 0:
+        headers[ATTRIBUTE] = ', '.join(data.attributes)
+    headers[CONTENT_TYPE] = mime_type
+
+    return headers, body
+
+
 class TextOcciRendering(Rendering):
     '''
     This is a rendering which will use the HTTP header to place the information
@@ -429,7 +435,7 @@ class TextOcciRendering(Rendering):
 
         data -- An HTTPData object.
         '''
-        return _set_data_to_headers(data)
+        return _set_data_to_headers(data, self.mime_type)
 
     def to_entity(self, headers, body, def_kind):
         data = self.get_data(headers, body)
@@ -480,14 +486,14 @@ def _extract_data_from_body(body):
     '''
     data = HTTPData()
     for entry in body.split('\n'):
-        if entry.find('Category:') > -1:
-            data.categories.extend(_extract_values(entry, 'Category:'))
-        if entry.find('X-OCCI-Attribute:') > -1:
-            data.attributes.extend(_extract_values(entry, 'X-OCCI-Attribute:'))
-        if entry.find('Link:') > -1:
-            data.links.extend(_extract_values(entry, 'Link:'))
-        if entry.find('X-OCCI-Location:') > -1:
-            data.locations.extend(_extract_values(entry, 'X-OCCI-Location:'))
+        if entry.find(CATEGORY + ':') > -1:
+            data.categories.extend(_extract_values(entry, CATEGORY + ':'))
+        if entry.find(ATTRIBUTE + ':') > -1:
+            data.attributes.extend(_extract_values(entry, ATTRIBUTE + ':'))
+        if entry.find(LINK + ':') > -1:
+            data.links.extend(_extract_values(entry, LINK + ':'))
+        if entry.find(LOCATION + ':') > -1:
+            data.locations.extend(_extract_values(entry, LOCATION + ':'))
     return data
 
 
@@ -504,36 +510,38 @@ def _extract_values(entry, key):
         items.append(tmp)
     else:
         split = shlex.shlex(tmp, posix=True)
+        # TODO: check if we need to remove the +
         split.whitespace += ','
         split.whitespace_split = True
         items.extend(list(split))
     return items
 
 
-def _set_data_to_body(data):
+def _set_data_to_body(data, mime_type):
     '''
     Simple method to set all information in the HTTP body.
 
     data -- The data to set.
+    mime_type -- The content type to set.
     '''
     body = ''
     if len(data.categories) > 0:
         for cat in data.categories:
-            body += '\nCategory: ' + cat
+            body += '\n' + CATEGORY + ': ' + cat
 
     if len(data.links) > 0:
         for link in data.links:
-            body += '\nLink: ' + link
+            body += '\n' + LINK + ': ' + link
 
     if len(data.attributes) > 0:
         for attr in data.attributes:
-            body += '\nX-OCCI-Attribute: ' + attr
+            body += '\n' + ATTRIBUTE + ': ' + attr
 
     if len(data.locations) > 0:
         for loc in data.locations:
-            body += '\nX-OCCI-Location: ' + loc
+            body += '\n' + LOCATION + ': ' + loc
 
-    return {}, body
+    return {CONTENT_TYPE: mime_type}, body
 
 
 class TextPlainRendering(TextOcciRendering):
@@ -545,7 +553,7 @@ class TextPlainRendering(TextOcciRendering):
     mime_type = 'text/plain'
 
     def set_data(self, data):
-        return _set_data_to_body(data)
+        return _set_data_to_body(data, self.mime_type)
 
     def get_data(self, headers, body):
         return _extract_data_from_body(body)
@@ -573,7 +581,7 @@ class TextUriListRendering(Rendering):
         body = '# uri:' + str(key)
         for entity in entities:
             body += '\n' + self.registry.get_hostname() + entity.identifier
-        return {}, body
+        return {CONTENT_TYPE: self.mime_type}, body
 
     def from_categories(self, categories):
         raise AttributeError(self.error)

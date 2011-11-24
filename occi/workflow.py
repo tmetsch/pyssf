@@ -25,7 +25,7 @@ Created on Jun 30, 2011
 
 from occi.backend import UserDefinedMixinBackend
 from occi.core_model import Resource, Link, Mixin
-from tornado.web import HTTPError
+from occi.exceptions import HTTPError
 import uuid
 
 #==============================================================================
