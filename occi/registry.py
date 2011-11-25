@@ -239,7 +239,8 @@ class NonePersistentRegistry(Registry):
         res.append(self.get_backend(entity.kind))
         for mixin in entity.mixins:
             res.append(self.get_backend(mixin))
-        return res
+        # remove duplicates - only need to call backs once - right?
+        return list(set(res))
 
     def set_backend(self, category, backend):
         self.BACKENDS2[category] = backend

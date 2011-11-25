@@ -19,14 +19,14 @@
 #
 from distutils.core import setup
 
-setup(name = 'pyssf',
-      version = '0.4.4',
-      description = 'Service Sharing Facility',
-      license = 'LGPL',
-      keywords = 'OCCI, Cloud Computing, Datacenter Software',
-      url = 'http://pyssf.sourceforge.net',
-      packages = ['occi', 'occi.extensions', 'occi.protocol'],
-      classifiers = ["Development Status :: 5 - Production/Stable",
+setup(name='pyssf',
+      version='0.4.4',
+      description='Service Sharing Facility',
+      license='LGPL',
+      keywords='OCCI, Cloud Computing, Datacenter Software',
+      url='http://pyssf.sourceforge.net',
+      packages=['occi', 'occi.extensions', 'occi.protocol'],
+      classifiers=["Development Status :: 5 - Production/Stable",
                      "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
                      "Operating System :: OS Independent",
                      "Programming Language :: Python",
@@ -37,4 +37,3 @@ setup(name = 'pyssf',
                      "Topic :: Utilities",
                     ],
      )
-

@@ -132,6 +132,7 @@ class ApplicationTest(unittest.TestCase):
         app.__call__(environ, response)
 
         environ['PATH_INFO'] = '/.well-known/org/ogf/occi/-/'
+        environ['QUERY_STRING'] = ''
         environ['HTTP_HOST'] = 'localhost:9888'
         app.__call__(environ, response)
 

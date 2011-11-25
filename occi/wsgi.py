@@ -33,6 +33,7 @@ from occi.protocol.occi_rendering import TextOcciRendering, \
     TextPlainRendering, TextUriListRendering
 from occi.registry import NonePersistentRegistry
 import StringIO
+import logging
 
 RETURN_CODES = {201: '201 Created',
                 200: '200 OK',
@@ -81,7 +82,7 @@ def _parse_body(environ):
     try:
         length = int(environ.get('CONTENT_LENGTH', '0'))
         return StringIO.StringIO(environ['wsgi_input'].read(length))
-    except KeyError:
+    except (KeyError, ValueError):
         return ''
 
 
@@ -93,8 +94,10 @@ def _parse_query(environ):
     '''
     tmp = environ.get('QUERY_STRING')
     if tmp is not None:
-        # PUT query in set not list!
-        query = (tmp.split('=')[0], tmp.split('=')[1])
+        try:
+            query = (tmp.split('=')[0], tmp.split('=')[1])
+        except IndexError:
+            query = ()
     else:
         query = ()
     return query
@@ -201,7 +204,7 @@ class Application(object):
             status = err.code
             headers = {CONTENT_TYPE: 'text/plain'}
             body = err.message
-            print 'ERROR:', body
+            logging.error(body)
 
         # send
         headers['Server'] = VERSION

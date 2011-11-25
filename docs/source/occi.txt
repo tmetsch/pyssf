@@ -25,13 +25,16 @@ strictly bound to that).
 
 The package here provides an OCCI compatible service and takes care of:
 
-  * A WSGI application which can run on most web frameworks for Python
+  * A WSGI application which can run on most web frameworks for Python,
+  * Easy to extend OCCI interface - you can add your own OCCI extension, hook
+    it up to different Resource Management Frameworks or even define own
+    renderings,
   * An OCCI compatible interface (Support text/occi, text/plain and
-    text/uri-list)
-  * A dynamically updated capabilities query interface
-  * Support for collections, mixins, templating and actions as defined by OCCI
-  * Renderings which are defined by OCCI
-  * A simple HTML interface for monitoring
+    text/uri-list),
+  * A dynamically updated capabilities query interface,
+  * Support for collections, mixins, templating and actions as defined by OCCI,
+  * Renderings which are defined by OCCI,
+  * A simple HTML interface for simple browsing using any Web browser.
 
 Creating an OCCI Service
 ------------------------
@@ -129,8 +132,8 @@ Defining your own or other renderings
 -------------------------------------
 
 (Optional) You can add your own set of Renderings to your Service if you like.
-For example to add support for OVF or JSON feel free to add those rendering on
-your own::
+For example to add support for `OVF <http://www.dmtf.org/standards/ovf>`_ or
+`JSON <http://www.json.org/>`_ feel free to add those rendering on your own::
 
     my_registry = NonePersistentRegistry()
     renderings = {'text/json': JsonRendering(registry)}
@@ -140,6 +143,11 @@ Please note that your rendering implementation should derive from the
 *Rendering* class. You do not necessarily need to implement all functions
 defined in that class but you are encouraged to do so. For more details review
 the OCCI and HTML rendering which come along within this package.
+
+.. note::
+    The HTMLRendering can be customized with an own CSS to adapt your look and
+    feel when using Web browsers. Simply provide a CSS as a string when calling
+    the HTMLRenderings's constructor.
 
 Implementing backends
 ---------------------
