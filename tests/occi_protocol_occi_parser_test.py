@@ -28,7 +28,7 @@ Created on Jul 4, 2011
 # disabling 'Access to a protected' pyling check (this is a test)
 # pylint: disable=C0103,R0904,W0212
 
-from occi.core_model import Action, Kind, Resource, Link
+from occi.core_model import Action, Kind, Resource, Link, Mixin
 from occi.protocol import occi_parser as parser
 from occi.registry import NonePersistentRegistry
 import unittest
@@ -52,10 +52,13 @@ class TestParser(unittest.TestCase):
                         'networkinterface',
                         related=[Link.kind]
                         )
+    ipnetwork_mixin = Mixin('http://schemas.ogf.org/occi/infrastructure/' \
+                           'networkinterface#',
+                           'ipnetworkinterface')
 
     source = Resource('/1', compute, [])
     target = Resource('/2', compute, [])
-    link1 = Link('/link/1', network_link, [], source, target)
+    link1 = Link('/link/1', network_link, [ipnetwork_mixin], source, target)
     link2 = Link(None, network_link, [], source, target)
 
     registry = NonePersistentRegistry()
@@ -67,6 +70,7 @@ class TestParser(unittest.TestCase):
         self.registry.set_backend(self.start_action, None)
         self.registry.set_backend(self.compute, None)
         self.registry.set_backend(self.network_link, None)
+        self.registry.set_backend(self.ipnetwork_mixin, None)
 
         self.link1.attributes = {'foo': 'bar'}
 
@@ -151,10 +155,12 @@ class TestParser(unittest.TestCase):
         Verifies that source and target are set...
         '''
         link_string = parser.get_link_str(self.link1)
+        print link_string
         link = parser.get_link(link_string, self.source, self.registry)
         self.assertEquals(link.kind, self.network_link)
         self.assertEquals(link.source, self.source)
         self.assertEquals(link.target, self.target)
+        self.assertEquals(len(link.mixins), 1)
         # 4 = 1 attr + core.id + core.src + core.target
         self.assertTrue(len(link.attributes) == 4)
 

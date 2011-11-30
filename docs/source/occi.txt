@@ -225,6 +225,22 @@ called; the backends for the assigned mixins of the resource are called; as
 well as backends defining the links kinds get called called. So if a resource
 has 1 kind, 2 mixins and 2 links --> 5 calls on backends are performed.
 
+Passing extra information to the backends
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To pass information to the backends it is possible to override the *__call__*
+function in the WSGI OCCI application. This is useful to pass on security
+information to the backends for example::
+
+    def __call__(self, environ, response):
+        sec_obc = {'username': 'password'}
+        return self._call_occi(environ, response, security=sec_obj)
+
+Now the *sec_obj* will be passed to the backends for every call. Next
+to this the OCCI core model *Entity* (and therefore also *Resource* and
+*Link*) has an attribute called *extras* which will not be rendered, but can
+be used to store any kind of object (such as ownership information).
+
 Notes on Backend Implementations
 --------------------------------
 

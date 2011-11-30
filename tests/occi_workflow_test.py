@@ -73,30 +73,35 @@ class EntityWorkflowTest(unittest.TestCase):
         # not much to verify here - just calls backends...
         workflow.replace_entity(self.src_entity,
                                 self.trg_entity,
-                                self.registry)
+                                self.registry,
+                                None)
 
     def test_update_entity_for_success(self):
         '''
         Test replace...
         '''
         # not much to verify here - just calls backends...
-        workflow.update_entity(self.src_entity, self.trg_entity, self.registry)
+        workflow.update_entity(self.src_entity,
+                               self.trg_entity,
+                               self.registry,
+                               None)
 
     def test_retrieve_entity_for_success(self):
         '''
         Test replace...
         '''
         # not much to verify here - just calls backends...
-        workflow.retrieve_entity(self.src_entity, self.registry)
-        workflow.retrieve_entity(self.link1, self.registry)
+        workflow.retrieve_entity(self.src_entity, self.registry, None)
+        workflow.retrieve_entity(self.link1, self.registry, None)
 
     def test_action_entity_for_success(self):
         '''
         Test replace...
         '''
         # not much to verify here - just calls backends...
-        workflow.action_entity(self.src_entity, self.action, self.registry)
-        workflow.action_entity(self.link1, self.action, self.registry)
+        workflow.action_entity(self.src_entity, self.action, self.registry,
+                               None)
+        workflow.action_entity(self.link1, self.action, self.registry, None)
 
     #==========================================================================
     # Failure
@@ -111,7 +116,7 @@ class EntityWorkflowTest(unittest.TestCase):
                      self.trg_entity)
         self.src_entity.links.append(link2)
         self.assertRaises(AttributeError, workflow.create_entity, '/foo/bar',
-                          self.src_entity, self.registry)
+                          self.src_entity, self.registry, None)
 
     def test_replace_entity_for_failure(self):
         '''
@@ -119,12 +124,12 @@ class EntityWorkflowTest(unittest.TestCase):
         '''
         self.trg_entity.links = [self.link1]
         # new entity should not have links...
-        self.assertRaises(HTTPError, workflow.replace_entity,
-                          self.src_entity, self.trg_entity, self.registry)
+        self.assertRaises(HTTPError, workflow.replace_entity, self.src_entity,
+                          self.trg_entity, self.registry, None)
 
         # cannot replace reouce with link
         self.assertRaises(AttributeError, workflow.replace_entity,
-                          self.src_entity, self.link1, self.registry)
+                          self.src_entity, self.link1, self.registry, None)
 
     def test_update_entity_for_failure(self):
         '''
@@ -132,8 +137,8 @@ class EntityWorkflowTest(unittest.TestCase):
         '''
         self.trg_entity.links = [self.link1]
         # new entity should not have links...
-        self.assertRaises(HTTPError, workflow.update_entity,
-                          self.src_entity, self.trg_entity, self.registry)
+        self.assertRaises(HTTPError, workflow.update_entity, self.src_entity,
+                          self.trg_entity, self.registry, None)
 
     #==========================================================================
     # Sanity
@@ -145,14 +150,16 @@ class EntityWorkflowTest(unittest.TestCase):
         '''
         # Check if an id get's set for the link...
         self.link1.identifier = None
-        workflow.create_entity('/foo/src', self.src_entity, self.registry)
+        workflow.create_entity('/foo/src', self.src_entity, self.registry,
+                               None)
         self.assertTrue(self.link1.identifier is not None)
 
     def test_create_resource_for_sanity(self):
         '''
         Test creation...
         '''
-        workflow.create_entity('/foo/src', self.src_entity, self.registry)
+        workflow.create_entity('/foo/src', self.src_entity, self.registry,
+                               None)
         # id needs to be set
         self.assertEqual(self.src_entity.identifier, '/foo/src')
         # entity needs to be available
@@ -167,7 +174,7 @@ class EntityWorkflowTest(unittest.TestCase):
         '''
         link2 = Link(None, self.link_kind, [], self.src_entity,
                      self.trg_entity)
-        workflow.create_entity('/link/2', link2, self.registry)
+        workflow.create_entity('/link/2', link2, self.registry, None)
         # id needs to be set
         self.assertEqual(link2.identifier, '/link/2')
         # entity needs to be available
@@ -180,8 +187,9 @@ class EntityWorkflowTest(unittest.TestCase):
         '''
         Test deletion...
         '''
-        workflow.create_entity('/foo/src', self.src_entity, self.registry)
-        workflow.delete_entity(self.src_entity, self.registry)
+        workflow.create_entity('/foo/src', self.src_entity, self.registry,
+                               None)
+        workflow.delete_entity(self.src_entity, self.registry, None)
         # ensure that both the resource and it's links are removed...
         self.assertFalse(self.src_entity in self.registry.get_resources())
         self.assertFalse(self.link1 in self.registry.get_resources())
@@ -190,8 +198,9 @@ class EntityWorkflowTest(unittest.TestCase):
         '''
         Test deletion...
         '''
-        workflow.create_entity('/foo/src', self.src_entity, self.registry)
-        workflow.delete_entity(self.link1, self.registry)
+        workflow.create_entity('/foo/src', self.src_entity, self.registry,
+                               None)
+        workflow.delete_entity(self.link1, self.registry, None)
         self.assertFalse(self.link1 in self.src_entity.links)
         self.assertFalse(self.link1 in self.registry.get_resources())
 
@@ -258,21 +267,21 @@ class CollectionWorkflowTest(unittest.TestCase):
         Check if the update functionalities are implemented correctly.
         '''
         self.assertRaises(AttributeError, workflow.update_collection,
-                          self.kind, [], [], self.registry)
+                          self.kind, [], [], self.registry, None)
 
     def test_replace_collection_for_failure(self):
         '''
         Check if the replace functionalities are implemented correctly.
         '''
         self.assertRaises(AttributeError, workflow.replace_collection,
-                          self.kind, [], [], self.registry)
+                          self.kind, [], [], self.registry, None)
 
     def test_delete_from_collection_for_failure(self):
         '''
         Check if the delete functionalities are implemented correctly.
         '''
         self.assertRaises(AttributeError, workflow.delete_from_collection,
-                          self.kind, [], self.registry)
+                          self.kind, [], self.registry, None)
 
     #==========================================================================
     # Sanity
@@ -297,7 +306,8 @@ class CollectionWorkflowTest(unittest.TestCase):
         '''
         res1 = Resource('/foo/target', self.kind, [self.mixin], [])
         res2 = Resource('/foo/target', self.kind, [], [])
-        workflow.update_collection(self.mixin, [res1], [res2], self.registry)
+        workflow.update_collection(self.mixin, [res1], [res2], self.registry,
+                                   None)
         self.assertTrue(self.mixin in res1.mixins)
         self.assertTrue(self.mixin in res2.mixins)
 
@@ -307,7 +317,8 @@ class CollectionWorkflowTest(unittest.TestCase):
         '''
         res1 = Resource('/foo/target', self.kind, [self.mixin], [])
         res2 = Resource('/foo/target', self.kind, [], [])
-        workflow.replace_collection(self.mixin, [res1], [res2], self.registry)
+        workflow.replace_collection(self.mixin, [res1], [res2], self.registry,
+                                    None)
         self.assertTrue(self.mixin not in res1.mixins)
         self.assertTrue(self.mixin in res2.mixins)
 
@@ -321,7 +332,8 @@ class CollectionWorkflowTest(unittest.TestCase):
         self.registry.add_resource('/foo/1', res1)
         self.registry.add_resource('/foo/2', res2)
 
-        workflow.delete_from_collection(self.mixin, [res2], self.registry)
+        workflow.delete_from_collection(self.mixin, [res2], self.registry,
+                                        None)
         self.assertTrue(self.mixin not in res2.mixins)
         self.assertTrue(self.mixin in res1.mixins)
 

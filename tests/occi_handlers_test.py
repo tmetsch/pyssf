@@ -755,20 +755,20 @@ class SimpleComputeBackend(KindBackend, ActionBackend):
     Simple backend...handing the kinds and Actions!
     '''
 
-    def create(self, entity):
+    def create(self, entity, extras):
         entity.attributes['occi.compute.state'] = 'inactive'
 
-    def update(self, old, new):
+    def update(self, old, new, extras):
         for attr in new.attributes.keys():
             old.attributes[attr] = new.attributes[attr]
 
-    def replace(self, old, new):
+    def replace(self, old, new, extras):
         old.attributes = new.attributes
         del(new)
 
-    def delete(self, entity):
+    def delete(self, entity, extras):
         if 'undeletable' in entity.attributes:
             raise AttributeError("I cannot be delete...")
 
-    def action(self, entity, action):
+    def action(self, entity, action, extras):
         entity.attributes['occi.compute.state'] = 'active'

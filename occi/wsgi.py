@@ -158,13 +158,9 @@ class Application(object):
                                  ' ActionBackend and backends handling' \
                                  ' mixins need to derive from MixinBackend.')
 
-    def __call__(self, environ, response):
-        '''
-        Will be called as defined by WSGI.
+    def _call_occi(self, environ, response, **kwargs):
+        extras = kwargs.copy()
 
-        environ -- The environ.
-        response -- The response.
-        '''
         # parse
         heads = _parse_headers(environ)
 
@@ -186,13 +182,15 @@ class Application(object):
         # find right handler
         handler = None
         if environ['PATH_INFO'] == '/-/':
-            handler = QueryHandler(self.registry, heads, body, query)
+            handler = QueryHandler(self.registry, heads, body, query, extras)
         elif environ['PATH_INFO'] == '/.well-known/org/ogf/occi/-/':
-            handler = QueryHandler(self.registry, heads, body, query)
+            handler = QueryHandler(self.registry, heads, body, query, extras)
         elif environ['PATH_INFO'].endswith('/'):
-            handler = CollectionHandler(self.registry, heads, body, query)
+            handler = CollectionHandler(self.registry, heads, body, query,
+                                        extras)
         else:
-            handler = ResourceHandler(self.registry, heads, body, query)
+            handler = ResourceHandler(self.registry, heads, body, query,
+                                      extras)
 
         # call handler
         mtd = environ['REQUEST_METHOD']
@@ -216,3 +214,12 @@ class Application(object):
         response(code, headers.items())
 
         return [body, ]
+
+    def __call__(self, environ, response):
+        '''
+        Will be called as defined by WSGI.
+
+        environ -- The environ.
+        response -- The response.
+        '''
+        return self._call_occi(environ, response)

@@ -41,7 +41,7 @@ class MyBackend(KindBackend, ActionBackend):
     attributes. Support for links and mixins would need to added.
     '''
 
-    def update(self, old, new):
+    def update(self, old, new, extras):
         # here you can check what information from new_entity you wanna bring
         # into old_entity
 
@@ -50,7 +50,7 @@ class MyBackend(KindBackend, ActionBackend):
         for item in new.attributes.keys():
             old.attributes[item] = new.attributes[item]
 
-    def replace(self, old, new):
+    def replace(self, old, new, extras):
         print('Replacing a resource with id: ' + old.identifier)
         old.attributes = {}
         for item in new.attributes.keys():
@@ -63,7 +63,8 @@ class ComputeBackend(MyBackend):
     A Backend for compute instances.
     '''
 
-    def create(self, entity):
+    def create(self, entity, extras):
+
         # e.g. check if all needed attributes are defined...
 
         # adding some default dummy values:
@@ -82,7 +83,7 @@ class ComputeBackend(MyBackend):
 
         print('Creating the virtual machine with id: ' + entity.identifier)
 
-    def retrieve(self, entity):
+    def retrieve(self, entity, extras):
         # trigger your management framework to get most up to date information
 
         # add up to date actions...
@@ -93,12 +94,12 @@ class ComputeBackend(MyBackend):
         if entity.attributes['occi.compute.state'] == 'suspended':
             entity.actions = [START]
 
-    def delete(self, entity):
+    def delete(self, entity, extras):
         # call the management framework to delete this compute instance...
         print('Removing representation of virtual machine with id: '
               + entity.identifier)
 
-    def action(self, entity, action):
+    def action(self, entity, action, extras):
         if action not in entity.actions:
             raise AttributeError("This action is currently no applicable.")
         elif action == START:
@@ -124,7 +125,7 @@ class NetworkBackend(MyBackend):
     Backend to handle network resources.
     '''
 
-    def create(self, entity):
+    def create(self, entity, extras):
         # create a VNIC...
         entity.attributes['occi.network.vlan'] = '1'
         entity.attributes['occi.network.label'] = 'dummy interface'
@@ -132,18 +133,18 @@ class NetworkBackend(MyBackend):
         entity.actions = [UP]
         print('Creating a VNIC')
 
-    def retrieve(self, entity):
+    def retrieve(self, entity, extras):
         # update a VNIC
         if entity.attributes['occi.network.state'] == 'active':
             entity.actions = [DOWN]
         elif entity.attributes['occi.network.state'] == 'inactive':
             entity.actions = [UP]
 
-    def delete(self, entity):
+    def delete(self, entity, extras):
         # and deactivate it
         print('Removing representation of a VNIC with id:' + entity.identifier)
 
-    def action(self, entity, action):
+    def action(self, entity, action, extras):
         if action not in entity.actions:
             raise AttributeError("This action is currently no applicable.")
         elif action.kind == UP:
@@ -161,7 +162,7 @@ class StorageBackend(MyBackend):
     Backend to handle storage resources.
     '''
 
-    def create(self, entity):
+    def create(self, entity, extras):
         # create a storage container here!
 
         entity.attributes['occi.storage.size'] = '1'
@@ -169,7 +170,7 @@ class StorageBackend(MyBackend):
         entity.actions = [ONLINE]
         print('Creating a storage device')
 
-    def retrieve(self, entity):
+    def retrieve(self, entity, extras):
         # check the state and return it!
 
         if entity.attributes['occi.storage.state'] == 'offline':
@@ -177,11 +178,11 @@ class StorageBackend(MyBackend):
         if entity.attributes['occi.storage.state'] == 'online':
             entity.actions = [BACKUP, SNAPSHOT, RESIZE]
 
-    def delete(self, entity):
+    def delete(self, entity, extras):
         # call the management framework to delete this storage instance...
         print('Removing storage device with id: ' + entity.identifier)
 
-    def action(self, entity, action):
+    def action(self, entity, action, extras):
         if action not in entity.actions:
             raise AttributeError("This action is currently no applicable.")
         elif action == ONLINE:
@@ -207,14 +208,14 @@ class IpNetworkBackend(MixinBackend):
     A mixin backend for the IPnetworking.
     '''
 
-    def create(self, entity):
+    def create(self, entity, extras):
         if not entity.kind == NETWORK:
             raise AttributeError('This mixin cannot be applied to this kind.')
         entity.attributes['occi.network.allocation'] = 'dynamic'
         entity.attributes['occi.network.gateway'] = '10.0.0.1'
         entity.attributes['occi.network.address'] = '10.0.0.1/24'
 
-    def delete(self, entity):
+    def delete(self, entity, extras):
         entity.attributes.pop('occi.network.allocation')
         entity.attributes.pop('occi.network.gateway')
         entity.attributes.pop('occi.network.address')
@@ -225,14 +226,14 @@ class IpNetworkInterfaceBackend(MixinBackend):
     A mixin backend for the IPnetowkringinterface.
     '''
 
-    def create(self, entity):
+    def create(self, entity, extras):
         if not entity.kind == NETWORKINTERFACE:
             raise AttributeError('This mixin cannot be applied to this kind.')
         entity.attributes['occi.networkinterface.address'] = '10.0.0.65'
         entity.attributes['occi.networkinterface.gateway'] = '10.0.0.1'
         entity.attributes['occi.networkinterface.allocation'] = 'dynamic'
 
-    def delete(self, entity):
+    def delete(self, entity, extras):
         entity.attributes.pop('occi.networkinterface.address')
         entity.attributes.pop('occi.networkinterface.gateway')
         entity.attributes.pop('occi.networkinterface.allocation')
@@ -243,12 +244,12 @@ class StorageLinkBackend(KindBackend):
     A backend for the storage links.
     '''
 
-    def create(self, entity):
+    def create(self, entity, extras):
         entity.attributes['occi.storagelink.deviceid'] = 'sda1'
         entity.attributes['occi.storagelink.mountpoint'] = '/'
         entity.attributes['occi.storagelink.state'] = 'mounted'
 
-    def delete(self, entity):
+    def delete(self, entity, extras):
         entity.attributes.pop('occi.storagelink.deviceid')
         entity.attributes.pop('occi.storagelink.mountpoint')
         entity.attributes.pop('occi.storagelink.state')
@@ -259,12 +260,12 @@ class NetworkInterfaceBackend(KindBackend):
     A backend for the network links.
     '''
 
-    def create(self, link):
+    def create(self, link, extras):
         link.attributes['occi.networkinterface.state'] = 'up'
         link.attributes['occi.networkinterface.mac'] = 'aa:bb:cc:dd:ee:ff'
         link.attributes['occi.networkinterface.interface'] = 'eth0'
 
-    def delete(self, link):
+    def delete(self, link, extras):
         link.attributes.pop('occi.networkinterface.state')
         link.attributes.pop('occi.networkinterface.mac')
         link.attributes.pop('occi.networkinterface.interface')

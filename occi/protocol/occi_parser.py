@@ -123,6 +123,8 @@ def get_link(link_string, source, registry):
 
     try:
         tmp_category = find_in_string(link_string, 'category')
+        # TODO: get single kind get multiple mixins...everything else -> fault!
+        print tmp_category
     except AttributeError:
         raise AttributeError('Could not determine the Category of the Link.')
     tempus = tmp_category.split('#')
@@ -160,7 +162,13 @@ def get_link_str(link):
     tmp = '<' + link.target.identifier + '>'
     tmp = tmp + '; rel="' + str(link.target.kind) + '"'
     tmp = tmp + '; self="' + str(link.identifier) + '"'
-    tmp = tmp + '; category="' + str(link.kind) + '"'
+    tmp = tmp + '; category="' + str(link.kind)
+
+    if len(link.mixins) > 0:
+        for mixin in link.mixins:
+            tmp = tmp + ' ' + str(mixin)
+
+    tmp = tmp + '"'
 
     link.attributes['occi.core.id'] = link.identifier
     link.attributes['occi.core.source'] = link.source.identifier
@@ -182,7 +190,7 @@ def get_attributes(attribute_string):
         tmp = _strip_all(attribute_string)
         key = _strip_all(tmp.split('=')[0])
         value = tmp.split('=')[1]
-        if value.find('"') is not - 1:
+        if value.find('"') is not -1:
             value = _strip_all(value)
     except IndexError:
         raise AttributeError('Could not determine the given attributes')

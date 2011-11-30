@@ -86,24 +86,26 @@ class KindBackend(object):
     multiple kinds to one backend.
     '''
 
-    def create(self, entity):
+    def create(self, entity, extras):
         '''
         Call the Resource Management and create this entity.
 
         entity -- The entity which is to be created.
+        extras -- Any extra arguments which are defined by the user.
         '''
         pass
 
-    def retrieve(self, entity):
+    def retrieve(self, entity, extras):
         '''
         Call the Resource Management and refresh this entity so the client gets
         up to date information.
 
         entity -- The entity which is to be retrieved.
+        extras -- Any extra arguments which are defined by the user.
         '''
         pass
 
-    def update(self, old, new):
+    def update(self, old, new, extras):
         '''
         Call the Resource Management and update this entity.
 
@@ -115,10 +117,11 @@ class KindBackend(object):
 
         old -- The old entity which is to be updated.
         new -- The new entity holding the updated information.
+        extras -- Any extra arguments which are defined by the user.
         '''
         pass
 
-    def replace(self, old, new):
+    def replace(self, old, new, extras):
         '''
         Call the Resource Management and update this entity. This is
         essentially a full update (Which allows removal of attributes for
@@ -130,14 +133,16 @@ class KindBackend(object):
 
         old -- The old entity which is to be updated.
         new -- The new entity holding the updated information.
+        extras -- Any extra arguments which are defined by the user.
         '''
         pass
 
-    def delete(self, entity):
+    def delete(self, entity, extras):
         '''
         Call the Resource Management and delete this entity.
 
         entity -- The entity which is to be deleted.
+        extras -- Any extra arguments which are defined by the user.
         '''
         pass
 
@@ -149,15 +154,16 @@ class ActionBackend(object):
     Use this Backend for Action types.
     '''
 
-    # disabling 'Too few public...' pyling check (this is for extension)
+    # disabling 'Too few public...' pylint check (this is for extension)
     # pylint: disable=R0903
 
-    def action(self, entity, action):
+    def action(self, entity, action, extras):
         '''
         Call the Resource Management and perform this action.
 
         entity -- The entity on which the action is going to be performed.
         action -- The action category definition.
+        extras -- Any extra arguments which are defined by the user.
         '''
         pass
 

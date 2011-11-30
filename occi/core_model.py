@@ -122,6 +122,7 @@ class Entity(object):
         # Attributes of resource entities
         self.attributes = {}
         self.actions = []
+        self.extras = None
 
 
 class Resource(Entity):

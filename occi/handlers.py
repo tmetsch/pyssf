@@ -43,11 +43,13 @@ class BaseHandler():
     General request handler.
     '''
 
-    def __init__(self, registry, headers, body, query):
+    def __init__(self, registry, headers, body, query, extras=None):
         self.registry = registry
         self.headers = headers
         self.body = body
         self.query = query
+
+        self.extras = extras
 
     def handle(self, method, key):
         '''
@@ -70,8 +72,7 @@ class BaseHandler():
         content_type -- String with either either Content-Type or Accept.
         '''
         try:
-            return self.registry.get_renderer(
-                                            self.headers[content_type])
+            return self.registry.get_renderer(self.headers[content_type])
         except KeyError:
             # In case no Accept is defined in the request
             return self.registry.get_renderer(self.registry.get_default_type())
@@ -205,7 +206,7 @@ class ResourceHandler(BaseHandler):
         try:
             entity = self.registry.get_resource(key)
 
-            workflow.retrieve_entity(entity, self.registry)
+            workflow.retrieve_entity(entity, self.registry, self.extras)
 
             return self.render_entity(entity)
         except KeyError as key:
@@ -223,7 +224,8 @@ class ResourceHandler(BaseHandler):
                 entity = self.registry.get_resource(key)
                 action = self.parse_action()
 
-                workflow.action_entity(entity, action, self.registry)
+                workflow.action_entity(entity, action, self.registry,
+                                       self.extras)
 
                 return self.render_entity(entity)
             except AttributeError as attr:
@@ -236,7 +238,7 @@ class ResourceHandler(BaseHandler):
                 old = self.registry.get_resource(key)
                 new = self.parse_entity(def_kind=old.kind)
 
-                workflow.update_entity(old, new, self.registry)
+                workflow.update_entity(old, new, self.registry, self.extras)
 
                 return self.render_entity(old)
             except AttributeError as attr:
@@ -256,7 +258,7 @@ class ResourceHandler(BaseHandler):
                 old = self.registry.get_resource(key)
                 new = self.parse_entity()
 
-                workflow.replace_entity(old, new, self.registry)
+                workflow.replace_entity(old, new, self.registry, self.extras)
 
                 return self.render_entity(old)
             except AttributeError as attr:
@@ -266,7 +268,7 @@ class ResourceHandler(BaseHandler):
             try:
                 entity = self.parse_entity()
 
-                workflow.create_entity(key, entity, self.registry)
+                workflow.create_entity(key, entity, self.registry, self.extras)
 
                 heads = {'Location': self.registry.get_hostname()
                                            + entity.identifier}
@@ -284,7 +286,7 @@ class ResourceHandler(BaseHandler):
         try:
             entity = self.registry.get_resource(key)
 
-            workflow.delete_entity(entity, self.registry)
+            workflow.delete_entity(entity, self.registry, self.extras)
 
             return self.response(200)
         except AttributeError as attr:
@@ -326,7 +328,8 @@ class CollectionHandler(BaseHandler):
                 action = self.parse_action()
                 entities = workflow.get_entities_under_path(key, self.registry)
                 for entity in entities:
-                    workflow.action_entity(entity, action, self.registry)
+                    workflow.action_entity(entity, action, self.registry,
+                                           self.extras)
 
                 return self.response(200)
             except AttributeError as attr:
@@ -335,9 +338,8 @@ class CollectionHandler(BaseHandler):
             # create resource (&links)
             try:
                 entity = self.parse_entity()
-
                 workflow.create_entity(workflow.create_id(entity.kind),
-                                       entity, self.registry)
+                                       entity, self.registry, self.extras)
 
                 heads = {'Location': self.registry.get_hostname()
                                            + entity.identifier}
@@ -352,8 +354,8 @@ class CollectionHandler(BaseHandler):
                 old_entities = workflow.get_entities_under_path(key,
                                                                 self.registry)
                 workflow.update_collection(mixin, old_entities,
-                                           new_entities,
-                                           self.registry)
+                                           new_entities, self.registry,
+                                           self.extras)
 
                 return self.response(200)
             except AttributeError as attr:
@@ -371,7 +373,7 @@ class CollectionHandler(BaseHandler):
             new_entities = self.parse_entities()
             old_entities = workflow.get_entities_under_path(key, self.registry)
             workflow.replace_collection(mixin, old_entities, new_entities,
-                                        self.registry)
+                                        self.registry, self.extras)
 
             return self.response(200)
         except AttributeError as attr:
@@ -387,7 +389,7 @@ class CollectionHandler(BaseHandler):
             # delete entities
             entities = workflow.get_entities_under_path(key, self.registry)
             for entity in entities:
-                workflow.delete_entity(entity, self.registry)
+                workflow.delete_entity(entity, self.registry, self.extras)
 
             return self.response(200)
         elif len(self.parse_entities()) > 0:
@@ -395,7 +397,8 @@ class CollectionHandler(BaseHandler):
             try:
                 mixin = self.registry.get_category(key)
                 entities = self.parse_entities()
-                workflow.delete_from_collection(mixin, entities, self.registry)
+                workflow.delete_from_collection(mixin, entities, self.registry,
+                                                self.extras)
 
                 return self.response(200)
             except AttributeError as attr:

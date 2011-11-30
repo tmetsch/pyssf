@@ -53,11 +53,11 @@ class TestKindBackend(unittest.TestCase):
         '''
         Test all possible calls if the pass...
         '''
-        self.back.create(None)
-        self.back.retrieve(None)
-        self.back.delete(None)
-        self.back.update(None, None)
-        self.back.replace(None, None)
+        self.back.create(None, None)
+        self.back.retrieve(None, None)
+        self.back.delete(None, None)
+        self.back.update(None, None, None)
+        self.back.replace(None, None, None)
 
     def test_is_related_for_sanity(self):
         '''
@@ -106,4 +106,4 @@ class TestActionBackend(unittest.TestCase):
         Test if default pass...
         '''
         back = ActionBackend()
-        back.action(None, None)
+        back.action(None, None, None)
