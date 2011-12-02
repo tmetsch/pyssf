@@ -233,11 +233,13 @@ function in the WSGI OCCI application. This is useful to pass on security
 information to the backends for example::
 
     def __call__(self, environ, response):
-        sec_obc = {'username': 'password'}
+        sec_obj = {'username': 'password'}
         return self._call_occi(environ, response, security=sec_obj)
 
-Now the *sec_obj* will be passed to the backends for every call. Next
-to this the OCCI core model *Entity* (and therefore also *Resource* and
+Now the *sec_obj* will be passed within the *extras* parameter of the
+functions in the backends (to retrieve it: *extras[security]*).
+
+Next to this the OCCI core model *Entity* (and therefore also *Resource* and
 *Link*) has an attribute called *extras* which will not be rendered, but can
 be used to store any kind of object (such as ownership information).
 
@@ -266,6 +268,7 @@ Notes on Backend Implementations
 
 .. note::
     It is recommended to throw either AttributeError or HTTPErrors on any
-    exceptions in the Backends. Those Errors will be translated into the
-    corresponding HTTP errors.
+    exceptions in the Backends. HTTPErrors can be used if you want to define a
+    return code (defined in the wsgi module) or AttribtueErrors on more
+    generic errors which will result in a Bad Request.
 

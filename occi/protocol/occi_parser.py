@@ -23,7 +23,7 @@ Created on Jun 28, 2011
 @author: tmetsch
 '''
 
-from occi.core_model import Category, Link, Mixin
+from occi.core_model import Category, Link, Mixin, Kind
 
 #==============================================================================
 # Following are text/occi and text/plain related parsing functions.
@@ -103,6 +103,28 @@ def get_category_str(category):
     return tmp
 
 
+def _get_link_categories(categories, registry):
+    '''
+    Determine the kind ans mixins for inline link creation.
+
+    categories -- String with a set of category string definitions.
+    registry -- Registry used for this call.
+    '''
+    tmp_kind = None
+    tmp_mixins = []
+    for tmp_cat in categories.split(' '):
+        tempus = tmp_cat.split('#')
+        link_category = get_category(tempus[1].strip() + ';scheme="'
+                                     + tempus[0].strip() + '#"',
+                                     registry.get_categories())
+        if isinstance(link_category, Kind):
+            tmp_kind = link_category
+        else:
+            tmp_mixins.append(link_category)
+
+    return tmp_kind, tmp_mixins
+
+
 def get_link(link_string, source, registry):
     '''
     Create a Link from a string rendering.
@@ -123,14 +145,13 @@ def get_link(link_string, source, registry):
 
     try:
         tmp_category = find_in_string(link_string, 'category')
-        # TODO: get single kind get multiple mixins...everything else -> fault!
-        print tmp_category
     except AttributeError:
         raise AttributeError('Could not determine the Category of the Link.')
-    tempus = tmp_category.split('#')
-    link_category = get_category(tempus[1].strip() + ';scheme="'
-                                 + tempus[0].strip() + '#"',
-                                 registry.get_categories())
+
+    tmp_kind, tmp_mixins = _get_link_categories(tmp_category, registry)
+
+    if tmp_kind is None:
+        raise AttributeError('Unable to find the Kind of the Link.')
 
     attributes = {}
     attr_begin = link_string.find('category="') + 12 + len(tmp_category)
@@ -148,7 +169,7 @@ def get_link(link_string, source, registry):
         raise AttributeError('The target for the link cannot be found: '
                              + target_id)
 
-    link = Link(link_id, link_category, [], source, target)
+    link = Link(link_id, tmp_kind, tmp_mixins, source, target)
     link.attributes = attributes
     return link
 

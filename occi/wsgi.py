@@ -103,6 +103,23 @@ def _parse_query(environ):
     return query
 
 
+def _set_hostname(environ, registry):
+    '''
+    Set the hostname of the service.
+
+    environ -- The WSGI environ.
+    registry -- The OCCI registry.
+    '''
+    # set hostname
+    if 'HTTP_HOST' in environ.keys():
+        registry.set_hostname('http://' + environ['HTTP_HOST'])
+    else:
+        # WSGI - could be that HTTP_HOST is not available...
+        host = 'http://' + environ.get('SERVER_NAME') + ':'
+        host += environ.get('SERVER_PORT')
+        registry.set_hostname(host)
+
+
 class Application(object):
     '''
     An WSGI application for OCCI.
@@ -159,6 +176,14 @@ class Application(object):
                                  ' mixins need to derive from MixinBackend.')
 
     def _call_occi(self, environ, response, **kwargs):
+        '''
+        Starts the overall OCCI part of the service. Needs to be called by the
+        __call__ function defined by an WSGI app.
+
+        environ -- The WSGI environ.
+        response -- The WESGI response.
+        kwargs -- keyworded arguments which will be forwarded to the backends.
+        '''
         extras = kwargs.copy()
 
         # parse
@@ -170,14 +195,7 @@ class Application(object):
         # parse query
         query = _parse_query(environ)
 
-        # set hostname
-        if 'HTTP_HOST' in environ.keys():
-            self.registry.set_hostname('http://' + environ['HTTP_HOST'])
-        else:
-            # WSGI - could be that HTTP_HOST is not available...
-            host = 'http://' + environ.get('SERVER_NAME') + ':'
-            host += environ.get('SERVER_PORT')
-            self.registry.set_hostname(host)
+        _set_hostname(environ, self.registry)
 
         # find right handler
         handler = None
@@ -212,7 +230,6 @@ class Application(object):
 
         # headers.items() because we need a list of sets...
         response(code, headers.items())
-
         return [body, ]
 
     def __call__(self, environ, response):

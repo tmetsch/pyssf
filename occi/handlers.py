@@ -43,6 +43,9 @@ class BaseHandler():
     General request handler.
     '''
 
+    # disabling 'Too many arguments' pylint check (only inst. within module)
+    # pylint: disable=R0913
+
     def __init__(self, registry, headers, body, query, extras=None):
         self.registry = registry
         self.headers = headers

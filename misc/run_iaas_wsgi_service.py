@@ -64,7 +64,6 @@ class ComputeBackend(MyBackend):
     '''
 
     def create(self, entity, extras):
-
         # e.g. check if all needed attributes are defined...
 
         # adding some default dummy values:
@@ -271,11 +270,17 @@ class NetworkInterfaceBackend(KindBackend):
         link.attributes.pop('occi.networkinterface.interface')
 
 
+class MyAPP(Application):
+
+    def __call__(self, environ, response):
+        sec_obj = {'username': 'password'}
+        return self._call_occi(environ, response, security=sec_obj, foo=None)
+
 if __name__ == '__main__':
 # When using own registry and custom HTMLRendering:
 #    registry = NonePersistentRegistry()
 #    renderings = {'text/html': HTMLRendering(registry)}
-    app = Application()
+    app = MyAPP()
 
     COMPUTE_BACKEND = ComputeBackend()
     NETWORK_BACKEND = NetworkBackend()

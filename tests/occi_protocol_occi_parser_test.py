@@ -58,12 +58,14 @@ class TestParser(unittest.TestCase):
 
     source = Resource('/1', compute, [])
     target = Resource('/2', compute, [])
-    link1 = Link('/link/1', network_link, [ipnetwork_mixin], source, target)
-    link2 = Link(None, network_link, [], source, target)
-
     registry = NonePersistentRegistry()
 
     def setUp(self):
+        self.link1 = Link('/link/1', self.network_link, [self.ipnetwork_mixin],
+                          self.source, self.target)
+        self.link2 = Link(None, self.network_link, [], self.source,
+                          self.target)
+
         self.registry.add_resource(self.source.identifier, self.source)
         self.registry.add_resource(self.target.identifier, self.target)
 
@@ -132,6 +134,12 @@ class TestParser(unittest.TestCase):
         self.assertRaises(AttributeError, parser.get_link, link_string, None,
                           self.registry)
 
+        # no kind defined
+        self.link1.kind = self.ipnetwork_mixin
+        link_string = parser.get_link_str(self.link1)
+        self.assertRaises(AttributeError, parser.get_link, link_string, None,
+                          self.registry)
+
     def test_get_attributes_for_failure(self):
         '''
         Verifies the parsing of attributes.
@@ -155,7 +163,6 @@ class TestParser(unittest.TestCase):
         Verifies that source and target are set...
         '''
         link_string = parser.get_link_str(self.link1)
-        print link_string
         link = parser.get_link(link_string, self.source, self.registry)
         self.assertEquals(link.kind, self.network_link)
         self.assertEquals(link.source, self.source)
