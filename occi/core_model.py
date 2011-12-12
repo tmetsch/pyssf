@@ -54,6 +54,9 @@ class Category(object):
         else:
             return False
 
+    def __hash__(self):
+        return hash(self.scheme) ^ hash(self.term)
+
     def __str__(self):
         return self.scheme + self.term
 

@@ -220,6 +220,18 @@ class CategoryRegistryTest(unittest.TestCase):
         result = self.registry.get_category('/bar/')
         self.assertTrue(result == None)
 
+    def test_set_category_for_sanity(self):
+        '''
+        Test the hash function of the categories...
+        '''
+        cat1 = Kind('http://example.com#', 'foo')
+        cat2 = Kind('http://example.com#', 'foo')
+
+        self.registry.set_backend(cat1, KindBackend())
+        self.registry.set_backend(cat2, KindBackend())
+
+        self.assertTrue(len(self.registry.BACKENDS2.keys()) == 3)
+
 
 class ResourcesTest(unittest.TestCase):
     '''
