@@ -93,6 +93,7 @@ def delete_entity(entity, registry, extras):
 
     # call all the backends who are associated with this entity.kind...
     backends = registry.get_all_backends(entity)
+
     for backend in backends:
         backend.delete(entity, extras)
 

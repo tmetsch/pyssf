@@ -231,7 +231,8 @@ def _from_entity(entity):
     data.categories = cat_str_list
 
     attributes = []
-    entity.attributes['occi.core.id'] = entity.identifier
+    if 'occi.core.id' not in entity.attributes:
+        entity.attributes['occi.core.id'] = entity.identifier
 
     link_str_list = []
     # actions

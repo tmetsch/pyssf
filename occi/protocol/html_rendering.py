@@ -131,8 +131,7 @@ class HTMLRendering(Rendering):
         tmp += '</div>\n'
 
         # body
-        tmp += '\t\t<div id="entity">\n'
-        tmp += '\t\t\t<h2>Kind</h2><ul><li>'
+        tmp += '\t\t<div id="entity">\n\t\t\t<h2>Kind</h2><ul><li>'
         tmp += str(entity.kind) + '</li></ul>\n'
         if len(entity.mixins) > 0:
             tmp += '\t\t\t<h2>Mixins</h2><ul>'
@@ -140,7 +139,8 @@ class HTMLRendering(Rendering):
                 tmp += '<li>' + str(item) + '</li>'
             tmp += '</ul>\n'
 
-        entity.attributes['occi.core.id'] = entity.identifier
+        if 'occi.core.id' not in entity.attributes:
+            entity.attributes['occi.core.id'] = entity.identifier
         if isinstance(entity, Resource):
             if len(entity.links) > 0:
                 tmp += '\t\t\t<h2>Links</h2><table>'
