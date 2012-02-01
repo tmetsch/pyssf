@@ -23,17 +23,20 @@ Created on 22.11.2011
 @author: tmetsch
 
 '''
+
 from occi import VERSION
 from occi.backend import KindBackend, MixinBackend, ActionBackend
 from occi.exceptions import HTTPError
 from occi.handlers import QueryHandler, CollectionHandler, ResourceHandler, \
     CATEGORY, LINK, ATTRIBUTE, LOCATION, ACCEPT, CONTENT_TYPE
 from occi.protocol.html_rendering import HTMLRendering
-from occi.protocol.occi_rendering import TextOcciRendering, \
-    TextPlainRendering, TextUriListRendering
+from occi.protocol.json_rendering import JsonRendering
+from occi.protocol.occi_rendering import TextOcciRendering, TextPlainRendering, \
+    TextUriListRendering
 from occi.registry import NonePersistentRegistry
 import StringIO
 import logging
+
 
 RETURN_CODES = {201: '201 Created',
                 200: '200 OK',
@@ -145,6 +148,8 @@ class Application(object):
                                        TextUriListRendering(self.registry))
             self.registry.set_renderer('text/html',
                                        HTMLRendering(self.registry))
+            self.registry.set_renderer('application/occi+json',
+                                       JsonRendering(self.registry))
         else:
             for mime_type in renderings.keys():
                 self.registry.set_renderer(mime_type, renderings[mime_type])
