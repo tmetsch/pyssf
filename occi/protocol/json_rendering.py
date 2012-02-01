@@ -27,6 +27,37 @@ from occi.handlers import CONTENT_TYPE
 from occi.protocol.occi_rendering import Rendering
 import json
 
+
+def _from_category(category):
+    data = {}
+    data['term'] = category.term
+    data['scheme'] = category.scheme
+    if hasattr(category, 'title') and category.title is not '':
+        data['title'] = category.title
+    if hasattr(category, 'related') and len(category.related) > 0:
+        rel_list = []
+        for item in category.related:
+            rel_list.append(str(item))
+        data['related'] = rel_list
+    if hasattr(category, 'location') and category.location is not None:
+        data['location'] = category.location
+    if hasattr(category, 'attributes') and len(category.attributes) > 0:
+        attr_list = []
+        for item in category.attributes:
+            if category.attributes[item] == 'required':
+                attr_list.append(item + '{required}')
+            elif category.attributes[item] == 'immutable':
+                attr_list.append(item + '{immutable}')
+            else:
+                attr_list.append(item)
+        data['attributes'] = attr_list
+    if hasattr(category, 'actions') and len(category.actions) > 0:
+        action_list = []
+        for item in category.actions:
+            action_list.append(str(item))
+        data['actions'] = action_list
+    return data
+
 class JsonRendering(Rendering):
     '''
     This is a rendering which will use the HTTP header to place the information
@@ -38,11 +69,7 @@ class JsonRendering(Rendering):
     def from_entity(self, entity):
         data = {}
         # kind
-        kind = {}
-        kind['term'] = entity.kind.scheme
-        kind['scheme'] = entity.kind.scheme
-        # TODO: add rest...
-        data['kind'] = kind
+        data['kind'] = _from_category(entity.kind)
 
         # mixins
         mixins = []
