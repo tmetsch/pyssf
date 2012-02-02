@@ -25,6 +25,7 @@ Created on Jun 28, 2011
 
 from occi.core_model import Resource, Link
 from occi.handlers import CATEGORY, ATTRIBUTE, LOCATION, LINK, CONTENT_TYPE
+from occi.protocol.rendering import Rendering
 import occi.protocol.occi_parser as parser
 import shlex
 
@@ -43,101 +44,6 @@ class HTTPData(object):
         self.links = []
         self.attributes = []
         self.locations = []
-
-
-class Rendering(object):
-    '''
-    All renderings should derive from this class.
-    '''
-
-    def __init__(self, registry):
-        '''
-        Constructor.
-
-        registry -- The registry used for this process.
-        '''
-        self.registry = registry
-
-    def to_entity(self, headers, body, def_kind):
-        '''
-        Given the HTTP headers and the body this method will convert the HTTP
-        data into an entity representation. Must return Resource or Link
-        instances.
-
-        headers -- The HTTP headers.
-        body -- The HTTP body.
-        def_kind -- If provided this kind is taken (Needed for update).
-        '''
-        raise NotImplementedError()
-
-    def from_entity(self, entity):
-        '''
-        Given an entity it will return a HTTP body an header.
-
-        If it's a link make sure source, target attributes are set. If it's a
-        Resource make sure Links are presented properly.
-
-        entity -- The entity which is to rendered.
-        '''
-        raise NotImplementedError()
-
-    def to_entities(self, headers, body):
-        '''
-        Given the HTTP headers and the body this method will convert the HTTP
-        data into a set of entity representations. Must return a set of
-        Resource or Link instances.
-
-        headers -- The HTTP headers.
-        body -- The HTTP body.
-        '''
-        raise NotImplementedError()
-
-    def from_entities(self, entities, key):
-        '''
-        Given an set of entities it will return a HTTP body an header.
-
-        entities -- The entities which will be rendered.
-        key -- Needed for uri-list (see RFC) and html rendering.
-        '''
-        raise NotImplementedError()
-
-    def from_categories(self, categories):
-        '''
-        Given an set of categories it will return a HTTP body an header.
-
-        categories -- The list of categories which is to be rendered.
-        '''
-        raise NotImplementedError()
-
-    def to_action(self, headers, body):
-        '''
-        Given the HTTP headers and the body this method will convert the HTTP
-        data into an Action.
-
-        headers -- The HTTP headers.
-        body -- The HTTP body.
-        '''
-        raise NotImplementedError()
-
-    def to_mixins(self, headers, body):
-        '''
-        Given the HTTP headers and the body this method will convert the HTTP
-        data into a Mixins. Must return a list with Mixin instances.
-
-        headers -- The HTTP headers.
-        body -- The HTTP body.
-        '''
-        raise NotImplementedError()
-
-    def get_filters(self, headers, body):
-        '''
-        Given the HTTP headers and the body this method will convert the HTTP
-        data into a list of categories and attributes.
-
-        headers -- The HTTP headers.
-        body -- The HTTP body.
-        '''
-        raise NotImplementedError()
 
 #==============================================================================
 # text/occi rendering

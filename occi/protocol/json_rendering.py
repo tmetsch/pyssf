@@ -24,13 +24,15 @@ Created on 01.02.2012
 @author: tmetsch
 '''
 
+# TODO: check if this can be move partly to occi_rendering (once standardized)
+# and rename to a parser class.
 
 # TODO: remove this one
 # pylint: disable=W0223
 
 from occi.core_model import Resource
 from occi.handlers import CONTENT_TYPE
-from occi.protocol.occi_rendering import Rendering
+from occi.protocol.rendering import Rendering
 import json
 
 

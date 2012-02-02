@@ -27,7 +27,7 @@ Created on Jul 15, 2011
 # pylint: disable=W0223
 
 from occi.core_model import Resource, Link
-from occi.protocol.occi_rendering import Rendering
+from occi.protocol.rendering import Rendering
 
 
 class HTMLRendering(Rendering):
