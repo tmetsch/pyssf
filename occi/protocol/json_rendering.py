@@ -15,6 +15,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
+
 '''
 JSON based rendering.
 
@@ -23,12 +24,20 @@ Created on 01.02.2012
 @author: tmetsch
 '''
 
+
+# TODO: remove this one
+# pylint: disable=W0223
+
+from occi.core_model import Resource
 from occi.handlers import CONTENT_TYPE
 from occi.protocol.occi_rendering import Rendering
 import json
 
 
 def _from_category(category):
+    '''
+    Create a JSON struct for a category.
+    '''
     data = {}
     data['term'] = category.term
     data['scheme'] = category.scheme
@@ -41,15 +50,15 @@ def _from_category(category):
         data['related'] = rel_list
     if hasattr(category, 'location') and category.location is not None:
         data['location'] = category.location
-    if hasattr(category, 'attributes') and len(category.attributes) > 0:
-        attr_list = []
+    if hasattr(category, 'attributes') and len(category.attributes) >= 1:
+        attr_list = {}
         for item in category.attributes:
             if category.attributes[item] == 'required':
-                attr_list.append(item + '{required}')
+                attr_list[item] = 'required'
             elif category.attributes[item] == 'immutable':
-                attr_list.append(item + '{immutable}')
+                attr_list[item] = 'immutable'
             else:
-                attr_list.append(item)
+                attr_list[item] = 'muttable'
         data['attributes'] = attr_list
     if hasattr(category, 'actions') and len(category.actions) > 0:
         action_list = []
@@ -57,6 +66,51 @@ def _from_category(category):
             action_list.append(str(item))
         data['actions'] = action_list
     return data
+
+
+def _from_entity(entity):
+    '''
+    Create a JSON struct for an entity.
+    '''
+    data = {}
+    # kind
+    data['kind'] = _from_category(entity.kind)
+
+    # mixins
+    mixins = []
+    for mixin in entity.mixins:
+        tmp = _from_category(mixin)
+        mixins.append(tmp)
+    data['mixins'] = mixins
+
+    # actions
+    actions = []
+    for action in entity.actions:
+        tmp = {}
+        tmp['term'] = action.term
+        tmp['scheme'] = action.scheme
+        tmp['link'] = entity.identifier + '?action=' + action.term
+        actions.append(tmp)
+    data['actions'] = actions
+
+    # links
+    if isinstance(entity, Resource):
+        links = []
+        for link in entity.links:
+            tmp = _from_entity(link)
+            tmp['source'] = link.source.identifier
+            tmp['target'] = link.target.identifier
+            links.append(tmp)
+        data['links'] = links
+
+    # attributes
+    attr = {}
+    for attribute in entity.attributes:
+        attr[attribute] = entity.attributes[attribute]
+    data['attributes'] = attr
+
+    return data
+
 
 class JsonRendering(Rendering):
     '''
@@ -67,44 +121,24 @@ class JsonRendering(Rendering):
     mime_type = 'application/occi+json'
 
     def from_entity(self, entity):
-        data = {}
-        # kind
-        data['kind'] = _from_category(entity.kind)
+        data = _from_entity(entity)
 
-        # mixins
-        mixins = []
-        for mixin in entity.mixins:
-            tmp = {}
-            tmp['term'] = mixin.term
-            tmp['scheme'] = mixin.scheme
-            mixins.append(tmp)
-        data['mixins'] = mixins
+        body = json.dumps(data, sort_keys=True, indent=2)
+        return {CONTENT_TYPE: self.mime_type}, body
 
-        # actions
-        actions = []
-        for action in entity.actions:
-            tmp = {}
-            tmp['term'] = action.term
-            tmp['scheme'] = action.scheme
-            actions.append(tmp)
-        data['actions'] = actions
+    def from_entities(self, entities, key):
+        data = []
+        for item in entities:
+            data.append(_from_entity(item))
 
-        # links
-        links = []
-        for link in entity.links:
-            tmp = {}
-            tmp['source'] = link.source
-            tmp['target'] = link.target
-            tmp['category'] = str(link.kind)
-        data['links'] = links
+        body = json.dumps(data, sort_keys=True, indent=2)
+        return {CONTENT_TYPE: self.mime_type}, body
 
-        # attributes
-        attr = {}
-        print entity.attributes
-        for attribute in entity.attributes:
-            attr[attribute] = entity.attributes[attribute]
-        data['attributes'] = attr
+    def from_categories(self, categories):
+        data = []
+        for item in categories:
+            # TODO: how to distinguish between action, mixin and kind
+            data.append(_from_category(item))
 
-        # , sort_keys=True
-        body = json.dumps(data, indent=2)
+        body = json.dumps(data, sort_keys=True, indent=2)
         return {CONTENT_TYPE: self.mime_type}, body

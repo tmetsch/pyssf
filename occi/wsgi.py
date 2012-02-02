@@ -31,8 +31,8 @@ from occi.handlers import QueryHandler, CollectionHandler, ResourceHandler, \
     CATEGORY, LINK, ATTRIBUTE, LOCATION, ACCEPT, CONTENT_TYPE
 from occi.protocol.html_rendering import HTMLRendering
 from occi.protocol.json_rendering import JsonRendering
-from occi.protocol.occi_rendering import TextOcciRendering, TextPlainRendering, \
-    TextUriListRendering
+from occi.protocol.occi_rendering import TextOcciRendering, \
+    TextPlainRendering, TextUriListRendering
 from occi.registry import NonePersistentRegistry
 import StringIO
 import logging
