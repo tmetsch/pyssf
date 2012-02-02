@@ -27,7 +27,7 @@ This software package is a collection of modules which can be used stand alone
 or all together. The tool-suite aims to give you some building blocks to
 create service offerings for Grids, Clusters, HPC and Clouds.
 
-All Software presented here falls under an Open Source License - Although
+All Software presented here falls under an Open Source License (LGPL). Although
 thoroughly tested (100% code/documentation coverage) & worked hard on
 `PEP8 <http://www.python.org/dev/peps/pep-0008/>`_,
 `PEP257 <http://www.python.org/dev/peps/pep-0257/>`_, pyflakes and pylint
