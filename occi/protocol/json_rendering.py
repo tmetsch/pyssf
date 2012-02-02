@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2010-2011 Platform Computing
+# Copyright (C) 2010-2012 Platform Computing
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -87,8 +87,7 @@ def _from_entity(entity):
     actions = []
     for action in entity.actions:
         tmp = {}
-        tmp['term'] = action.term
-        tmp['scheme'] = action.scheme
+        tmp['kind'] = _from_category(action.kind)
         tmp['link'] = entity.identifier + '?action=' + action.term
         actions.append(tmp)
     data['actions'] = actions

@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Service Sharing Facility'
-copyright = u'2010-2011, Platform Computing'
+copyright = u'2010-2012, Platform Computing'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -222,7 +222,7 @@ man_pages = [
 epub_title = u'pyssf'
 epub_author = u'Platform Computing'
 epub_publisher = u'Platform Computing'
-epub_copyright = u'2011, Platform Computing'
+epub_copyright = u'2010-2012, Platform Computing'
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.
