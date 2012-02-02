@@ -212,8 +212,8 @@ class ResourceHandler(BaseHandler):
             workflow.retrieve_entity(entity, self.registry, self.extras)
 
             return self.render_entity(entity)
-        except KeyError as key:
-            raise HTTPError(404, 'Resource not found: ' + str(key))
+        except KeyError as key_error:
+            raise HTTPError(404, 'Resource not found: ' + str(key_error))
 
     def post(self, key):
         '''
@@ -233,8 +233,8 @@ class ResourceHandler(BaseHandler):
                 return self.render_entity(entity)
             except AttributeError as attr:
                 raise HTTPError(400, str(attr))
-            except KeyError as key:
-                raise HTTPError(404, str(key))
+            except KeyError as key_error:
+                raise HTTPError(404, str(key_error))
         else:
             # update
             try:
@@ -246,8 +246,8 @@ class ResourceHandler(BaseHandler):
                 return self.render_entity(old)
             except AttributeError as attr:
                 raise HTTPError(400, str(attr))
-            except KeyError as key:
-                raise HTTPError(404, str(key))
+            except KeyError as key_error:
+                raise HTTPError(404, str(key_error))
 
     def put(self, key):
         '''
@@ -294,8 +294,8 @@ class ResourceHandler(BaseHandler):
             return self.response(200)
         except AttributeError as attr:
             raise HTTPError(400, str(attr))
-        except KeyError as key:
-            raise HTTPError(404, str(key))
+        except KeyError as key_error:
+            raise HTTPError(404, str(key_error))
 
 
 class CollectionHandler(BaseHandler):

@@ -25,5 +25,3 @@ pylint>=0.23.0
 pyflakes>=0.5.0
 sphinx>=1.0.7
 
-# Run-time requirements
-# tornado>=2.0
