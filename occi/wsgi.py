@@ -27,6 +27,7 @@ Created on 22.11.2011
 from occi import VERSION
 from occi.backend import KindBackend, MixinBackend, ActionBackend
 from occi.exceptions import HTTPError
+from occi.handlers import QUERY_STRING
 from occi.handlers import QueryHandler, CollectionHandler, ResourceHandler, \
     CATEGORY, LINK, ATTRIBUTE, LOCATION, ACCEPT, CONTENT_TYPE
 from occi.protocol.html_rendering import HTMLRendering
@@ -45,7 +46,8 @@ RETURN_CODES = {201: '201 Created',
                 404: '404 Not Found',
                 405: '405 Method Not Allowed',
                 406: '406 Not Acceptable',
-                500: '500 Internal Server Error'}
+                500: '500 Internal Server Error',
+                501: '501 Not implemented'}
 
 
 def _parse_headers(environ):
@@ -72,6 +74,8 @@ def _parse_headers(environ):
         headers[ACCEPT] = environ.get('HTTP_ACCEPT')
     if 'CONTENT_TYPE' in environ.keys():
         headers[CONTENT_TYPE] = environ.get('CONTENT_TYPE')
+    if 'QUERY_STRING' in environ.keys():
+        headers[QUERY_STRING] = environ.get('QUERY_STRING')
 
     return headers
 
@@ -147,6 +151,8 @@ class Application(object):
             self.registry.set_renderer('text/uri-list',
                                        TextUriListRendering(self.registry))
             self.registry.set_renderer('text/html',
+                                       HTMLRendering(self.registry))
+            self.registry.set_renderer('application/x-www-form-urlencoded',
                                        HTMLRendering(self.registry))
             self.registry.set_renderer('application/occi+json',
                                        JsonRendering(self.registry))

@@ -38,7 +38,8 @@ class TestHTMLRendering(unittest.TestCase):
     Just some simple calls on the HTML rendering.
     '''
 
-    parser = HTMLRendering(NonePersistentRegistry())
+    registry = NonePersistentRegistry()
+    parser = HTMLRendering(registry)
 
     def setUp(self):
         action = Action('http://example.com/foo#', 'action')
@@ -54,6 +55,8 @@ class TestHTMLRendering(unittest.TestCase):
         self.link = Link('/link/foo', self.kind, [], self.source, self.target)
         self.source.links = [self.link]
         self.source.actions = [action]
+
+        self.registry.set_backend(action, None)
 
     #==========================================================================
     # Success
@@ -86,3 +89,26 @@ class TestHTMLRendering(unittest.TestCase):
         Test from categories...
         '''
         self.parser.from_categories([self.kind])
+
+    def test_to_action_for_success(self):
+        '''
+        Test actions...
+        '''
+        self.parser.to_action({'Query_String':
+                               'action=action?scheme=http://example.com/foo'},
+                              'foobar')
+
+    #==========================================================================
+    # Test for failure
+    #==========================================================================
+
+    def test_to_action_for_failure(self):
+        '''
+        Test actions...
+        '''
+        self.assertRaises(AttributeError, self.parser.to_action,
+                          {'Query_String': 'action=foo?'}, '')
+        self.assertRaises(AttributeError, self.parser.to_action,
+                          {'Query_String': 'scheme=bar'}, '')
+        self.assertRaises(AttributeError, self.parser.to_action,
+                          {'Query_String': 'action=foo?scheme=bar'}, '')

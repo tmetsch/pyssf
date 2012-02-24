@@ -26,7 +26,9 @@ Created on Jul 15, 2011
 # disabling 'Method is abstract' pylint check (HTML only support GET!)
 # pylint: disable=W0223
 
+from occi.core_model import Category
 from occi.core_model import Resource, Link
+from occi.handlers import QUERY_STRING
 from occi.protocol.rendering import Rendering
 
 
@@ -96,6 +98,15 @@ class HTMLRendering(Rendering):
            a { \
             color: #73c167; \
            } \
+           a:visited { \
+            color: #444; \
+           } \
+           p {\
+            margin: 1em; \
+           } \
+           form {\
+            margin: 1em; \
+           } \
            #entity { \
             margin: 1em; \
            }"
@@ -127,23 +138,31 @@ class HTMLRendering(Rendering):
         for item in entity.identifier.split('/')[1:-1]:
             path += item + '/'
             tmp += ' <a href="' + path + '">' + item + "</a> / "
-        tmp += entity.identifier.split('/')[-1]
+        tmp += '<a href="' + entity.identifier + '">'
+        tmp += entity.identifier.split('/')[-1] + '</a>'
         tmp += '</div>\n'
 
         # body
         tmp += '\t\t<div id="entity">\n\t\t\t<h2>Kind</h2><ul><li>'
-        tmp += str(entity.kind) + '</li></ul>\n'
+        tmp += '<a href="/-/#' + entity.kind.scheme + '-'
+        tmp += entity.kind.term + '">' + str(entity.kind) + '</a></li></ul>\n'
         if len(entity.mixins) > 0:
             tmp += '\t\t\t<h2>Mixins</h2><ul>'
             for item in entity.mixins:
-                tmp += '<li>' + str(item) + '</li>'
+                tmp += '<li><a href="/-/#' + item.scheme + '-'
+                tmp += item.term + '">' + str(item) + '</a></li>'
             tmp += '</ul>\n'
+
+        if hasattr(entity, 'summary') and entity.summary != '':
+            tmp += '\t\t\t<h2>Summary</h2><p>' + str(entity.summary) + '</p>\n'
+        if entity.title != '':
+            tmp += '\t\t\t<h2>Title</h2><p>' + str(entity.title) + '</p>\n'
 
         if 'occi.core.id' not in entity.attributes:
             entity.attributes['occi.core.id'] = entity.identifier
         if isinstance(entity, Resource):
             if len(entity.links) > 0:
-                tmp += '\t\t\t<h2>Links</h2><table>'
+                tmp += '\n\t\t\t<h2>Links</h2><table>'
                 tmp += '<tr><th>Kind</th><th>Link</th><th>Target</th></tr>'
                 for item in entity.links:
                     tmp += '<tr><td>' + item.kind.term + '</td>'
@@ -155,7 +174,7 @@ class HTMLRendering(Rendering):
                 tmp += '</table>\n'
 
         elif isinstance(entity, Link):
-            tmp += '\t\t\t<h2>Source &amp; Target</h2><ul>'
+            tmp += '\n\t\t\t<h2>Source &amp; Target</h2><ul>'
             tmp += '<li><strong>Source: </strong>'
             tmp += '<a href="' + entity.source.identifier + '">'
             tmp += entity.source.identifier + '</a></li>'
@@ -164,19 +183,23 @@ class HTMLRendering(Rendering):
             tmp += entity.target.identifier + '</a></li></ul>\n'
 
         if len(entity.attributes.keys()) > 0:
-            tmp += '\t\t\t<h2>Attributes</h2><table>'
+            tmp += '\n\t\t\t<h2>Attributes</h2><table>'
             for item in entity.attributes.keys():
                 tmp += '<tr><th>' + item + '</th><td>'
                 tmp += str(entity.attributes[item]) + '</td></tr>'
             tmp += '</table>\n'
 
         if len(entity.actions) > 0:
-            tmp += '\t\t\t<h2>Actions</h2><ul>'
+            tmp += '\n\t\t\t<h2>Actions</h2>'
             for action in entity.actions:
-                tmp += '<li>' + str(action.term) + '</li>'
-            tmp += '<ul>\n'
+                tmp += '<FORM action="' + entity.identifier + '?action='
+                tmp += str(action.term) + '?scheme=' + str(action.scheme)
+                tmp += '" method="post" />' '<INPUT type="submit" value="'
+                tmp += str(action.term) + '"/></FORM>'
+            tmp += '\n'
 
-        tmp += '\t\t</div>\n\t</body>\n</html>'
+        tmp += '\n\t\t</div>\n\t</body>\n</html>'
+
         return {'Content-Type': self.mime_type}, tmp
 
     def from_entities(self, entities, key):
@@ -225,7 +248,8 @@ class HTMLRendering(Rendering):
 
         # body
         for cat in categories:
-            tmp += '\t\t<h2>' + repr(cat).upper() + ': ' + cat.term + '</h2>\n'
+            tmp += '\t\t<h2><a name="' + cat.scheme + '-' + cat.term + '">'
+            tmp += repr(cat).upper() + ': ' + cat.term + '</a></h2>\n'
             tmp += '\t\t<table>\n'
             tmp += '\t\t\t<tr><th>Scheme</th><td>' + cat.scheme
             tmp += '</td></tr>\n'
@@ -266,3 +290,27 @@ class HTMLRendering(Rendering):
 
         tmp += '\t</body>\n</html>'
         return {'Content-Type': self.mime_type}, tmp
+
+    def to_action(self, headers, body):
+        cat_str = headers.get(QUERY_STRING)
+        scheme_index = cat_str.find('scheme=')
+        if scheme_index != -1:
+            scheme = cat_str[scheme_index + 7:]
+        else:
+            raise AttributeError('Unable to find the scheme. Broken request?.')
+
+        index = cat_str.find('action=')
+        if index != -1:
+            term = cat_str[index + 7:scheme_index - 1]
+        else:
+            raise AttributeError('Unable to find the term. Broken request?.')
+
+        tmp = Category(scheme + '#', term, '', {}, '')
+        cats = self.registry.get_categories()
+        if tmp in cats:
+            for item in self.registry.get_categories():
+                if tmp == item:
+                    del(tmp)
+                    return item
+        else:
+            raise AttributeError('Action is not defined. Check the QI.')

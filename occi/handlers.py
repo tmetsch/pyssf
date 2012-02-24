@@ -36,6 +36,7 @@ LINK = 'Link'
 LOCATION = 'X-OCCI-Location'
 ATTRIBUTE = 'X-OCCI-Attribute'
 CATEGORY = 'Category'
+QUERY_STRING = 'Query_String'
 
 
 class BaseHandler():
