@@ -47,30 +47,31 @@ needs and corresponding backend which will handle the operations.
 This can either mean to implement one backend which can handle several OCCI
 types; or to implement a backend for each OCCI type::
 
-    from occi.backend import ActionBackend, KindBackend
+    from occi.backend import ActionBackend, KindBackend, MixinBackend
     from occi.core_model import Action, Kind, Mixin, Resource
     from occi.wsgi import Application
-
-
+    
+    from wsgiref.simple_server import make_server
+    
     class MyBackend(KindBackend, ActionBackend):
         '''
         TODO: This needs to be implemented!
-
+    
         Will implement create, retrieve, update, delete, replace
         Will also implement: action (from ActionBackend).
         '''
-
+    
         pass
-
+    
     class MyMixinBackend(MixinBackend):
         '''
         TODO: This needs to be implemented!
-
+    
         Will implement create, retrieve, update, delete, replace
         '''
-
+    
         pass
-
+    
     if __name__ == '__main__':
         mykind = Kind('http://example.com/occi#',
                       'mykind',
@@ -80,15 +81,18 @@ types; or to implement a backend for each OCCI type::
                                   'occi.compute.mandatory': 'required'},
                       related=[Resource.kind],
                       actions=[])
-
+    
         mymixin = Mixin('http://example.com/occi#', 'mykind', '/my_stuff/')
-
+    
         kind_backend = MyBackend()
         mixin_backend = MyMixinBackend()
-
+    
         app = Application()
-        app.register_backend(mykind, backend)
+        app.register_backend(mykind, kind_backend)
         app.register_backend(mymixin, mixin_backend)
+    
+        httpd = make_server('', 8888, app)
+        httpd.serve_forever()
 
 The OCCI service itself is an `WSGI <http://www.wsgi.org/>`_ application which
 can run on most Web servers our there. And now that the WSGI application is
