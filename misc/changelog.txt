@@ -2,7 +2,13 @@
 Version 0.4.4
 -------------
 
-
+R,S620,Create a pure WSGI application
+R,S640,Update parser to handle multiple categories in inline link creation
+R,S650,Provide a way to give backends extra arguments
+R,S660,Make categories hashable
+R,S670,Define a JSON rendering
+R,S680,Make Categories in HTML rendering clickable and jump to QI
+R,S690,Allow HTML rendering to perform actions.
 
 Version 0.4.3
 -------------
