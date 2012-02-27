@@ -23,7 +23,7 @@ Created on Jul 15, 2011
 @author: tmetsch
 '''
 
-# disabling 'Method is abstract' pylint check (HTML only support GET!)
+# disabling 'Method is abstract' pylint check (HTML only support simple ops!)
 # pylint: disable=W0223
 
 from occi.core_model import Category
@@ -123,40 +123,7 @@ class HTMLRendering(Rendering):
             self.css = css
 
     def from_entity(self, entity):
-        tmp = '<html>\n\t<head>\n'
-        tmp += '\t\t<title>Resource: ' + entity.identifier + '</title>\n'
-        tmp += '\t\t<style type="text/css"><!-- ' + self.css + ' --></style>\n'
-        tmp += '\t</head>\n\t<body>\n'
-
-        # header
-        tmp += '\t\t<div id="header"><ul><li><a href="/">Home</a></li>'
-        tmp += '<li><a href="/-/">Query Interface</a></li></ul></div>\n'
-
-        # breadcrumb
-        tmp += '\t\t<div id="breadcrumb"><a href="/">&raquo;</a> /'
-        path = '/'
-        for item in entity.identifier.split('/')[1:-1]:
-            path += item + '/'
-            tmp += ' <a href="' + path + '">' + item + "</a> / "
-        tmp += '<a href="' + entity.identifier + '">'
-        tmp += entity.identifier.split('/')[-1] + '</a>'
-        tmp += '</div>\n'
-
-        # body
-        tmp += '\t\t<div id="entity">\n\t\t\t<h2>Kind</h2><ul><li>'
-        tmp += '<a href="/-/#' + entity.kind.scheme + '-'
-        tmp += entity.kind.term + '">' + str(entity.kind) + '</a></li></ul>\n'
-        if len(entity.mixins) > 0:
-            tmp += '\t\t\t<h2>Mixins</h2><ul>'
-            for item in entity.mixins:
-                tmp += '<li><a href="/-/#' + item.scheme + '-'
-                tmp += item.term + '">' + str(item) + '</a></li>'
-            tmp += '</ul>\n'
-
-        if hasattr(entity, 'summary') and entity.summary != '':
-            tmp += '\t\t\t<h2>Summary</h2><p>' + str(entity.summary) + '</p>\n'
-        if entity.title != '':
-            tmp += '\t\t\t<h2>Title</h2><p>' + str(entity.title) + '</p>\n'
+        tmp = self._from_entity_head_html(entity)
 
         if 'occi.core.id' not in entity.attributes:
             entity.attributes['occi.core.id'] = entity.identifier
@@ -201,6 +168,48 @@ class HTMLRendering(Rendering):
         tmp += '\n\t\t</div>\n\t</body>\n</html>'
 
         return {'Content-Type': self.mime_type}, tmp
+
+    def _from_entity_head_html(self, entity):
+        '''
+        Private helper function which creates the first part of the HTML.
+
+        entity -- The entity to render.
+        '''
+        tmp = '<html>\n\t<head>\n'
+        tmp += '\t\t<title>Resource: ' + entity.identifier + '</title>\n'
+        tmp += '\t\t<style type="text/css"><!-- ' + self.css + ' --></style>\n'
+        tmp += '\t</head>\n\t<body>\n'
+
+        # header
+        tmp += '\t\t<div id="header"><ul><li><a href="/">Home</a></li>'
+        tmp += '<li><a href="/-/">Query Interface</a></li></ul></div>\n'
+
+        # breadcrumb
+        tmp += '\t\t<div id="breadcrumb"><a href="/">&raquo;</a> /'
+        path = '/'
+        for item in entity.identifier.split('/')[1:-1]:
+            path += item + '/'
+            tmp += ' <a href="' + path + '">' + item + "</a> / "
+        tmp += '<a href="' + entity.identifier + '">'
+        tmp += entity.identifier.split('/')[-1] + '</a>'
+        tmp += '</div>\n'
+
+        # body
+        tmp += '\t\t<div id="entity">\n\t\t\t<h2>Kind</h2><ul><li>'
+        tmp += '<a href="/-/#' + entity.kind.scheme + '-'
+        tmp += entity.kind.term + '">' + str(entity.kind) + '</a></li></ul>\n'
+        if len(entity.mixins) > 0:
+            tmp += '\t\t\t<h2>Mixins</h2><ul>'
+            for item in entity.mixins:
+                tmp += '<li><a href="/-/#' + item.scheme + '-'
+                tmp += item.term + '">' + str(item) + '</a></li>'
+            tmp += '</ul>\n'
+
+        if hasattr(entity, 'summary') and entity.summary != '':
+            tmp += '\t\t\t<h2>Summary</h2><p>' + str(entity.summary) + '</p>\n'
+        if entity.title != '':
+            tmp += '\t\t\t<h2>Title</h2><p>' + str(entity.title) + '</p>\n'
+        return tmp
 
     def from_entities(self, entities, key):
         tmp = '<html>\n\t<head>\n'

@@ -24,10 +24,10 @@ Created on 01.02.2012
 @author: tmetsch
 '''
 
-# TODO: check if this can be move partly to occi_rendering (once standardized)
+# L8R: check if this can be move partly to occi_rendering (once standardized)
 # and rename to a parser class.
 
-# TODO: remove this one
+# disabling 'Method is abstract' pylint check (currently only support GETs!)
 # pylint: disable=W0223
 
 from occi.core_model import Resource
@@ -138,7 +138,6 @@ class JsonRendering(Rendering):
     def from_categories(self, categories):
         data = []
         for item in categories:
-            # TODO: how to distinguish between action, mixin and kind
             data.append(_from_category(item))
 
         body = json.dumps(data, sort_keys=True, indent=2)

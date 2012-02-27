@@ -230,7 +230,7 @@ class CategoryRegistryTest(unittest.TestCase):
         self.registry.set_backend(cat1, KindBackend())
         self.registry.set_backend(cat2, KindBackend())
 
-        self.assertTrue(len(self.registry.BACKENDS2.keys()) == 3)
+        self.assertTrue(len(self.registry.BACKENDS.keys()) == 3)
 
 
 class ResourcesTest(unittest.TestCase):

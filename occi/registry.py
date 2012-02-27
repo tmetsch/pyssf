@@ -185,13 +185,13 @@ class NonePersistentRegistry(Registry):
     @author: tmetsch
     '''
 
-    BACKENDS2 = {}
+    BACKENDS = {}
 
-    RENDERINGS2 = {}
+    RENDERINGS = {}
 
-    RESOURCES2 = {}
+    RESOURCES = {}
 
-    HOST2 = ''
+    HOST = ''
 
     def get_renderer(self, mime_type):
         parser = None
@@ -201,11 +201,11 @@ class NonePersistentRegistry(Registry):
             if type_str.find(';q=') > -1:
                 type_str = type_str[:type_str.find(';q=')]
 
-            if type_str in self.RENDERINGS2:
-                parser = self.RENDERINGS2[type_str]
+            if type_str in self.RENDERINGS:
+                parser = self.RENDERINGS[type_str]
                 break
             elif type_str == '*/*':
-                parser = self.RENDERINGS2[self.get_default_type()]
+                parser = self.RENDERINGS[self.get_default_type()]
                 break
 
         if parser is None:
@@ -218,21 +218,20 @@ class NonePersistentRegistry(Registry):
         if not isinstance(renderer, Rendering):
             raise AttributeError('renderer needs to derive from Rendering.')
 
-        self.RENDERINGS2[mime_type] = renderer
+        self.RENDERINGS[mime_type] = renderer
 
     def get_backend(self, category):
-        # need to lookup because category should not have __hash__ func.
-        for re_cat in self.BACKENDS2.keys():
-            if category == re_cat:
-                back = self.BACKENDS2[re_cat]
-                if repr(re_cat) == 'kind' and isinstance(back, KindBackend):
-                    return back
-                if repr(re_cat) == 'action' and isinstance(back,
-                                                           ActionBackend):
-                    return back
-                if repr(re_cat) == 'mixin' and isinstance(back, MixinBackend):
-                    return back
-        raise AttributeError('Cannot find corresponding Backend.')
+        try:
+            back = self.BACKENDS[category]
+            if repr(category) == 'kind' and isinstance(back, KindBackend):
+                return back
+            if repr(category) == 'action' and isinstance(back,
+                                                       ActionBackend):
+                return back
+            if repr(category) == 'mixin' and isinstance(back, MixinBackend):
+                return back
+        except KeyError:
+            raise AttributeError('Cannot find corresponding Backend.')
 
     def get_all_backends(self, entity):
         res = []
@@ -243,31 +242,31 @@ class NonePersistentRegistry(Registry):
         return list(set(res))
 
     def set_backend(self, category, backend):
-        self.BACKENDS2[category] = backend
+        self.BACKENDS[category] = backend
 
     def delete_mixin(self, mixin):
-        self.BACKENDS2.pop(mixin)
+        self.BACKENDS.pop(mixin)
 
     def get_category(self, path):
-        for category in self.BACKENDS2.keys():
+        for category in self.BACKENDS.keys():
             if category.location == path:
                 return category
         return None
 
     def get_categories(self):
-        return self.BACKENDS2.keys()
+        return self.BACKENDS.keys()
 
     def get_resource(self, key):
-        return self.RESOURCES2[key]
+        return self.RESOURCES[key]
 
     def add_resource(self, key, resource):
-        self.RESOURCES2[key] = resource
+        self.RESOURCES[key] = resource
 
     def delete_resource(self, key):
-        self.RESOURCES2.pop(key)
+        self.RESOURCES.pop(key)
 
     def get_resource_keys(self):
-        return self.RESOURCES2.keys()
+        return self.RESOURCES.keys()
 
     def get_resources(self):
-        return self.RESOURCES2.values()
+        return self.RESOURCES.values()
