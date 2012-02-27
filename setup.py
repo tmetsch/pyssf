@@ -20,7 +20,7 @@
 from distutils.core import setup
 
 setup(name='pyssf',
-      version='0.4.4',
+      version='0.4.5',
       description='Service Sharing Facility',
       license='LGPL',
       keywords='OCCI, Cloud Computing, Datacenter Software',
