@@ -51,8 +51,11 @@ def get_category(category_string, categories, is_mixin=False):
 
     if is_mixin:
         location = find_in_string(category_string, 'location')
-        if not location[0] == '/' or not location[-1] == '/':
-            raise AttributeError('Illegal location; must start and end with /')
+        if not location[-1] == '/':
+            raise AttributeError('Illegal location; must end with /')
+        if location[0] != '/' and location.find('http') != 0:
+            raise AttributeError('Illegal location; Either provide full URL \
+or just a path starting with /.')
         return Mixin(scheme, term, location=location)
 
     # return the category from registry...
@@ -66,11 +69,12 @@ def get_category(category_string, categories, is_mixin=False):
                          + str(scheme) + str(term))
 
 
-def get_category_str(category):
+def get_category_str(category, registry):
     '''
     Create a string rendering for a Category.
 
     category -- A category.
+    registry -- registry to retrieve hostname.
     '''
     tmp = ''
     tmp += category.term
@@ -84,7 +88,10 @@ def get_category_str(category):
             rel_list.append(str(item))
         tmp += '; rel="' + ' '.join(rel_list) + '"'
     if hasattr(category, 'location') and category.location is not None:
-        tmp += '; location="' + category.location + '"'
+        tmp += '; location="'
+        if category.location.find('http') == -1:
+            tmp += registry.get_hostname()
+        tmp += category.location + '"'
     if hasattr(category, 'attributes') and len(category.attributes) > 0:
         attr_list = []
         for item in category.attributes:

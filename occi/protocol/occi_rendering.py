@@ -119,20 +119,21 @@ def _to_entity(data, def_kind, registry):
     return entity
 
 
-def _from_entity(entity):
+def _from_entity(entity, registry):
     '''
     Create a HTTP data object from an entity.
 
     entity -- The entity to render.
+    registry -- Registry.
     '''
     data = HTTPData()
 
     # categories
     cat_str_list = []
-    cat_str_list.append(parser.get_category_str(entity.kind))
+    cat_str_list.append(parser.get_category_str(entity.kind, registry))
 
     for category in entity.mixins:
-        cat_str_list.append(parser.get_category_str(category))
+        cat_str_list.append(parser.get_category_str(category, registry))
 
     data.categories = cat_str_list
 
@@ -204,16 +205,17 @@ def _from_entities(entity_list, registry):
     return data
 
 
-def _from_categories(categories):
+def _from_categories(categories, registry):
     '''
     Create a HTTP data object from a set of categories.
 
     categories -- list of categories.
+    registry -- needed to retrieve hostname info.
     '''
     data = HTTPData()
 
     for cat in categories:
-        data.categories.append(parser.get_category_str(cat))
+        data.categories.append(parser.get_category_str(cat, registry))
 
     return data
 
@@ -350,7 +352,7 @@ class TextOcciRendering(Rendering):
         return entity
 
     def from_entity(self, entity):
-        data = _from_entity(entity)
+        data = _from_entity(entity, self.registry)
         headers, body = self.set_data(data)
         return headers, body
 
@@ -365,7 +367,7 @@ class TextOcciRendering(Rendering):
         return headers, body
 
     def from_categories(self, categories):
-        data = _from_categories(categories)
+        data = _from_categories(categories, self.registry)
         headers, body = self.set_data(data)
         return headers, body
 

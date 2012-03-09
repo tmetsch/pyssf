@@ -120,6 +120,10 @@ class TestParser(unittest.TestCase):
         self.assertRaises(AttributeError, parser.get_category, tmp,
                           self.registry.get_categories(), True)
 
+        tmp = 'foo; scheme="http://example.com#"; location="sdf/"'
+        self.assertRaises(AttributeError, parser.get_category, tmp,
+                          self.registry.get_categories(), True)
+
     def test_get_link_for_failure(self):
         '''
         Test with msg category.
@@ -154,7 +158,8 @@ class TestParser(unittest.TestCase):
         '''
         Simple sanity check...
         '''
-        res = parser.get_category(parser.get_category_str(self.compute),
+        res = parser.get_category(parser.get_category_str(self.compute,
+                                                          self.registry),
                           self.registry.get_categories())
         self.assertEqual(res, self.compute)
 

@@ -170,7 +170,7 @@ class TestQueryCapabilites(unittest.TestCase):
         # test the filtering...
         headers = {ACCEPT: 'text/occi',
                    CONTENT_TYPE: 'text/occi',
-                   CATEGORY: parser.get_category_str(COMPUTE)}
+                   CATEGORY: parser.get_category_str(COMPUTE, self.registry)}
         handler = QueryHandler(self.registry, headers, '', [])
         status, headers, body = handler.get()
         self.assertTrue(len(headers['Category'].split(',')) == 1)
@@ -298,12 +298,14 @@ class TestCollectionCapabilites(unittest.TestCase):
         Simple test - more complex one in TestResourceHandler...
         '''
         headers = {CONTENT_TYPE: 'text/xml',
-                   'Categories': parser.get_category_str(COMPUTE)}
+                   'Categories': parser.get_category_str(COMPUTE,
+                                                         self.registry)}
         handler = CollectionHandler(self.registry, headers, '', ())
         self.assertRaises(HTTPError, handler.post, '/compute')
 
         headers = {CONTENT_TYPE: 'text/occi',
-                   'Categories': parser.get_category_str(COMPUTE)}
+                   'Categories': parser.get_category_str(COMPUTE,
+                                                         self.registry)}
         handler = CollectionHandler(self.registry, headers, '', ())
         self.assertRaises(HTTPError, handler.post, '/compute')
 
@@ -334,7 +336,8 @@ class TestCollectionCapabilites(unittest.TestCase):
         # filter on category
         headers = {ACCEPT: 'text/occi',
                    CONTENT_TYPE: 'text/occi',
-                   CATEGORY: parser.get_category_str(self.compute.kind)}
+                   CATEGORY: parser.get_category_str(self.compute.kind,
+                                                     self.registry)}
 
         handler = CollectionHandler(self.registry, headers, '', [])
         status, headers, body = handler.get('/')
@@ -366,7 +369,7 @@ class TestCollectionCapabilites(unittest.TestCase):
         Tests if actions can be triggered on a resource set.
         '''
         headers = {CONTENT_TYPE: 'text/occi',
-                   CATEGORY: parser.get_category_str(START)}
+                   CATEGORY: parser.get_category_str(START, self.registry)}
 
         handler = CollectionHandler(self.registry, headers, '',
                                     ['action', 'start'])
@@ -425,7 +428,7 @@ class TestCollectionCapabilites(unittest.TestCase):
         Simple test - more complex one in TestResourceHandler...
         '''
         headers = {CONTENT_TYPE: 'text/occi',
-                   CATEGORY: parser.get_category_str(COMPUTE)}
+                   CATEGORY: parser.get_category_str(COMPUTE, self.registry)}
         handler = CollectionHandler(self.registry, headers, '', ())
         handler.post('/compute/')
         self.assertTrue(len(self.registry.get_resources()) == 4)
@@ -482,7 +485,7 @@ class TestResourceCapabilites(unittest.TestCase):
         self.assertRaises(HTTPError, handler.post, '/bla')
 
         headers = {CONTENT_TYPE: 'text/occi',
-                   CATEGORY: parser.get_category_str(COMPUTE)}
+                   CATEGORY: parser.get_category_str(COMPUTE, self.registry)}
         handler = ResourceHandler(self.registry, headers, '', ())
         handler.put('/compute/1')
         self.assertTrue('/compute/1' in self.registry.get_resource_keys())
@@ -497,7 +500,7 @@ class TestResourceCapabilites(unittest.TestCase):
         test update...
         '''
         headers = {CONTENT_TYPE: 'text/occi',
-                   CATEGORY: parser.get_category_str(COMPUTE),
+                   CATEGORY: parser.get_category_str(COMPUTE, self.registry),
                    ATTRIBUTE: 'occi.compute.memory="2.0"'}
         handler = ResourceHandler(self.registry, headers, '', ())
         handler.put('/compute/1')
@@ -516,7 +519,7 @@ class TestResourceCapabilites(unittest.TestCase):
         self.assertRaises(HTTPError, handler.delete, '/compute/2')
 
         headers = {CONTENT_TYPE: 'text/occi',
-                   CATEGORY: parser.get_category_str(COMPUTE),
+                   CATEGORY: parser.get_category_str(COMPUTE, self.registry),
                    ATTRIBUTE: 'undeletable="true"'}
         handler = ResourceHandler(self.registry, headers, '', ())
         handler.put('/compute/1')
@@ -530,7 +533,7 @@ class TestResourceCapabilites(unittest.TestCase):
         Trigger an action...
         '''
         headers = {CONTENT_TYPE: 'text/occi',
-                   CATEGORY: parser.get_category_str(COMPUTE)}
+                   CATEGORY: parser.get_category_str(COMPUTE, self.registry)}
         handler = ResourceHandler(self.registry, headers, '', ())
         handler.put('/compute/3')
         self.assertTrue('/compute/3' in self.registry.get_resource_keys())
@@ -542,7 +545,7 @@ class TestResourceCapabilites(unittest.TestCase):
         self.assertRaises(HTTPError, handler.post, '/compute/3')
 
         headers = {CONTENT_TYPE: 'text/occi',
-                   CATEGORY: parser.get_category_str(START)}
+                   CATEGORY: parser.get_category_str(START, self.registry)}
         handler = ResourceHandler(self.registry, headers, '',
                                   ['action', 'start'])
         self.assertRaises(HTTPError, handler.post, '/bla"')
@@ -556,19 +559,20 @@ class TestResourceCapabilites(unittest.TestCase):
         Put two resource and one link...
         '''
         headers = {CONTENT_TYPE: 'text/occi',
-                   CATEGORY: parser.get_category_str(COMPUTE)}
+                   CATEGORY: parser.get_category_str(COMPUTE, self.registry)}
         handler = ResourceHandler(self.registry, headers, '', [])
         handler.put('/compute/1')
         self.assertTrue('/compute/1' in self.registry.get_resource_keys())
 
         headers = {CONTENT_TYPE: 'text/occi',
-                   CATEGORY: parser.get_category_str(NETWORK)}
+                   CATEGORY: parser.get_category_str(NETWORK, self.registry)}
         handler = ResourceHandler(self.registry, headers, '', [])
         handler.put('/network/1')
         self.assertTrue('/network/1' in self.registry.get_resource_keys())
 
         headers = {CONTENT_TYPE: 'text/occi',
-                   CATEGORY: parser.get_category_str(NETWORKINTERFACE),
+                   CATEGORY: parser.get_category_str(NETWORKINTERFACE,
+                                                     self.registry),
                    ATTRIBUTE: 'occi.core.source="/compute/1",' \
                                        ' occi.core.target="/network/1"'}
         handler = ResourceHandler(self.registry, headers, '', [])
@@ -583,7 +587,7 @@ class TestResourceCapabilites(unittest.TestCase):
         test retrieval...
         '''
         headers = {CONTENT_TYPE: 'text/occi',
-                   CATEGORY: parser.get_category_str(COMPUTE)}
+                   CATEGORY: parser.get_category_str(COMPUTE, self.registry)}
         handler = ResourceHandler(self.registry, headers, '', [])
         handler.put('/compute/1')
         self.assertTrue('/compute/1' in self.registry.get_resource_keys())
@@ -600,7 +604,7 @@ class TestResourceCapabilites(unittest.TestCase):
         test update...
         '''
         headers = {CONTENT_TYPE: 'text/occi',
-                   CATEGORY: parser.get_category_str(COMPUTE)}
+                   CATEGORY: parser.get_category_str(COMPUTE, self.registry)}
         handler = ResourceHandler(self.registry, headers, '', ())
         handler.put('/compute/1')
         self.assertTrue('/compute/1' in self.registry.get_resource_keys())
@@ -617,14 +621,14 @@ class TestResourceCapabilites(unittest.TestCase):
         test update...
         '''
         headers = {CONTENT_TYPE: 'text/occi',
-                   CATEGORY: parser.get_category_str(COMPUTE),
+                   CATEGORY: parser.get_category_str(COMPUTE, self.registry),
                    ATTRIBUTE: 'occi.compute.memory="2.0"'}
         handler = ResourceHandler(self.registry, headers, '', ())
         handler.put('/compute/1')
         self.assertTrue('/compute/1' in self.registry.get_resource_keys())
 
         headers = {CONTENT_TYPE: 'text/occi',
-                   CATEGORY: parser.get_category_str(COMPUTE),
+                   CATEGORY: parser.get_category_str(COMPUTE, self.registry),
                    ATTRIBUTE: 'occi.compute.cores="2"'}
         handler = ResourceHandler(self.registry, headers, '', ())
         handler.put('/compute/1')
@@ -638,7 +642,7 @@ class TestResourceCapabilites(unittest.TestCase):
         Test delete...
         '''
         headers = {CONTENT_TYPE: 'text/occi',
-                   CATEGORY: parser.get_category_str(COMPUTE),
+                   CATEGORY: parser.get_category_str(COMPUTE, self.registry),
                    ATTRIBUTE: 'occi.compute.memory="2.0"'}
         handler = ResourceHandler(self.registry, headers, '', [])
         handler.put('/compute/1')
@@ -653,13 +657,13 @@ class TestResourceCapabilites(unittest.TestCase):
         Trigger an action...
         '''
         headers = {CONTENT_TYPE: 'text/occi',
-                   CATEGORY: parser.get_category_str(COMPUTE)}
+                   CATEGORY: parser.get_category_str(COMPUTE, self.registry)}
         handler = ResourceHandler(self.registry, headers, '', [])
         handler.put('/compute/3')
         self.assertTrue('/compute/3' in self.registry.get_resource_keys())
 
         headers = {CONTENT_TYPE: 'text/occi',
-                   CATEGORY: parser.get_category_str(START)}
+                   CATEGORY: parser.get_category_str(START, self.registry)}
 
         handler = ResourceHandler(self.registry, headers, '',
                                   ['action', 'start'])
@@ -707,7 +711,7 @@ class TestLinkHandling(unittest.TestCase):
         Test creation of compute with a link to network (inline)...
         '''
         headers = {CONTENT_TYPE: 'text/occi',
-                   CATEGORY: parser.get_category_str(COMPUTE),
+                   CATEGORY: parser.get_category_str(COMPUTE, self.registry),
                    LINK: '</network/1>;' \
                    'rel="http://schemas.ogf.org/occi/infrastructure#' \
                    'network";' \
@@ -733,7 +737,8 @@ class TestLinkHandling(unittest.TestCase):
         Test creation for sanity...
         '''
         headers = {CONTENT_TYPE: 'text/plain'}
-        body = 'Category: ' + parser.get_category_str(NETWORKINTERFACE) + '\n'
+        body = 'Category: ' + parser.get_category_str(NETWORKINTERFACE,
+                                                      self.registry) + '\n'
         body += 'X-OCCI-Attribute: occi.core.source="/compute/1"\n'
         body += 'X-OCCI-Attribute: occi.core.target="/network/1"'
 
