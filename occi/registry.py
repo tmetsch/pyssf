@@ -235,6 +235,8 @@ class NonePersistentRegistry(Registry):
         self.RENDERINGS[mime_type] = renderer
 
     def get_backend(self, category, extras):
+        print category
+        print self.BACKENDS.keys()
         try:
             back = self.BACKENDS[category]
             if repr(category) == 'kind' and isinstance(back, KindBackend):
@@ -250,8 +252,13 @@ class NonePersistentRegistry(Registry):
     def get_all_backends(self, entity, extras):
         res = []
         res.append(self.get_backend(entity.kind, extras))
+        # XXX: check if this is necessary...
+        #for kind_related in entity.kind.related:
+        #    res.append(self.get_backend(kind_related, extras))
         for mixin in entity.mixins:
             res.append(self.get_backend(mixin, extras))
+            for mixin_related in mixin.related:
+                res.append(self.get_backend(mixin_related, extras))
         # remove duplicates - only need to call backs once - right?
         return list(set(res))
 

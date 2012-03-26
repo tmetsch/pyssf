@@ -52,6 +52,7 @@ def create_entity(key, entity, registry, extras):
     if isinstance(entity, Resource):
         # if it's a resource - set/create links properly.
         for link in entity.links:
+            # TODO: string links
             if link.identifier is None:
                 link.identifier = create_id(link.kind)
             elif link.identifier in registry.get_resource_keys(extras):
@@ -84,6 +85,7 @@ def delete_entity(entity, registry, extras):
     '''
     if isinstance(entity, Resource):
         # it's an resource - so delete all it's links
+        # TODO: string links
         for link in entity.links:
             for back in registry.get_all_backends(link, extras):
                 back.delete(link, extras)
@@ -161,6 +163,7 @@ def retrieve_entity(entity, registry, extras):
     if isinstance(entity, Resource):
         # if it's a resource - retrieve all links...
         for link in entity.links:
+            # TODO: string links
             for back in registry.get_all_backends(link, extras):
                 back.retrieve(link, extras)
 
@@ -358,7 +361,6 @@ def append_mixins(mixins, registry, extras):
             raise AttributeError('Category with same term, scheme already' +
                                  ' exists.')
 
-        # TODO make configurable on what to add!
         registry.set_backend(mixin, UserDefinedMixinBackend(), extras)
 
 
@@ -386,6 +388,7 @@ def remove_mixins(mixins, registry, extras):
         for entity in entities:
             entity.mixins.remove(mixin)
         registry.delete_mixin(mixin, extras)
+        del(mixin)
 
 #==============================================================================
 # Convenient stuff

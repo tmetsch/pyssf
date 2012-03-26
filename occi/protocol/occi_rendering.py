@@ -107,6 +107,7 @@ def _to_entity(data, def_kind, registry, extras):
                 target_attr = target_attr.replace(registry.get_hostname(), '')
 
             source = registry.get_resource(source_attr, extras)
+            # TODO: string links
             target = registry.get_resource(target_attr, extras)
         except KeyError:
             raise AttributeError('Both occi.core.[source, target]'
@@ -157,6 +158,7 @@ def _from_entity(entity, registry):
 
     elif isinstance(entity, Link):
         entity.attributes['occi.core.source'] = entity.source.identifier
+        # TODO: string links
         entity.attributes['occi.core.target'] = entity.target.identifier
 
     data.links = link_str_list

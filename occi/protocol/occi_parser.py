@@ -57,9 +57,21 @@ def get_category(category_string, categories, is_mixin=False):
         if not location[-1] == '/':
             raise AttributeError('Illegal location; must end with /')
         if location[0] != '/' and location.find('http') != 0:
-            raise AttributeError('Illegal location; Either provide full URL \
-or just a path starting with /.')
-        return Mixin(scheme, term, location=location)
+            raise AttributeError('Illegal location; Either provide full URL' \
+                                 ' or just a path starting with /.')
+        mixin = Mixin(scheme, term, location=location)
+
+        try:
+            related = find_in_string(category_string, 'related')
+            for item in categories:
+                if str(item) == related:
+                    mixin.related = [item]
+                    break
+            raise AttributeError('Related category cannot be found.')
+        except AttributeError:
+            pass
+
+        return mixin
 
     # return the category from registry...
     tmp = Category(scheme, term, '', {}, '')
@@ -179,6 +191,7 @@ def get_link(link_string, source, registry, extras):
             target_id = target_id.replace(registry.get_hostname(), '')
         target = registry.get_resource(target_id, extras)
     except KeyError:
+        # TODO: string links
         raise AttributeError('The target for the link cannot be found: '
                              + target_id)
 
@@ -206,6 +219,7 @@ def get_link_str(link):
 
     link.attributes['occi.core.id'] = link.identifier
     link.attributes['occi.core.source'] = link.source.identifier
+    # TODO: string links
     link.attributes['occi.core.target'] = link.target.identifier
 
     if len(link.attributes) > 0:
