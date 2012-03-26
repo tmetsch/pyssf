@@ -48,21 +48,26 @@ class TestAbstractClass(unittest.TestCase):
         self.assertRaises(NotImplementedError, Registry().get_renderer, None)
         self.assertRaises(NotImplementedError, Registry().set_renderer, None,
                           None)
-        self.assertRaises(NotImplementedError, Registry().get_backend, None)
+        self.assertRaises(NotImplementedError, Registry().get_backend, None,
+                          None)
         self.assertRaises(NotImplementedError, Registry().get_all_backends,
-                          None)
+                          None, None)
         self.assertRaises(NotImplementedError, Registry().set_backend, None,
+                          None, None)
+        self.assertRaises(NotImplementedError, Registry().delete_mixin, None,
                           None)
-        self.assertRaises(NotImplementedError, Registry().delete_mixin, None)
-        self.assertRaises(NotImplementedError, Registry().get_category, None)
-        self.assertRaises(NotImplementedError, Registry().get_categories)
-        self.assertRaises(NotImplementedError, Registry().get_resource, None)
+        self.assertRaises(NotImplementedError, Registry().get_category, None,
+                          None)
+        self.assertRaises(NotImplementedError, Registry().get_categories, None)
+        self.assertRaises(NotImplementedError, Registry().get_resource, None,
+                          None)
         self.assertRaises(NotImplementedError, Registry().add_resource, None,
-                          None)
+                          None, None)
         self.assertRaises(NotImplementedError, Registry().delete_resource,
+                          None, None)
+        self.assertRaises(NotImplementedError, Registry().get_resource_keys,
                           None)
-        self.assertRaises(NotImplementedError, Registry().get_resource_keys)
-        self.assertRaises(NotImplementedError, Registry().get_resources)
+        self.assertRaises(NotImplementedError, Registry().get_resources, None)
 
     def test_hostname_for_sanity(self):
         '''
@@ -86,16 +91,16 @@ class TestBackendsRegistry(unittest.TestCase):
         self.action = Action('http://example.com#', 'action')
         self.mixin = Mixin('http://example.com#', 'mixin')
 
-        self.registry.set_backend(self.kind1, KindBackend())
-        self.registry.set_backend(self.kind2, DummyBackend())
-        self.registry.set_backend(self.action, ActionBackend())
-        self.registry.set_backend(self.mixin, MixinBackend())
+        self.registry.set_backend(self.kind1, KindBackend(), None)
+        self.registry.set_backend(self.kind2, DummyBackend(), None)
+        self.registry.set_backend(self.action, ActionBackend(), None)
+        self.registry.set_backend(self.mixin, MixinBackend(), None)
 
         self.entity = Resource('foo', self.kind1, [self.kind2])
 
     def tearDown(self):
-        for item in self.registry.get_categories():
-            self.registry.delete_mixin(item)
+        for item in self.registry.get_categories(None):
+            self.registry.delete_mixin(item, None)
 
     #==========================================================================
     # Success
@@ -105,10 +110,10 @@ class TestBackendsRegistry(unittest.TestCase):
         '''
         Test if backend can be retrieved...
         '''
-        self.registry.get_backend(self.kind1)
-        self.registry.get_backend(self.kind2)
-        self.registry.get_backend(self.action)
-        self.registry.get_backend(self.mixin)
+        self.registry.get_backend(self.kind1, None)
+        self.registry.get_backend(self.kind2, None)
+        self.registry.get_backend(self.action, None)
+        self.registry.get_backend(self.mixin, None)
 
     #==========================================================================
     # Failure
@@ -119,7 +124,7 @@ class TestBackendsRegistry(unittest.TestCase):
         Test if backend can be retrieved...
         '''
         self.assertRaises(AttributeError, self.registry.get_backend,
-                          Kind('foo', 'bar'))
+                          Kind('foo', 'bar'), None)
 
     #==========================================================================
     # Sanity
@@ -129,8 +134,8 @@ class TestBackendsRegistry(unittest.TestCase):
         '''
         Test if backend can be retrieved...
         '''
-        back1 = self.registry.get_backend(self.kind1)
-        back2 = self.registry.get_backend(self.kind2)
+        back1 = self.registry.get_backend(self.kind1, None)
+        back2 = self.registry.get_backend(self.kind2, None)
         self.assertTrue(isinstance(back1, KindBackend))
         self.assertTrue(isinstance(back2, DummyBackend))
 
@@ -138,7 +143,7 @@ class TestBackendsRegistry(unittest.TestCase):
         '''
         Test if all backends can be retrieved...
         '''
-        backs = self.registry.get_all_backends(self.entity)
+        backs = self.registry.get_all_backends(self.entity, None)
         self.assertTrue(len(backs) == 2)
 
 
@@ -154,8 +159,8 @@ class TestParserRegistry(unittest.TestCase):
         self.registry.set_renderer('text/occi', DummyRendering(self.registry))
 
     def tearDown(self):
-        for item in self.registry.get_categories():
-            self.registry.delete_mixin(item)
+        for item in self.registry.get_categories(None):
+            self.registry.delete_mixin(item, None)
 
     def test_get_parser_for_success(self):
         '''
@@ -200,24 +205,24 @@ class CategoryRegistryTest(unittest.TestCase):
         self.kind1 = Kind('http://example.com#', '1')
         self.kind2 = Kind('http://example.com#', '2', location='/foo/')
 
-        self.registry.set_backend(self.kind1, KindBackend())
-        self.registry.set_backend(self.kind2, DummyBackend())
+        self.registry.set_backend(self.kind1, KindBackend(), None)
+        self.registry.set_backend(self.kind2, DummyBackend(), None)
 
     def tearDown(self):
-        for item in self.registry.get_categories():
-            self.registry.delete_mixin(item)
+        for item in self.registry.get_categories(None):
+            self.registry.delete_mixin(item, None)
 
     def test_get_category_for_sanity(self):
         '''
         Test if the category can be retrieved from a URN.
         '''
-        result = self.registry.get_category('/1/')
+        result = self.registry.get_category('/1/', None)
         self.assertTrue(self.kind1 == result)
 
-        result = self.registry.get_category('/foo/')
+        result = self.registry.get_category('/foo/', None)
         self.assertTrue(self.kind2 == result)
 
-        result = self.registry.get_category('/bar/')
+        result = self.registry.get_category('/bar/', None)
         self.assertTrue(result == None)
 
     def test_set_category_for_sanity(self):
@@ -227,8 +232,8 @@ class CategoryRegistryTest(unittest.TestCase):
         cat1 = Kind('http://example.com#', 'foo')
         cat2 = Kind('http://example.com#', 'foo')
 
-        self.registry.set_backend(cat1, KindBackend())
-        self.registry.set_backend(cat2, KindBackend())
+        self.registry.set_backend(cat1, KindBackend(), None)
+        self.registry.set_backend(cat2, KindBackend(), None)
 
         self.assertTrue(len(self.registry.BACKENDS.keys()) == 3)
 
@@ -245,32 +250,32 @@ class ResourcesTest(unittest.TestCase):
         self.res2 = Resource('bar', None, None)
 
     def tearDown(self):
-        for resource in self.registry.get_resources():
-            self.registry.delete_resource(resource.identifier)
+        for resource in self.registry.get_resources(None):
+            self.registry.delete_resource(resource.identifier, None)
 
     def test_get_resource_for_sanity(self):
         '''
         Test if added resource can be retrieved.
         '''
-        self.registry.add_resource('foo', self.res1)
-        self.assertEquals(self.res1, self.registry.get_resource('foo'))
+        self.registry.add_resource('foo', self.res1, None)
+        self.assertEquals(self.res1, self.registry.get_resource('foo', None))
 
     def test_delete_resource_for_sanity(self):
         '''
         Test if delete resource cannot be retrieved.
         '''
-        self.registry.add_resource('foo', self.res1)
-        self.registry.delete_resource('foo')
-        self.assertRaises(KeyError, self.registry.get_resource, 'foo')
+        self.registry.add_resource('foo', self.res1, None)
+        self.registry.delete_resource('foo', None)
+        self.assertRaises(KeyError, self.registry.get_resource, 'foo', None)
 
     def test_resources_for_sanity(self):
         '''
         Test is all resources and all keys can be retrieved.
         '''
-        self.registry.add_resource('foo', self.res1)
-        self.registry.add_resource('bar', self.res2)
-        self.assertTrue(len(self.registry.get_resources()) == 2)
-        self.assertTrue(len(self.registry.get_resource_keys()) == 2)
+        self.registry.add_resource('foo', self.res1, None)
+        self.registry.add_resource('bar', self.res2, None)
+        self.assertTrue(len(self.registry.get_resources(None)) == 2)
+        self.assertTrue(len(self.registry.get_resource_keys(None)) == 2)
 
 
 class DummyBackend(KindBackend):

@@ -101,9 +101,10 @@ class ApplicationTest(unittest.TestCase):
         app.register_backend(IPNETWORKINTERFACE, back1)
         app.register_backend(START, back2)
 
-        self.assertTrue(app.registry.get_backend(COMPUTE) == back)
-        self.assertTrue(app.registry.get_backend(IPNETWORKINTERFACE) == back1)
-        self.assertTrue(app.registry.get_backend(START) == back2)
+        self.assertTrue(app.registry.get_backend(COMPUTE, None) == back)
+        self.assertTrue(app.registry.get_backend(IPNETWORKINTERFACE,
+                                                 None) == back1)
+        self.assertTrue(app.registry.get_backend(START, None) == back2)
 
     def test_call_for_sanity(self):
         '''

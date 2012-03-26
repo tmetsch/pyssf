@@ -56,11 +56,11 @@ class TestTextOcciRendering(unittest.TestCase):
         self.mixin = Mixin('http://example.com#', 'mixin')
         self.action = Action('http://example.com#', 'action')
 
-        self.registry.set_backend(self.kind, KindBackend())
-        self.registry.set_backend(self.invalid_kind, KindBackend())
-        self.registry.set_backend(self.link, KindBackend())
-        self.registry.set_backend(self.mixin, MixinBackend())
-        self.registry.set_backend(self.action, ActionBackend())
+        self.registry.set_backend(self.kind, KindBackend(), None)
+        self.registry.set_backend(self.invalid_kind, KindBackend(), None)
+        self.registry.set_backend(self.link, KindBackend(), None)
+        self.registry.set_backend(self.mixin, MixinBackend(), None)
+        self.registry.set_backend(self.action, ActionBackend(), None)
 
         # 2 linked entities
         self.entity = Resource('/foo/1', self.kind, [self.mixin])
@@ -68,15 +68,15 @@ class TestTextOcciRendering(unittest.TestCase):
         self.link1 = Link('/link/1', self.link, [], self.entity, trg)
         self.entity.links = [self.link1]
 
-        self.registry.add_resource('/foo/2', trg)
-        self.registry.add_resource('/link/1', self.link1)
-        self.registry.add_resource('/foo/1', self.entity)
+        self.registry.add_resource('/foo/2', trg, None)
+        self.registry.add_resource('/link/1', self.link1, None)
+        self.registry.add_resource('/foo/1', self.entity, None)
 
     def tearDown(self):
-        for res in self.registry.get_resources():
-            self.registry.delete_resource(res.identifier)
-        for item in self.registry.get_categories():
-            self.registry.delete_mixin(item)
+        for res in self.registry.get_resources(None):
+            self.registry.delete_resource(res.identifier, None)
+        for item in self.registry.get_categories(None):
+            self.registry.delete_mixin(item, None)
 
     #==========================================================================
     # Failure
@@ -90,13 +90,13 @@ class TestTextOcciRendering(unittest.TestCase):
         res = Resource('/foo/1', self.mixin, [], links=[])
         headers, body = self.rendering.from_entity(res)
         self.assertRaises(AttributeError, self.rendering.to_entity,
-                          headers, body, None)
+                          headers, body, None, None)
 
         # kind does not relate to link or resource...
         res.kind = self.invalid_kind
         headers, body = self.rendering.from_entity(res)
         self.assertRaises(AttributeError, self.rendering.to_entity,
-                          headers, body, None)
+                          headers, body, None, None)
 
     def test_resources_for_failure(self):
         '''
@@ -104,7 +104,7 @@ class TestTextOcciRendering(unittest.TestCase):
         '''
         heads = {'X-OCCI-Location': '/bla/bla/2'}
         self.assertRaises(AttributeError, self.rendering.to_entities, heads,
-                          '')
+                          '', None)
 
     def test_link_for_failure(self):
         '''
@@ -115,7 +115,7 @@ class TestTextOcciRendering(unittest.TestCase):
         link = Link('/bar/1', self.link, [], self.entity, trg)
         headers, body = self.rendering.from_entity(link)
         self.assertRaises(AttributeError, self.rendering.to_entity,
-                          headers, body, None)
+                          headers, body, None, None)
 
     #==========================================================================
     # Sanity
@@ -127,14 +127,14 @@ class TestTextOcciRendering(unittest.TestCase):
         '''
         # basic check
         headers, body = self.rendering.from_entity(self.entity)
-        new = self.rendering.to_entity(headers, body, None)
+        new = self.rendering.to_entity(headers, body, None, None)
         self.assertEqual(self.entity.kind, new.kind)
         self.assertEqual(len(self.entity.links), len(new.links))
 
         # verify that provided kind is taken
         kind = Kind('foo', 'bar', related=[Resource.kind])
         headers, body = self.rendering.from_entity(self.entity)
-        new = self.rendering.to_entity(headers, body, kind)
+        new = self.rendering.to_entity(headers, body, kind, None)
         self.assertEqual(new.kind, kind)
         self.assertEqual(len(self.entity.links), len(new.links))
 
@@ -147,10 +147,10 @@ class TestTextOcciRendering(unittest.TestCase):
         '''
         Tests is a set of resource can be set and retrieved for sanity.
         '''
-        res = self.registry.get_resources()
+        res = self.registry.get_resources(None)
         heads, body = self.rendering.from_entities(res, '/')
-        entities = self.rendering.to_entities(heads, body)
-        self.assertEqual(self.registry.get_resources(), entities)
+        entities = self.rendering.to_entities(heads, body, None)
+        self.assertEqual(self.registry.get_resources(None), entities)
 
     def test_link_for_sanity(self):
         '''
@@ -160,7 +160,7 @@ class TestTextOcciRendering(unittest.TestCase):
         tmp = 'occi.core.target=' + self.link1.target.identifier
         tmp += ', occi.core.source=' + self.link1.source.identifier
         headers['X-OCCI-Attribute'] = tmp
-        new = self.rendering.to_entity(headers, body, None)
+        new = self.rendering.to_entity(headers, body, None, None)
         self.assertEqual(self.link1.kind, new.kind)
         # do not alter the source entity link list!
         self.assertTrue(len(self.entity.links) == 1)
@@ -171,7 +171,7 @@ class TestTextOcciRendering(unittest.TestCase):
         '''
         heads = {'Category': 'foo; scheme="http://example.com#";' +
                  ' location="/foo/"'}
-        mixins = self.rendering.to_mixins(heads, '')
+        mixins = self.rendering.to_mixins(heads, '', None)
         headers, body = self.rendering.from_categories(mixins)
         self.assertTrue('foo' in headers['Category'])
         self.assertTrue('scheme="http://example.com#"' in headers['Category'])
@@ -183,7 +183,7 @@ class TestTextOcciRendering(unittest.TestCase):
         '''
         heads = {'Category': self.action.term + '; scheme="'
                  + self.action.scheme + '"'}
-        action = self.rendering.to_action(heads, None)
+        action = self.rendering.to_action(heads, None, None)
         self.assertEqual(action, self.action)
 
     def test_get_filters_for_sanity(self):
@@ -258,13 +258,15 @@ class TestTextURIListRendering(unittest.TestCase):
         Tests is attr-exp are thrown for unsupported operations.
         '''
         self.assertRaises(AttributeError, self.rendering.to_entity, None,
-                          None, None)
+                          None, None, None)
         self.assertRaises(AttributeError, self.rendering.from_entity, None)
         self.assertRaises(AttributeError, self.rendering.to_entities, None,
-                          None)
+                          None, None)
         self.assertRaises(AttributeError, self.rendering.from_categories, None)
-        self.assertRaises(AttributeError, self.rendering.to_action, None, None)
-        self.assertRaises(AttributeError, self.rendering.to_mixins, None, None)
+        self.assertRaises(AttributeError, self.rendering.to_action, None, None,
+                          None)
+        self.assertRaises(AttributeError, self.rendering.to_mixins, None, None,
+                          None)
         self.assertRaises(AttributeError, self.rendering.get_filters, None,
                           None)
 
@@ -282,11 +284,13 @@ class TestRendering(unittest.TestCase):
         '''
         rendering = Rendering(self.registry)
         self.assertRaises(NotImplementedError, rendering.to_entity, None, None,
+                          None, None)
+        self.assertRaises(NotImplementedError, rendering.to_action, None, None,
                           None)
-        self.assertRaises(NotImplementedError, rendering.to_action, None, None)
         self.assertRaises(NotImplementedError, rendering.to_entities, None,
+                          None, None)
+        self.assertRaises(NotImplementedError, rendering.to_mixins, None, None,
                           None)
-        self.assertRaises(NotImplementedError, rendering.to_mixins, None, None)
         self.assertRaises(NotImplementedError, rendering.get_filters, None,
                           None)
         self.assertRaises(NotImplementedError, rendering.from_entity, None)

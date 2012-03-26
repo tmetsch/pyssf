@@ -78,97 +78,111 @@ class Registry(object):
         raise NotImplementedError('Registry implementation seems to be' \
                                   ' incomplete.')
 
-    def get_backend(self, category):
+    def get_backend(self, category, extras):
         """
         Retrieve a backend which is able to deal with the given category.
 
         category -- The category a backend is needed for.
+        extras -- Extras object - same as the one passed on to the backends.
         """
         raise NotImplementedError('Registry implementation seems to be' \
                                   ' incomplete.')
 
-    def get_all_backends(self, entity):
+    def get_all_backends(self, entity, extras):
         """
         Retrieve all backends associated with a resource instance
 
         entity -- The resource instance.
+        extras -- Extras object - same as the one passed on to the backends.
         """
         raise NotImplementedError('Registry implementation seems to be' \
                                   ' incomplete.')
 
-    def set_backend(self, category, backend):
+    def set_backend(self, category, backend, extras):
         """
         Set a backend which is able to deal with the given category.
 
         category -- The category a backend is needed for.
         backend -- The backend which should handle this category.
+        extras -- Extras object - same as the one passed on to the backends.
         """
         raise NotImplementedError('Registry implementation seems to be' \
                                   ' incomplete.')
 
-    def delete_mixin(self, mixin):
+    def delete_mixin(self, mixin, extras):
         '''
         Remove a mixin from the service.
 
         mixin -- The mixin
+        extras -- Extras object - same as the one passed on to the backends.
         '''
         raise NotImplementedError('Registry implementation seems to be' \
                                   ' incomplete.')
 
-    def get_category(self, path):
+    def get_category(self, path, extras):
         '''
         Return the category which is associated with an Location.
 
         path -- The location which the category should define.
+        extras -- Extras object - same as the one passed on to the backends.
         '''
         raise NotImplementedError('Registry implementation seems to be' \
                                   ' incomplete.')
 
-    def get_categories(self):
+    def get_categories(self, extras):
         '''
         Return all registered categories.
+
+        extras -- Extras object - same as the one passed on to the backends.
         '''
         raise NotImplementedError('Registry implementation seems to be' \
                                   ' incomplete.')
 
-    def get_resource(self, key):
+    def get_resource(self, key, extras):
         '''
         Return a certain resource.
 
         key -- Unique identifier of the resource.
+        extras -- Extras object - same as the one passed on to the backends.
         '''
         raise NotImplementedError('Registry implementation seems to be' \
                                   ' incomplete.')
 
-    def add_resource(self, key, entity):
+    def add_resource(self, key, entity, extras):
         '''
         Add a resource.
 
         key -- the unique identifier.
         entity -- the OCCI representation.
+        extras -- Extras object - same as the one passed on to the backends.
         '''
         raise NotImplementedError('Registry implementation seems to be' \
                                   ' incomplete.')
 
-    def delete_resource(self, key):
+    def delete_resource(self, key, extras):
         '''
         Delete a resource.
 
         key -- Unique identifier of the resource.
+        extras -- Extras object - same as the one passed on to the backends.
         '''
         raise NotImplementedError('Registry implementation seems to be' \
                                   ' incomplete.')
 
-    def get_resource_keys(self):
+    def get_resource_keys(self, extras):
         '''
         Return all keys of all resources.
+
+        extras -- Extras object - same as the one passed on to the backends.
         '''
         raise NotImplementedError('Registry implementation seems to be' \
                                   ' incomplete.')
 
-    def get_resources(self):
+    def get_resources(self, extras):
         '''
         Return all resources.
+
+        extras -- Extras object - same as the one passed on to the backends.
         '''
         raise NotImplementedError('Registry implementation seems to be' \
                                   ' incomplete.')
@@ -220,7 +234,7 @@ class NonePersistentRegistry(Registry):
 
         self.RENDERINGS[mime_type] = renderer
 
-    def get_backend(self, category):
+    def get_backend(self, category, extras):
         try:
             back = self.BACKENDS[category]
             if repr(category) == 'kind' and isinstance(back, KindBackend):
@@ -233,40 +247,40 @@ class NonePersistentRegistry(Registry):
         except KeyError:
             raise AttributeError('Cannot find corresponding Backend.')
 
-    def get_all_backends(self, entity):
+    def get_all_backends(self, entity, extras):
         res = []
-        res.append(self.get_backend(entity.kind))
+        res.append(self.get_backend(entity.kind, extras))
         for mixin in entity.mixins:
-            res.append(self.get_backend(mixin))
+            res.append(self.get_backend(mixin, extras))
         # remove duplicates - only need to call backs once - right?
         return list(set(res))
 
-    def set_backend(self, category, backend):
+    def set_backend(self, category, backend, extras):
         self.BACKENDS[category] = backend
 
-    def delete_mixin(self, mixin):
+    def delete_mixin(self, mixin, extras):
         self.BACKENDS.pop(mixin)
 
-    def get_category(self, path):
+    def get_category(self, path, extras):
         for category in self.BACKENDS.keys():
             if category.location == path:
                 return category
         return None
 
-    def get_categories(self):
+    def get_categories(self, extras):
         return self.BACKENDS.keys()
 
-    def get_resource(self, key):
+    def get_resource(self, key, extras):
         return self.RESOURCES[key]
 
-    def add_resource(self, key, resource):
+    def add_resource(self, key, resource, extras):
         self.RESOURCES[key] = resource
 
-    def delete_resource(self, key):
+    def delete_resource(self, key, extras):
         self.RESOURCES.pop(key)
 
-    def get_resource_keys(self):
+    def get_resource_keys(self, extras):
         return self.RESOURCES.keys()
 
-    def get_resources(self):
+    def get_resources(self, extras):
         return self.RESOURCES.values()

@@ -37,7 +37,7 @@ class Rendering(object):
         '''
         self.registry = registry
 
-    def to_entity(self, headers, body, def_kind):
+    def to_entity(self, headers, body, def_kind, extras):
         '''
         Given the HTTP headers and the body this method will convert the HTTP
         data into an entity representation. Must return Resource or Link
@@ -46,6 +46,7 @@ class Rendering(object):
         headers -- The HTTP headers.
         body -- The HTTP body.
         def_kind -- If provided this kind is taken (Needed for update).
+        extras -- Passed on extra object.
         '''
         raise NotImplementedError()
 
@@ -60,7 +61,7 @@ class Rendering(object):
         '''
         raise NotImplementedError()
 
-    def to_entities(self, headers, body):
+    def to_entities(self, headers, body, extras):
         '''
         Given the HTTP headers and the body this method will convert the HTTP
         data into a set of entity representations. Must return a set of
@@ -68,6 +69,7 @@ class Rendering(object):
 
         headers -- The HTTP headers.
         body -- The HTTP body.
+        extras -- Passed on extra object.
         '''
         raise NotImplementedError()
 
@@ -88,23 +90,25 @@ class Rendering(object):
         '''
         raise NotImplementedError()
 
-    def to_action(self, headers, body):
+    def to_action(self, headers, body, extras):
         '''
         Given the HTTP headers and the body this method will convert the HTTP
         data into an Action.
 
         headers -- The HTTP headers.
         body -- The HTTP body.
+        extras -- Passed on extra object.
         '''
         raise NotImplementedError()
 
-    def to_mixins(self, headers, body):
+    def to_mixins(self, headers, body, extras):
         '''
         Given the HTTP headers and the body this method will convert the HTTP
         data into a Mixins. Must return a list with Mixin instances.
 
         headers -- The HTTP headers.
         body -- The HTTP body.
+        extras -- Passed on extra object.
         '''
         raise NotImplementedError()
 

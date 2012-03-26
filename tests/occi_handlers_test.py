@@ -76,13 +76,13 @@ class TestQueryCapabilites(unittest.TestCase):
 
         backend = KindBackend()
 
-        self.registry.set_backend(COMPUTE, backend)
-        self.registry.set_backend(STORAGE, backend)
-        self.registry.set_backend(NETWORK, backend)
+        self.registry.set_backend(COMPUTE, backend, None)
+        self.registry.set_backend(STORAGE, backend, None)
+        self.registry.set_backend(NETWORK, backend, None)
 
     def tearDown(self):
-        for item in self.registry.get_categories():
-            self.registry.delete_mixin(item)
+        for item in self.registry.get_categories(None):
+            self.registry.delete_mixin(item, None)
 
     #==========================================================================
     # Failure
@@ -224,19 +224,19 @@ class TestCollectionCapabilites(unittest.TestCase):
                                       [IPNETWORKINTERFACE], self.compute,
                                       self.network)
 
-        self.registry.set_backend(COMPUTE, SimpleComputeBackend())
-        self.registry.set_backend(NETWORK, KindBackend())
-        self.registry.set_backend(self.mixin, MixinBackend())
-        self.registry.set_backend(START, SimpleComputeBackend())
+        self.registry.set_backend(COMPUTE, SimpleComputeBackend(), None)
+        self.registry.set_backend(NETWORK, KindBackend(), None)
+        self.registry.set_backend(self.mixin, MixinBackend(), None)
+        self.registry.set_backend(START, SimpleComputeBackend(), None)
 
-        self.registry.add_resource(self.compute.identifier, self.compute)
-        self.registry.add_resource(self.network.identifier, self.network)
+        self.registry.add_resource(self.compute.identifier, self.compute, None)
+        self.registry.add_resource(self.network.identifier, self.network, None)
         self.registry.add_resource(self.network_interface.identifier,
-                                   self.network_interface)
+                                   self.network_interface, None)
 
     def tearDown(self):
-        for item in self.registry.get_resources():
-            self.registry.delete_resource(item.identifier)
+        for item in self.registry.get_resources(None):
+            self.registry.delete_resource(item.identifier, None)
 
     #==========================================================================
     # Failure
@@ -362,7 +362,7 @@ class TestCollectionCapabilites(unittest.TestCase):
         '''
         handler = CollectionHandler(self.registry, {}, '', [])
         handler.delete('/compute')
-        self.assertFalse(self.compute in self.registry.get_resources())
+        self.assertFalse(self.compute in self.registry.get_resources(None))
 
     def test_action_for_sanity(self):
         '''
@@ -431,7 +431,7 @@ class TestCollectionCapabilites(unittest.TestCase):
                    CATEGORY: parser.get_category_str(COMPUTE, self.registry)}
         handler = CollectionHandler(self.registry, headers, '', ())
         handler.post('/compute/')
-        self.assertTrue(len(self.registry.get_resources()) == 4)
+        self.assertTrue(len(self.registry.get_resources(None)) == 4)
 
 
 class TestResourceCapabilites(unittest.TestCase):
@@ -445,14 +445,14 @@ class TestResourceCapabilites(unittest.TestCase):
         self.registry.set_renderer('text/occi',
                                    TextOcciRendering(self.registry))
 
-        self.registry.set_backend(COMPUTE, SimpleComputeBackend())
-        self.registry.set_backend(NETWORK, KindBackend())
-        self.registry.set_backend(NETWORKINTERFACE, KindBackend())
-        self.registry.set_backend(START, SimpleComputeBackend())
+        self.registry.set_backend(COMPUTE, SimpleComputeBackend(), None)
+        self.registry.set_backend(NETWORK, KindBackend(), None)
+        self.registry.set_backend(NETWORKINTERFACE, KindBackend(), None)
+        self.registry.set_backend(START, SimpleComputeBackend(), None)
 
     def tearDown(self):
-        for item in self.registry.get_resources():
-            self.registry.delete_resource(item.identifier)
+        for item in self.registry.get_resources(None):
+            self.registry.delete_resource(item.identifier, None)
 
     #==========================================================================
     # Failure
@@ -488,7 +488,7 @@ class TestResourceCapabilites(unittest.TestCase):
                    CATEGORY: parser.get_category_str(COMPUTE, self.registry)}
         handler = ResourceHandler(self.registry, headers, '', ())
         handler.put('/compute/1')
-        self.assertTrue('/compute/1' in self.registry.get_resource_keys())
+        self.assertTrue('/compute/1' in self.registry.get_resource_keys(None))
 
         headers = {CONTENT_TYPE: 'text/occi',
                    ATTRIBUTE: 'garbage'}
@@ -504,7 +504,7 @@ class TestResourceCapabilites(unittest.TestCase):
                    ATTRIBUTE: 'occi.compute.memory="2.0"'}
         handler = ResourceHandler(self.registry, headers, '', ())
         handler.put('/compute/1')
-        self.assertTrue('/compute/1' in self.registry.get_resource_keys())
+        self.assertTrue('/compute/1' in self.registry.get_resource_keys(None))
 
         headers = {CONTENT_TYPE: 'text/occi',
                    CATEGORY: 'garbage'}
@@ -523,7 +523,7 @@ class TestResourceCapabilites(unittest.TestCase):
                    ATTRIBUTE: 'undeletable="true"'}
         handler = ResourceHandler(self.registry, headers, '', ())
         handler.put('/compute/1')
-        self.assertTrue('/compute/1' in self.registry.get_resource_keys())
+        self.assertTrue('/compute/1' in self.registry.get_resource_keys(None))
 
         handler = ResourceHandler(self.registry, headers, '', ())
         self.assertRaises(HTTPError, handler.delete, '/compute/1')
@@ -536,7 +536,7 @@ class TestResourceCapabilites(unittest.TestCase):
                    CATEGORY: parser.get_category_str(COMPUTE, self.registry)}
         handler = ResourceHandler(self.registry, headers, '', ())
         handler.put('/compute/3')
-        self.assertTrue('/compute/3' in self.registry.get_resource_keys())
+        self.assertTrue('/compute/3' in self.registry.get_resource_keys(None))
 
         headers = {CONTENT_TYPE: 'text/occi',
                    CATEGORY: 'blabla'}
@@ -562,13 +562,13 @@ class TestResourceCapabilites(unittest.TestCase):
                    CATEGORY: parser.get_category_str(COMPUTE, self.registry)}
         handler = ResourceHandler(self.registry, headers, '', [])
         handler.put('/compute/1')
-        self.assertTrue('/compute/1' in self.registry.get_resource_keys())
+        self.assertTrue('/compute/1' in self.registry.get_resource_keys(None))
 
         headers = {CONTENT_TYPE: 'text/occi',
                    CATEGORY: parser.get_category_str(NETWORK, self.registry)}
         handler = ResourceHandler(self.registry, headers, '', [])
         handler.put('/network/1')
-        self.assertTrue('/network/1' in self.registry.get_resource_keys())
+        self.assertTrue('/network/1' in self.registry.get_resource_keys(None))
 
         headers = {CONTENT_TYPE: 'text/occi',
                    CATEGORY: parser.get_category_str(NETWORKINTERFACE,
@@ -577,8 +577,9 @@ class TestResourceCapabilites(unittest.TestCase):
                                        ' occi.core.target="/network/1"'}
         handler = ResourceHandler(self.registry, headers, '', [])
         status, headers, body = handler.put('/network/link/1')
-        self.assertTrue('/network/link/1' in self.registry.get_resource_keys())
-        compute = self.registry.get_resource('/compute/1')
+        self.assertTrue('/network/link/1' in
+                        self.registry.get_resource_keys(None))
+        compute = self.registry.get_resource('/compute/1', None)
         self.assertTrue(len(compute.links) == 1)
         self.assertTrue('/network/link/1' in headers['Location'])
 
@@ -590,7 +591,7 @@ class TestResourceCapabilites(unittest.TestCase):
                    CATEGORY: parser.get_category_str(COMPUTE, self.registry)}
         handler = ResourceHandler(self.registry, headers, '', [])
         handler.put('/compute/1')
-        self.assertTrue('/compute/1' in self.registry.get_resource_keys())
+        self.assertTrue('/compute/1' in self.registry.get_resource_keys(None))
 
         headers = {ACCEPT: 'text/occi'}
         handler = ResourceHandler(self.registry, headers, '', [])
@@ -607,13 +608,13 @@ class TestResourceCapabilites(unittest.TestCase):
                    CATEGORY: parser.get_category_str(COMPUTE, self.registry)}
         handler = ResourceHandler(self.registry, headers, '', ())
         handler.put('/compute/1')
-        self.assertTrue('/compute/1' in self.registry.get_resource_keys())
+        self.assertTrue('/compute/1' in self.registry.get_resource_keys(None))
 
         headers = {CONTENT_TYPE: 'text/occi',
                    ATTRIBUTE: 'occi.compute.cores="2"'}
         handler = ResourceHandler(self.registry, headers, '', ())
         handler.post('/compute/1')
-        compute = self.registry.get_resource('/compute/1')
+        compute = self.registry.get_resource('/compute/1', None)
         self.assertTrue('occi.compute.cores' in compute.attributes.keys())
 
     def test_replace_for_sanity(self):
@@ -625,7 +626,7 @@ class TestResourceCapabilites(unittest.TestCase):
                    ATTRIBUTE: 'occi.compute.memory="2.0"'}
         handler = ResourceHandler(self.registry, headers, '', ())
         handler.put('/compute/1')
-        self.assertTrue('/compute/1' in self.registry.get_resource_keys())
+        self.assertTrue('/compute/1' in self.registry.get_resource_keys(None))
 
         headers = {CONTENT_TYPE: 'text/occi',
                    CATEGORY: parser.get_category_str(COMPUTE, self.registry),
@@ -633,7 +634,7 @@ class TestResourceCapabilites(unittest.TestCase):
         handler = ResourceHandler(self.registry, headers, '', ())
         handler.put('/compute/1')
 
-        compute = self.registry.get_resource('/compute/1')
+        compute = self.registry.get_resource('/compute/1', None)
         self.assertTrue('occi.compute.memory' not in compute.attributes.keys())
         self.assertTrue('occi.compute.cores' in compute.attributes.keys())
 
@@ -646,11 +647,12 @@ class TestResourceCapabilites(unittest.TestCase):
                    ATTRIBUTE: 'occi.compute.memory="2.0"'}
         handler = ResourceHandler(self.registry, headers, '', [])
         handler.put('/compute/1')
-        self.assertTrue('/compute/1' in self.registry.get_resource_keys())
+        self.assertTrue('/compute/1' in self.registry.get_resource_keys(None))
 
         handler = ResourceHandler(self.registry, headers, '', [])
         handler.delete('/compute/1')
-        self.assertTrue('/compute/1' not in self.registry.get_resource_keys())
+        self.assertTrue('/compute/1' not in
+                        self.registry.get_resource_keys(None))
 
     def test_trigger_action_for_sanity(self):
         '''
@@ -660,7 +662,7 @@ class TestResourceCapabilites(unittest.TestCase):
                    CATEGORY: parser.get_category_str(COMPUTE, self.registry)}
         handler = ResourceHandler(self.registry, headers, '', [])
         handler.put('/compute/3')
-        self.assertTrue('/compute/3' in self.registry.get_resource_keys())
+        self.assertTrue('/compute/3' in self.registry.get_resource_keys(None))
 
         headers = {CONTENT_TYPE: 'text/occi',
                    CATEGORY: parser.get_category_str(START, self.registry)}
@@ -669,7 +671,7 @@ class TestResourceCapabilites(unittest.TestCase):
                                   ['action', 'start'])
         handler.post('/compute/3')
 
-        compute = self.registry.get_resource('/compute/3')
+        compute = self.registry.get_resource('/compute/3', None)
         self.assertTrue(compute.attributes['occi.compute.state']
                         == 'active')
 
@@ -687,20 +689,20 @@ class TestLinkHandling(unittest.TestCase):
         self.registry.set_renderer('text/occi',
                                    TextOcciRendering(self.registry))
 
-        self.registry.set_backend(COMPUTE, SimpleComputeBackend())
-        self.registry.set_backend(NETWORK, KindBackend())
-        self.registry.set_backend(NETWORKINTERFACE, KindBackend())
-        self.registry.set_backend(START, SimpleComputeBackend())
+        self.registry.set_backend(COMPUTE, SimpleComputeBackend(), None)
+        self.registry.set_backend(NETWORK, KindBackend(), None)
+        self.registry.set_backend(NETWORKINTERFACE, KindBackend(), None)
+        self.registry.set_backend(START, SimpleComputeBackend(), None)
 
         self.compute = Resource('/compute/1', COMPUTE, [])
         self.network = Resource('/network/1', NETWORK, [IPNETWORK])
 
-        self.registry.add_resource('/compute/1', self.compute)
-        self.registry.add_resource('/network/1', self.network)
+        self.registry.add_resource('/compute/1', self.compute, None)
+        self.registry.add_resource('/network/1', self.network, None)
 
     def tearDown(self):
-        for item in self.registry.get_resources():
-            self.registry.delete_resource(item.identifier)
+        for item in self.registry.get_resources(None):
+            self.registry.delete_resource(item.identifier, None)
 
     #==========================================================================
     # Sanity
@@ -721,10 +723,10 @@ class TestLinkHandling(unittest.TestCase):
                    'occi.networkinterface.mac="00:11:22:33:44:55";'}
         handler = ResourceHandler(self.registry, headers, '', [])
         handler.put('/compute/2')
-        self.assertTrue('/compute/2' in self.registry.get_resource_keys())
-        self.assertTrue(len(self.registry.get_resources()) == 4)
+        self.assertTrue('/compute/2' in self.registry.get_resource_keys(None))
+        self.assertTrue(len(self.registry.get_resources(None)) == 4)
 
-        compute = self.registry.get_resource('/compute/2')
+        compute = self.registry.get_resource('/compute/2', None)
         self.assertTrue(len(compute.links) == 1)
 
         handler = ResourceHandler(self.registry, headers, '', [])
@@ -744,9 +746,9 @@ class TestLinkHandling(unittest.TestCase):
 
         handler = ResourceHandler(self.registry, headers, body, [])
         handler.put('/link/2')
-        self.assertTrue('/link/2' in self.registry.get_resource_keys())
+        self.assertTrue('/link/2' in self.registry.get_resource_keys(None))
 
-        link = self.registry.get_resource('/link/2')
+        link = self.registry.get_resource('/link/2', None)
         self.assertTrue(link in link.source.links)
 
         handler = ResourceHandler(self.registry, headers, '', [])

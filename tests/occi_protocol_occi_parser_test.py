@@ -66,19 +66,19 @@ class TestParser(unittest.TestCase):
         self.link2 = Link(None, self.network_link, [], self.source,
                           self.target)
 
-        self.registry.add_resource(self.source.identifier, self.source)
-        self.registry.add_resource(self.target.identifier, self.target)
+        self.registry.add_resource(self.source.identifier, self.source, None)
+        self.registry.add_resource(self.target.identifier, self.target, None)
 
-        self.registry.set_backend(self.start_action, None)
-        self.registry.set_backend(self.compute, None)
-        self.registry.set_backend(self.network_link, None)
-        self.registry.set_backend(self.ipnetwork_mixin, None)
+        self.registry.set_backend(self.start_action, None, None)
+        self.registry.set_backend(self.compute, None, None)
+        self.registry.set_backend(self.network_link, None, None)
+        self.registry.set_backend(self.ipnetwork_mixin, None, None)
 
         self.link1.attributes = {'foo': 'bar'}
 
     def tearDown(self):
-        for item in self.registry.get_categories():
-            self.registry.delete_mixin(item)
+        for item in self.registry.get_categories(None):
+            self.registry.delete_mixin(item, None)
 
     #==========================================================================
     # Success
@@ -94,7 +94,8 @@ class TestParser(unittest.TestCase):
 
         # mixin check...
         tmp = 'foo; scheme="http://example.com#"; location="/foo_bar/"'
-        parser.get_category(tmp, self.registry.get_categories(), is_mixin=True)
+        parser.get_category(tmp, self.registry.get_categories(None),
+                            is_mixin=True)
 
     #==========================================================================
     # Failure
@@ -105,24 +106,24 @@ class TestParser(unittest.TestCase):
         Test with faulty category.
         '''
         self.assertRaises(AttributeError, parser.get_category, 'some crap',
-                          self.registry.get_categories())
+                          self.registry.get_categories(None))
         self.assertRaises(AttributeError, parser.get_category,
                           'foo; scheme="bar"',
-                          self.registry.get_categories())
+                          self.registry.get_categories(None))
 
         # mixin with msg location check...
         tmp = 'foo; scheme="http://example.com#"'
         self.assertRaises(AttributeError, parser.get_category, tmp,
-                          self.registry.get_categories(), True)
+                          self.registry.get_categories(None), True)
 
         # mixin with faulty location check...
         tmp = 'foo; scheme="http://example.com#"; location="sdf"'
         self.assertRaises(AttributeError, parser.get_category, tmp,
-                          self.registry.get_categories(), True)
+                          self.registry.get_categories(None), True)
 
         tmp = 'foo; scheme="http://example.com#"; location="sdf/"'
         self.assertRaises(AttributeError, parser.get_category, tmp,
-                          self.registry.get_categories(), True)
+                          self.registry.get_categories(None), True)
 
     def test_get_link_for_failure(self):
         '''
@@ -130,19 +131,19 @@ class TestParser(unittest.TestCase):
         '''
         # no valid string...
         self.assertRaises(AttributeError, parser.get_link, 'some crap', None,
-                          self.registry.get_categories())
+                          self.registry.get_categories(None), None)
 
         # no target...
         link_string = parser.get_link_str(self.link1)
-        self.registry.delete_resource(self.target.identifier)
+        self.registry.delete_resource(self.target.identifier, None)
         self.assertRaises(AttributeError, parser.get_link, link_string, None,
-                          self.registry)
+                          self.registry, None)
 
         # no kind defined
         self.link1.kind = self.ipnetwork_mixin
         link_string = parser.get_link_str(self.link1)
         self.assertRaises(AttributeError, parser.get_link, link_string, None,
-                          self.registry)
+                          self.registry, None)
 
     def test_get_attributes_for_failure(self):
         '''
@@ -160,7 +161,7 @@ class TestParser(unittest.TestCase):
         '''
         res = parser.get_category(parser.get_category_str(self.compute,
                                                           self.registry),
-                          self.registry.get_categories())
+                          self.registry.get_categories(None))
         self.assertEqual(res, self.compute)
 
     def test_get_link_for_sanity(self):
@@ -168,7 +169,7 @@ class TestParser(unittest.TestCase):
         Verifies that source and target are set...
         '''
         link_string = parser.get_link_str(self.link1)
-        link = parser.get_link(link_string, self.source, self.registry)
+        link = parser.get_link(link_string, self.source, self.registry, None)
         self.assertEquals(link.kind, self.network_link)
         self.assertEquals(link.source, self.source)
         self.assertEquals(link.target, self.target)
@@ -178,13 +179,13 @@ class TestParser(unittest.TestCase):
 
         # identifier checks...
         link_string = parser.get_link_str(self.link1)
-        link = parser.get_link(link_string, self.source, self.registry)
+        link = parser.get_link(link_string, self.source, self.registry, None)
         self.assertEquals(link.identifier, '/link/1')
 
         tmp = link_string.split('; ')
         tmp.pop(2)
         link_string = '; '.join(tmp)
-        link = parser.get_link(link_string, self.source, self.registry)
+        link = parser.get_link(link_string, self.source, self.registry, None)
         self.assertEquals(link.identifier, None)
 
     def test_strip_all_for_sanity(self):

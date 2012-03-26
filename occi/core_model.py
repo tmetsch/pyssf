@@ -45,6 +45,7 @@ class Category(object):
 
         # location
         self.location = location
+        self.extras = None
 
     def __eq__(self, instance):
         if instance is None or not isinstance(instance, Category):

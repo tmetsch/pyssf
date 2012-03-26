@@ -300,7 +300,7 @@ class HTMLRendering(Rendering):
         tmp += '\t</body>\n</html>'
         return {'Content-Type': self.mime_type}, tmp
 
-    def to_action(self, headers, body):
+    def to_action(self, headers, body, extras):
         cat_str = headers.get(QUERY_STRING)
         scheme_index = cat_str.find('scheme=')
         if scheme_index != -1:
@@ -315,9 +315,9 @@ class HTMLRendering(Rendering):
             raise AttributeError('Unable to find the term. Broken request?.')
 
         tmp = Category(scheme + '#', term, '', {}, '')
-        cats = self.registry.get_categories()
+        cats = self.registry.get_categories(extras)
         if tmp in cats:
-            for item in self.registry.get_categories():
+            for item in self.registry.get_categories(extras):
                 if tmp == item:
                     del(tmp)
                     return item

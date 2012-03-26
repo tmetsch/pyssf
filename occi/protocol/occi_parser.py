@@ -23,6 +23,9 @@ Created on Jun 28, 2011
 @author: tmetsch
 '''
 
+# disabling 'Too many local variables' pylint check (text renderings :-()
+# pylint: disable=R0914
+
 from occi.core_model import Category, Link, Mixin, Kind
 
 #==============================================================================
@@ -76,6 +79,7 @@ def get_category_str(category, registry):
     category -- A category.
     registry -- registry to retrieve hostname.
     '''
+
     tmp = ''
     tmp += category.term
     tmp += '; scheme="' + category.scheme + '"'
@@ -110,12 +114,13 @@ def get_category_str(category, registry):
     return tmp
 
 
-def _get_link_categories(categories, registry):
+def _get_link_categories(categories, registry, extras):
     '''
     Determine the kind ans mixins for inline link creation.
 
     categories -- String with a set of category string definitions.
     registry -- Registry used for this call.
+    extras -- Passed on extra object.
     '''
     tmp_kind = None
     tmp_mixins = []
@@ -123,7 +128,7 @@ def _get_link_categories(categories, registry):
         tempus = tmp_cat.split('#')
         link_category = get_category(tempus[1].strip() + ';scheme="'
                                      + tempus[0].strip() + '#"',
-                                     registry.get_categories())
+                                     registry.get_categories(extras))
         if isinstance(link_category, Kind):
             tmp_kind = link_category
         else:
@@ -132,7 +137,7 @@ def _get_link_categories(categories, registry):
     return tmp_kind, tmp_mixins
 
 
-def get_link(link_string, source, registry):
+def get_link(link_string, source, registry, extras):
     '''
     Create a Link from a string rendering.
 
@@ -141,6 +146,7 @@ def get_link(link_string, source, registry):
     link_string -- A string rendering of a link.
     source -- The source entity.
     registry -- Registry used for this call.
+    extras -- Passed on extra object.
     '''
     tmp = link_string.find('<') + 1
     target_id = link_string[tmp:link_string.rfind('>', tmp)].strip()
@@ -155,7 +161,7 @@ def get_link(link_string, source, registry):
     except AttributeError:
         raise AttributeError('Could not determine the Category of the Link.')
 
-    tmp_kind, tmp_mixins = _get_link_categories(tmp_category, registry)
+    tmp_kind, tmp_mixins = _get_link_categories(tmp_category, registry, extras)
 
     if tmp_kind is None:
         raise AttributeError('Unable to find the Kind of the Link.')
@@ -171,7 +177,7 @@ def get_link(link_string, source, registry):
     try:
         if target_id.find(registry.get_hostname()) == 0:
             target_id = target_id.replace(registry.get_hostname(), '')
-        target = registry.get_resource(target_id)
+        target = registry.get_resource(target_id, extras)
     except KeyError:
         raise AttributeError('The target for the link cannot be found: '
                              + target_id)

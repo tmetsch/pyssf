@@ -50,12 +50,13 @@ class HTTPData(object):
 #==============================================================================
 
 
-def _to_entity(data, def_kind, registry):
+def _to_entity(data, def_kind, registry, extras):
     '''
     Extract an entity from the HTTP data object.
 
     kind -- The kind definition.
     registry -- The registry.
+    extras -- Passed on extra object.
     '''
 
     # disable 'Too many local vars' pylint check (It's a bit ugly but will do)
@@ -69,7 +70,7 @@ def _to_entity(data, def_kind, registry):
     kind_found = False
     for category_string in data.categories:
         category = parser.get_category(category_string.strip(),
-                                       registry.get_categories())
+                                       registry.get_categories(extras))
         if repr(category) == 'kind' and not kind_found:
             kind = category
             kind_found = True
@@ -94,7 +95,7 @@ def _to_entity(data, def_kind, registry):
         for link_string in data.links:
             entity.links.append(parser.get_link(link_string.strip(),
                                                 entity,
-                                                registry))
+                                                registry, extras))
     elif Link.kind in kind.related:
         try:
             source_attr = attributes['occi.core.source']
@@ -105,8 +106,8 @@ def _to_entity(data, def_kind, registry):
             if target_attr.find(registry.get_hostname()) == 0:
                 target_attr = target_attr.replace(registry.get_hostname(), '')
 
-            source = registry.get_resource(source_attr)
-            target = registry.get_resource(target_attr)
+            source = registry.get_resource(source_attr, extras)
+            target = registry.get_resource(target_attr, extras)
         except KeyError:
             raise AttributeError('Both occi.core.[source, target]'
                                  + ' attributes need to be resources.')
@@ -170,12 +171,13 @@ def _from_entity(entity, registry):
     return data
 
 
-def _to_entities(data, registry):
+def _to_entities(data, registry, extras):
     '''
     Extract a set of (in the service existing) entities from a request.
 
     data -- the HTTP data.
     registry -- The registry used for this call.
+    extras -- Passed on extra object.
     '''
     result = []
     for item in data.locations:
@@ -183,7 +185,7 @@ def _to_entities(data, registry):
             if item.find(registry.get_hostname()) == 0:
                 item = item.replace(registry.get_hostname(), '')
 
-            result.append(registry.get_resource(item.strip()))
+            result.append(registry.get_resource(item.strip(), extras))
         except KeyError:
             raise AttributeError('Could not find the resource with id: '
                                  + str(item))
@@ -220,30 +222,32 @@ def _from_categories(categories, registry):
     return data
 
 
-def _to_action(data, registry):
+def _to_action(data, registry, extras):
     '''
     Create an action from an HTTP data object.
 
     data -- the HTTP data.
     registry -- The registry used for this call.
+    extras -- Passed on extra object.
     '''
     action = parser.get_category(data.categories[0].strip(),
-                                 registry.get_categories())
+                                 registry.get_categories(extras))
 
     return action
 
 
-def _to_mixins(data, registry):
+def _to_mixins(data, registry, extras):
     '''
     Create a Mixin from an HTTP data object.
 
     data -- the HTTP data.
     registry -- The registry used for this call.
+    extras -- Passed on extra object.
     '''
     result = []
     for cat_str in data.categories:
         result.append(parser.get_category(cat_str,
-                                          registry.get_categories(),
+                                          registry.get_categories(extras),
                                           is_mixin=True))
 
     return result
@@ -260,7 +264,8 @@ def _get_filter(data, registry):
     attributes = {}
 
     for cat in data.categories:
-        categories.append(parser.get_category(cat, registry.get_categories()))
+        categories.append(parser.get_category(cat,
+                                              registry.get_categories(None)))
 
     for attr in data.attributes:
         key, value = parser.get_attributes(attr)
@@ -346,9 +351,9 @@ class TextOcciRendering(Rendering):
         '''
         return _set_data_to_headers(data, self.mime_type)
 
-    def to_entity(self, headers, body, def_kind):
+    def to_entity(self, headers, body, def_kind, extras):
         data = self.get_data(headers, body)
-        entity = _to_entity(data, def_kind, self.registry)
+        entity = _to_entity(data, def_kind, self.registry, extras)
         return entity
 
     def from_entity(self, entity):
@@ -356,9 +361,9 @@ class TextOcciRendering(Rendering):
         headers, body = self.set_data(data)
         return headers, body
 
-    def to_entities(self, headers, body):
+    def to_entities(self, headers, body, extras):
         data = self.get_data(headers, body)
-        entities = _to_entities(data, self.registry)
+        entities = _to_entities(data, self.registry, extras)
         return entities
 
     def from_entities(self, entities, key):
@@ -371,14 +376,14 @@ class TextOcciRendering(Rendering):
         headers, body = self.set_data(data)
         return headers, body
 
-    def to_action(self, headers, body):
+    def to_action(self, headers, body, extras):
         data = self.get_data(headers, body)
-        action = _to_action(data, self.registry)
+        action = _to_action(data, self.registry, extras)
         return action
 
-    def to_mixins(self, headers, body):
+    def to_mixins(self, headers, body, extras):
         data = self.get_data(headers, body)
-        mixin = _to_mixins(data, self.registry)
+        mixin = _to_mixins(data, self.registry, extras)
         return mixin
 
     def get_filters(self, headers, body):
@@ -476,13 +481,13 @@ class TextUriListRendering(Rendering):
     error = 'Unable to handle this request with the text/uri-list' \
                 ' rendering.'
 
-    def to_entity(self, headers, body, def_kind):
+    def to_entity(self, headers, body, def_kind, extras):
         raise AttributeError(self.error)
 
     def from_entity(self, entity):
         raise AttributeError(self.error)
 
-    def to_entities(self, headers, body):
+    def to_entities(self, headers, body, extras):
         raise AttributeError(self.error)
 
     def from_entities(self, entities, key):
@@ -494,10 +499,10 @@ class TextUriListRendering(Rendering):
     def from_categories(self, categories):
         raise AttributeError(self.error)
 
-    def to_action(self, headers, body):
+    def to_action(self, headers, body, extras):
         raise AttributeError(self.error)
 
-    def to_mixins(self, headers, body):
+    def to_mixins(self, headers, body, extras):
         raise AttributeError(self.error)
 
     def get_filters(self, headers, body):

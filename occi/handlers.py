@@ -105,7 +105,7 @@ class BaseHandler():
         '''
         rendering = self.get_renderer(CONTENT_TYPE)
 
-        action = rendering.to_action(self.headers, self.body)
+        action = rendering.to_action(self.headers, self.body, self.extras)
 
         return action
 
@@ -135,7 +135,8 @@ class BaseHandler():
         '''
         rendering = self.get_renderer(CONTENT_TYPE)
 
-        entity = rendering.to_entity(self.headers, self.body, def_kind)
+        entity = rendering.to_entity(self.headers, self.body, def_kind,
+                                     self.extras)
 
         return entity
 
@@ -145,7 +146,7 @@ class BaseHandler():
         '''
         rendering = self.get_renderer(CONTENT_TYPE)
 
-        entities = rendering.to_entities(self.headers, self.body)
+        entities = rendering.to_entities(self.headers, self.body, self.extras)
 
         return entities
 
@@ -155,7 +156,7 @@ class BaseHandler():
         '''
         rendering = self.get_renderer(CONTENT_TYPE)
 
-        mixin = rendering.to_mixins(self.headers, self.body)
+        mixin = rendering.to_mixins(self.headers, self.body, self.extras)
 
         return mixin
 
@@ -208,7 +209,7 @@ class ResourceHandler(BaseHandler):
         key -- The resource id.
         '''
         try:
-            entity = self.registry.get_resource(key)
+            entity = self.registry.get_resource(key, self.extras)
 
             workflow.retrieve_entity(entity, self.registry, self.extras)
 
@@ -225,7 +226,7 @@ class ResourceHandler(BaseHandler):
         if self.query is not ():
             # action
             try:
-                entity = self.registry.get_resource(key)
+                entity = self.registry.get_resource(key, self.extras)
                 action = self.parse_action()
 
                 workflow.action_entity(entity, action, self.registry,
@@ -239,7 +240,7 @@ class ResourceHandler(BaseHandler):
         else:
             # update
             try:
-                old = self.registry.get_resource(key)
+                old = self.registry.get_resource(key, self.extras)
                 new = self.parse_entity(def_kind=old.kind)
 
                 workflow.update_entity(old, new, self.registry, self.extras)
@@ -256,10 +257,10 @@ class ResourceHandler(BaseHandler):
 
         key -- The resource id.
         '''
-        if key in self.registry.get_resource_keys():
+        if key in self.registry.get_resource_keys(self.extras):
             # replace...
             try:
-                old = self.registry.get_resource(key)
+                old = self.registry.get_resource(key, self.extras)
                 new = self.parse_entity()
 
                 workflow.replace_entity(old, new, self.registry, self.extras)
@@ -288,7 +289,7 @@ class ResourceHandler(BaseHandler):
         '''
         # delete
         try:
-            entity = self.registry.get_resource(key)
+            entity = self.registry.get_resource(key, self.extras)
 
             workflow.delete_entity(entity, self.registry, self.extras)
 
@@ -313,7 +314,8 @@ class CollectionHandler(BaseHandler):
         # retrieve (filter)
         try:
             categories, attributes = self.parse_filter()
-            entities = workflow.get_entities_under_path(key, self.registry)
+            entities = workflow.get_entities_under_path(key, self.registry,
+                                                        self.extras)
             result = workflow.filter_entities(entities, categories, attributes)
 
             return self.render_entities(result, key)
@@ -330,7 +332,8 @@ class CollectionHandler(BaseHandler):
             # action
             try:
                 action = self.parse_action()
-                entities = workflow.get_entities_under_path(key, self.registry)
+                entities = workflow.get_entities_under_path(key, self.registry,
+                                                            self.extras)
                 for entity in entities:
                     workflow.action_entity(entity, action, self.registry,
                                            self.extras)
@@ -353,10 +356,11 @@ class CollectionHandler(BaseHandler):
         elif len(self.parse_entities()) > 0:
             # update
             try:
-                mixin = self.registry.get_category(key)
+                mixin = self.registry.get_category(key, self.extras)
                 new_entities = self.parse_entities()
                 old_entities = workflow.get_entities_under_path(key,
-                                                                self.registry)
+                                                                self.registry,
+                                                                self.extras)
                 workflow.update_collection(mixin, old_entities,
                                            new_entities, self.registry,
                                            self.extras)
@@ -373,9 +377,10 @@ class CollectionHandler(BaseHandler):
         '''
         # replace
         try:
-            mixin = self.registry.get_category(key)
+            mixin = self.registry.get_category(key, self.extras)
             new_entities = self.parse_entities()
-            old_entities = workflow.get_entities_under_path(key, self.registry)
+            old_entities = workflow.get_entities_under_path(key, self.registry,
+                                                            self.extras)
             workflow.replace_collection(mixin, old_entities, new_entities,
                                         self.registry, self.extras)
 
@@ -391,7 +396,8 @@ class CollectionHandler(BaseHandler):
         '''
         if len(self.parse_entities()) == 0:
             # delete entities
-            entities = workflow.get_entities_under_path(key, self.registry)
+            entities = workflow.get_entities_under_path(key, self.registry,
+                                                        self.extras)
             for entity in entities:
                 workflow.delete_entity(entity, self.registry, self.extras)
 
@@ -399,7 +405,7 @@ class CollectionHandler(BaseHandler):
         elif len(self.parse_entities()) > 0:
             # remove from collection
             try:
-                mixin = self.registry.get_category(key)
+                mixin = self.registry.get_category(key, self.extras)
                 entities = self.parse_entities()
                 workflow.delete_from_collection(mixin, entities, self.registry,
                                                 self.extras)
@@ -444,7 +450,7 @@ class QueryHandler(BaseHandler):
         try:
             mixins = self.parse_mixins()
 
-            workflow.append_mixins(mixins, self.registry)
+            workflow.append_mixins(mixins, self.registry, self.extras)
 
             return self.render_categories(mixins)
         except AttributeError as attr:
@@ -460,7 +466,7 @@ class QueryHandler(BaseHandler):
         try:
             categories, attributes = self.parse_filter()
 
-            workflow.remove_mixins(categories, self.registry)
+            workflow.remove_mixins(categories, self.registry, self.extras)
 
             return self.response(200)
         except AttributeError as attr:

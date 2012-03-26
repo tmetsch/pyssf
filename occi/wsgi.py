@@ -178,7 +178,7 @@ class Application(object):
             allow = True
 
         if allow:
-            self.registry.set_backend(category, backend)
+            self.registry.set_backend(category, backend, None)
         else:
             raise AttributeError('Backends handling kinds need to derive' \
                                  ' from KindBackend; Backends handling' \

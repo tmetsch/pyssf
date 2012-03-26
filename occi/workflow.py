@@ -54,22 +54,22 @@ def create_entity(key, entity, registry, extras):
         for link in entity.links:
             if link.identifier is None:
                 link.identifier = create_id(link.kind)
-            elif link.identifier in registry.get_resource_keys():
+            elif link.identifier in registry.get_resource_keys(extras):
                 raise AttributeError('A link with that id is already present')
 
-            for back in registry.get_all_backends(link):
+            for back in registry.get_all_backends(link, extras):
                 back.create(link, extras)
 
-            registry.add_resource(link.identifier, link)
+            registry.add_resource(link.identifier, link, extras)
     elif isinstance(entity, Link):
         entity.source.links.append(entity)
 
     # call all the backends who are associated with this entity.kind...
-    backends = registry.get_all_backends(entity)
+    backends = registry.get_all_backends(entity, extras)
     for backend in backends:
         backend.create(entity, extras)
 
-    registry.add_resource(key, entity)
+    registry.add_resource(key, entity, extras)
 
 
 def delete_entity(entity, registry, extras):
@@ -85,19 +85,19 @@ def delete_entity(entity, registry, extras):
     if isinstance(entity, Resource):
         # it's an resource - so delete all it's links
         for link in entity.links:
-            for back in registry.get_all_backends(link):
+            for back in registry.get_all_backends(link, extras):
                 back.delete(link, extras)
-            registry.delete_resource(link.identifier)
+            registry.delete_resource(link.identifier, extras)
     elif isinstance(entity, Link):
         entity.source.links.remove(entity)
 
     # call all the backends who are associated with this entity.kind...
-    backends = registry.get_all_backends(entity)
+    backends = registry.get_all_backends(entity, extras)
 
     for backend in backends:
         backend.delete(entity, extras)
 
-    registry.delete_resource(entity.identifier)
+    registry.delete_resource(entity.identifier, extras)
 
 
 def replace_entity(old, new, registry, extras):
@@ -120,7 +120,7 @@ def replace_entity(old, new, registry, extras):
                              ' entity.')
 
     # call all the backends who are associated with this entity.kind...
-    backends = registry.get_all_backends(old)
+    backends = registry.get_all_backends(old, extras)
     for backend in backends:
         backend.replace(old, new, extras)
     del(new)
@@ -142,7 +142,7 @@ def update_entity(old, new, registry, extras):
                         ' update request')
 
     # call all the backends who are associated with this entity.kind...
-    backends = registry.get_all_backends(old)
+    backends = registry.get_all_backends(old, extras)
     for backend in backends:
         backend.update(old, new, extras)
     del(new)
@@ -161,11 +161,11 @@ def retrieve_entity(entity, registry, extras):
     if isinstance(entity, Resource):
         # if it's a resource - retrieve all links...
         for link in entity.links:
-            for back in registry.get_all_backends(link):
+            for back in registry.get_all_backends(link, extras):
                 back.retrieve(link, extras)
 
     # call all the backends who are associated with this entity.kind...
-    backends = registry.get_all_backends(entity)
+    backends = registry.get_all_backends(entity, extras)
     for backend in backends:
         backend.retrieve(entity, extras)
 
@@ -179,7 +179,7 @@ def action_entity(entity, action, registry, extras):
     registry -- The registry used for this process.
     extras -- Any extra arguments which are defined by the user.
     '''
-    backend = registry.get_backend(action)
+    backend = registry.get_backend(action, extras)
     backend.action(entity, action, extras)
 
 #==============================================================================
@@ -203,7 +203,7 @@ def update_collection(mixin, old_entities, new_entities, registry, extras):
                              + ' of Mixins.')
     for entity in unique(new_entities, old_entities):
         entity.mixins.append(mixin)
-        backend = registry.get_backend(mixin)
+        backend = registry.get_backend(mixin, extras)
         backend.create(entity, extras)
     del(new_entities)
 
@@ -226,10 +226,10 @@ def replace_collection(mixin, old_entities, new_entities, registry, extras):
                              + ' of Mixins.')
     for entity in unique(new_entities, old_entities):
         entity.mixins.append(mixin)
-        backend = registry.get_backend(mixin)
+        backend = registry.get_backend(mixin, extras)
         backend.create(entity, extras)
     for entity in unique(old_entities, new_entities):
-        backend = registry.get_backend(mixin)
+        backend = registry.get_backend(mixin, extras)
         backend.delete(entity, extras)
         entity.mixins.remove(mixin)
     del(new_entities)
@@ -248,13 +248,13 @@ def delete_from_collection(mixin, entities, registry, extras):
         raise AttributeError('This operation is only supported on Collections'
                              + ' of Mixins.')
 
-    for entity in intersect(entities, registry.get_resources()):
-        backend = registry.get_backend(mixin)
+    for entity in intersect(entities, registry.get_resources(extras)):
+        backend = registry.get_backend(mixin, extras)
         backend.delete(entity, extras)
         entity.mixins.remove(mixin)
 
 
-def get_entities_under_path(path, registry):
+def get_entities_under_path(path, registry, extras):
     '''
     Return all entities which fall under a path.
 
@@ -265,16 +265,17 @@ def get_entities_under_path(path, registry):
 
     path -- The path under which to look...
     registry -- The registry used for this process.
+    extras -- Any extra arguments which are defined by the user.
     '''
     result = []
-    if registry.get_category(path) is None:
-        for res in registry.get_resources():
+    if registry.get_category(path, extras) is None:
+        for res in registry.get_resources(extras):
             if res.identifier.find(path) == 0:
                 result.append(res)
         return result
     else:
-        cat = registry.get_category(path)
-        for res in registry.get_resources():
+        cat = registry.get_category(path, extras)
+        for res in registry.get_resources(extras):
             if cat == res.kind or cat in res.mixins:
                 result.append(res)
         return result
@@ -326,62 +327,65 @@ def filter_categories(categories, registry):
     registry -- The registry used for this process.
     '''
     if len(categories) == 0:
-        return registry.get_categories()
+        return registry.get_categories(None)
 
     result = []
-    for cat in registry.get_categories():
+    for cat in registry.get_categories(None):
         if cat in categories:
             result.append(cat)
     return result
 
 
-def append_mixins(mixins, registry):
+def append_mixins(mixins, registry, extras):
     '''
     Add a mixin to the service.
 
     mixins -- The mixins which are to be added.
     registry -- The registry used for this process.
+    extras -- Passed on extra object.
     '''
     for mixin in mixins:
         if not isinstance(mixin, Mixin):
             raise AttributeError('Needs to be of type Mixin.')
-        if registry.get_category(mixin.location):
+        if registry.get_category(mixin.location, extras):
             raise AttributeError('Location overlaps with existing one.')
 
         try:
-            registry.get_backend(mixin)
+            registry.get_backend(mixin, extras)
         except AttributeError:
             pass
         else:
             raise AttributeError('Category with same term, scheme already' +
                                  ' exists.')
 
-        registry.set_backend(mixin, UserDefinedMixinBackend())
+        # TODO make configurable on what to add!
+        registry.set_backend(mixin, UserDefinedMixinBackend(), extras)
 
 
-def remove_mixins(mixins, registry):
+def remove_mixins(mixins, registry, extras):
     '''
     Remove a mixin from the service.
 
     mixins -- The mixin which are to be removed.
     registry -- The registry used for this process.
+    extras -- Any extra arguments which are defined by the user.
     '''
     for mixin in mixins:
         if not isinstance(mixin, Mixin):
             raise AttributeError('Needs to be of type Mixin.')
 
         try:
-            backend = registry.get_backend(mixin)
+            backend = registry.get_backend(mixin, extras)
         except AttributeError:
             raise HTTPError(400, 'This Mixin is not registered!')
 
         if not isinstance(backend, UserDefinedMixinBackend):
             raise HTTPError(403, 'This Mixin cannot be deleted!')
 
-        entities = get_entities_under_path(mixin.location, registry)
+        entities = get_entities_under_path(mixin.location, registry, extras)
         for entity in entities:
             entity.mixins.remove(mixin)
-        registry.delete_mixin(mixin)
+        registry.delete_mixin(mixin, extras)
 
 #==============================================================================
 # Convenient stuff

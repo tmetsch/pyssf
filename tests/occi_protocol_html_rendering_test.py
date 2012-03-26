@@ -56,7 +56,7 @@ class TestHTMLRendering(unittest.TestCase):
         self.source.links = [self.link]
         self.source.actions = [action]
 
-        self.registry.set_backend(action, None)
+        self.registry.set_backend(action, None, None)
 
     #==========================================================================
     # Success
@@ -96,7 +96,7 @@ class TestHTMLRendering(unittest.TestCase):
         '''
         self.parser.to_action({'Query_String':
                                'action=action?scheme=http://example.com/foo'},
-                              'foobar')
+                              'foobar', None)
 
     #==========================================================================
     # Test for failure
@@ -107,8 +107,8 @@ class TestHTMLRendering(unittest.TestCase):
         Test actions...
         '''
         self.assertRaises(AttributeError, self.parser.to_action,
-                          {'Query_String': 'action=foo?'}, '')
+                          {'Query_String': 'action=foo?'}, '', None)
         self.assertRaises(AttributeError, self.parser.to_action,
-                          {'Query_String': 'scheme=bar'}, '')
+                          {'Query_String': 'scheme=bar'}, '', None)
         self.assertRaises(AttributeError, self.parser.to_action,
-                          {'Query_String': 'action=foo?scheme=bar'}, '')
+                          {'Query_String': 'action=foo?scheme=bar'}, '', None)
