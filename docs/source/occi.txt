@@ -229,8 +229,8 @@ called; the backends for the assigned mixins of the resource are called; as
 well as backends defining the links kinds get called called. So if a resource
 has 1 kind, 2 mixins and 2 links --> 5 calls on backends are performed.
 
-Passing extra information to the backends
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Passing extra information to the backends and registry
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To pass information to the backends and the registry it is possible to override
 the *__call__* function in the WSGI OCCI application. This is useful to pass on
@@ -241,14 +241,18 @@ security information to the backends and registry for example::
         return self._call_occi(environ, response, security=sec_obj)
 
 Now the *sec_obj* will be passed within the *extras* parameter of the
-functions in the backends (to retrieve it: *extras[security]*).
+functions in the backends/registry (to retrieve it: *extras[security]*).
 
 Now it is possible to do security assertions in the registry (check ownership
 of an category or resource listing) or backend (check ownership of resources).
+This will allow that two users have the same category (term, scheme and
+location are equal) but that different resources are returned due to the
+ownership. Thus this creates Service provider client specific namespaces.
 
-Next to this the OCCI core model *Entity* (and therefore also *Resource* and
-*Link*) has an attribute called *extras* which will not be rendered, but can
-be used to store any kind of object (such as ownership information).
+Next to this within the OCCI core model *Entity* (and therefore also *Resource*
+and *Link*) and *Category* have an attribute called *extras* which will not be
+rendered, but can be used to store any kind of object (such as ownership
+information).
 
 Notes on Backend Implementations
 --------------------------------
@@ -279,3 +283,10 @@ Notes on Backend Implementations
     return code (defined in the wsgi module) or AttribtueErrors on more
     generic errors which will result in a Bad Request.
 
+.. note::
+    It is possible to influence the behaviour of which backends are called by
+    overwritting the get_all_backends() routine in the registry. By default
+    (in the NonePersitentRegistry) the backends which define the kinds and
+    mixins are called as well as the backends defining the related mixins.
+    This could be altered to also call the backends from related kinds for
+    example.

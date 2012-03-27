@@ -63,15 +63,14 @@ def get_category(category_string, categories, is_mixin=False):
 
         try:
             related = find_in_string(category_string, 'related')
+        except AttributeError:
+            return mixin
+        else:
             for item in categories:
                 if str(item) == related:
                     mixin.related = [item]
-                    break
+                    return mixin
             raise AttributeError('Related category cannot be found.')
-        except AttributeError:
-            pass
-
-        return mixin
 
     # return the category from registry...
     tmp = Category(scheme, term, '', {}, '')

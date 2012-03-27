@@ -89,14 +89,15 @@ class TestBackendsRegistry(unittest.TestCase):
         self.kind1 = Kind('http://example.com#', '1')
         self.kind2 = Kind('http://example.com#', '2')
         self.action = Action('http://example.com#', 'action')
-        self.mixin = Mixin('http://example.com#', 'mixin')
+        self.mixin = Mixin('http://example.com#', 'mixin',
+                           related=[self.kind1])
 
         self.registry.set_backend(self.kind1, KindBackend(), None)
         self.registry.set_backend(self.kind2, DummyBackend(), None)
         self.registry.set_backend(self.action, ActionBackend(), None)
         self.registry.set_backend(self.mixin, MixinBackend(), None)
 
-        self.entity = Resource('foo', self.kind1, [self.kind2])
+        self.entity = Resource('foo', self.kind1, [self.mixin])
 
     def tearDown(self):
         for item in self.registry.get_categories(None):

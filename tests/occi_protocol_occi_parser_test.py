@@ -125,6 +125,12 @@ class TestParser(unittest.TestCase):
         self.assertRaises(AttributeError, parser.get_category, tmp,
                           self.registry.get_categories(None), True)
 
+        # related mixin not found!
+        tmp = 'foo; scheme="http://example.com#"; related="http://foo.com#' \
+              'bar,http://bar.com#foo"; location="/sdf/"'
+        self.assertRaises(AttributeError, parser.get_category, tmp,
+                          self.registry.get_categories(None), True)
+
     def test_get_link_for_failure(self):
         '''
         Test with msg category.
@@ -163,6 +169,13 @@ class TestParser(unittest.TestCase):
                                                           self.registry),
                           self.registry.get_categories(None))
         self.assertEqual(res, self.compute)
+
+        # user defined mixin...related to compute
+        tmp = 'foo; scheme="http://example.com#"; related="http://schemas.ogf'\
+              '.org/occi/infrastructure#compute"; location="/sdf/"'
+        res = parser.get_category(tmp, self.registry.get_categories(None),
+                                  True)
+        self.assertEquals(res.related, [self.compute])
 
     def test_get_link_for_sanity(self):
         '''
