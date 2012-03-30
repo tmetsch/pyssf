@@ -434,7 +434,8 @@ class QueryHandler(BaseHandler):
         try:
             categories, attributes = self.parse_filter()
 
-            result = workflow.filter_categories(categories, self.registry)
+            result = workflow.filter_categories(categories, self.registry,
+                                                self.extras)
 
             return self.render_categories(result)
         except AttributeError as attr:

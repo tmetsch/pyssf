@@ -448,12 +448,12 @@ class QueriyInterfaceTest(unittest.TestCase):
         '''
         Test the simple filter options.
         '''
-        res = workflow.filter_categories([], self.registry)
+        res = workflow.filter_categories([], self.registry, None)
         self.assertTrue(self.kind1 in res)
         self.assertTrue(self.kind2 in res)
         self.assertTrue(len(res) == 2)
 
-        res = workflow.filter_categories([self.kind1], self.registry)
+        res = workflow.filter_categories([self.kind1], self.registry, None)
         self.assertTrue(self.kind1 in res)
         self.assertFalse(self.kind2 in res)
         self.assertTrue(len(res) == 1)

@@ -321,19 +321,20 @@ def filter_entities(entities, categories, attributes):
 #==============================================================================
 
 
-def filter_categories(categories, registry):
+def filter_categories(categories, registry, extras):
     '''
     Filter the categories. Only those requested should be added to the
     resulting list.
 
     categories -- The list of categories to filter against.
     registry -- The registry used for this process.
+    extras -- Passed on extra object.
     '''
     if len(categories) == 0:
-        return registry.get_categories(None)
+        return registry.get_categories(extras)
 
     result = []
-    for cat in registry.get_categories(None):
+    for cat in registry.get_categories(extras):
         if cat in categories:
             result.append(cat)
     return result
