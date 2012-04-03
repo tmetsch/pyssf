@@ -237,6 +237,8 @@ class TestCollectionCapabilites(unittest.TestCase):
     def tearDown(self):
         for item in self.registry.get_resources(None):
             self.registry.delete_resource(item.identifier, None)
+        for item in self.registry.get_categories(None):
+            self.registry.delete_mixin(item, None)
 
     #==========================================================================
     # Failure
@@ -453,6 +455,8 @@ class TestResourceCapabilites(unittest.TestCase):
     def tearDown(self):
         for item in self.registry.get_resources(None):
             self.registry.delete_resource(item.identifier, None)
+        for item in self.registry.get_categories(None):
+            self.registry.delete_mixin(item, None)
 
     #==========================================================================
     # Failure
@@ -703,6 +707,8 @@ class TestLinkHandling(unittest.TestCase):
     def tearDown(self):
         for item in self.registry.get_resources(None):
             self.registry.delete_resource(item.identifier, None)
+        for item in self.registry.get_categories(None):
+            self.registry.delete_mixin(item, None)
 
     #==========================================================================
     # Sanity

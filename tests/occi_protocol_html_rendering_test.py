@@ -58,6 +58,10 @@ class TestHTMLRendering(unittest.TestCase):
 
         self.registry.set_backend(action, None, None)
 
+    def tearDown(self):
+        for item in self.registry.get_categories(None):
+            self.registry.delete_mixin(item, None)
+
     #==========================================================================
     # Success
     #==========================================================================

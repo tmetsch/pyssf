@@ -123,7 +123,8 @@ class BaseHandler():
 
         rendering = self.get_renderer(CONTENT_TYPE)
 
-        categories, attributes = rendering.get_filters(self.headers, self.body)
+        categories, attributes = rendering.get_filters(self.headers, self.body,
+                                                       self.extras)
 
         return categories, attributes
 

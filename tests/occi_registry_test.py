@@ -233,10 +233,7 @@ class CategoryRegistryTest(unittest.TestCase):
         cat1 = Kind('http://example.com#', 'foo')
         cat2 = Kind('http://example.com#', 'foo')
 
-        self.registry.set_backend(cat1, KindBackend(), None)
-        self.registry.set_backend(cat2, KindBackend(), None)
-
-        self.assertTrue(len(self.registry.BACKENDS.keys()) == 3)
+        self.assertEqual(cat1, cat2)
 
 
 class ResourcesTest(unittest.TestCase):

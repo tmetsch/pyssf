@@ -47,7 +47,7 @@ class TestCore(unittest.TestCase):
         mixin = Mixin('http://example.com#', 'mixin')
 
         # test eq
-        self.assertEquals(cat1, cat2)
+        self.assertEqual(cat1, cat2)
         self.assertFalse(cat1 == str)
         self.assertFalse(cat1 == kind)
 
@@ -65,16 +65,17 @@ class TestCore(unittest.TestCase):
         dictionary[cat1] = 'foo'
         dictionary[cat2] = 'foo'
         self.assertTrue(len(dictionary.keys()) == 2)
-        self.assertNotEquals(cat1, cat2)
+        self.assertNotEqual(cat1, cat2)
 
         # case with both set to same extras
         cat1.extras = {'id': 'foobar'}
-        self.assertTrue(hash(str(cat1.extras)), hash(str(cat2.extras)))
+        self.assertTrue(hash(str(cat1.extras)) == hash(str(cat2.extras)))
         dictionary = {}
         dictionary[cat1] = 'foo'
         dictionary[cat2] = 'foo'
         self.assertTrue(len(dictionary.keys()) == 1)
-        self.assertNotEquals(cat1, cat2)
+        self.assertEqual(cat1, cat2)
+        self.assertTrue(cat1 != cat2)
 
         # test str
         self.assertEqual(str(cat1), 'http://example.com#foo')

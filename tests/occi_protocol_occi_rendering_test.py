@@ -191,12 +191,12 @@ class TestTextOcciRendering(unittest.TestCase):
         Test if filters can be retrieved...
         '''
         headers, body = self.rendering.from_categories([self.kind])
-        cats, attrs = self.rendering.get_filters(headers, '')
+        cats, attrs = self.rendering.get_filters(headers, '', None)
         self.assertTrue(cats == [self.kind])
         self.assertTrue(attrs == {})
 
         headers['X-OCCI-Attribute'] = 'foo="bar"'
-        cats, attrs = self.rendering.get_filters(headers, '')
+        cats, attrs = self.rendering.get_filters(headers, '', None)
         self.assertTrue(cats == [self.kind])
         self.assertTrue(attrs['foo'] == 'bar')
 
@@ -268,7 +268,7 @@ class TestTextURIListRendering(unittest.TestCase):
         self.assertRaises(AttributeError, self.rendering.to_mixins, None, None,
                           None)
         self.assertRaises(AttributeError, self.rendering.get_filters, None,
-                          None)
+                          None, None)
 
 
 class TestRendering(unittest.TestCase):
@@ -292,7 +292,7 @@ class TestRendering(unittest.TestCase):
         self.assertRaises(NotImplementedError, rendering.to_mixins, None, None,
                           None)
         self.assertRaises(NotImplementedError, rendering.get_filters, None,
-                          None)
+                          None, None)
         self.assertRaises(NotImplementedError, rendering.from_entity, None)
         self.assertRaises(NotImplementedError, rendering.from_categories, None)
         self.assertRaises(NotImplementedError, rendering.from_entities, None,

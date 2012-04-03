@@ -112,12 +112,13 @@ class Rendering(object):
         '''
         raise NotImplementedError()
 
-    def get_filters(self, headers, body):
+    def get_filters(self, headers, body, extras):
         '''
         Given the HTTP headers and the body this method will convert the HTTP
         data into a list of categories and attributes.
 
         headers -- The HTTP headers.
         body -- The HTTP body.
+        extras -- Passed on extra object.
         '''
         raise NotImplementedError()

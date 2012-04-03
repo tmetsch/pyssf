@@ -251,23 +251,23 @@ def _to_mixins(data, registry, extras):
         result.append(parser.get_category(cat_str,
                                           registry.get_categories(extras),
                                           is_mixin=True))
-
     return result
 
 
-def _get_filter(data, registry):
+def _get_filter(data, registry, extras):
     '''
     Parse categories and attributes from the request.
 
     data -- the HTTP data.
     registry -- The registry used for this call.
+    extras -- Passed on extra object.
     '''
     categories = []
     attributes = {}
 
     for cat in data.categories:
         categories.append(parser.get_category(cat,
-                                              registry.get_categories(None)))
+                                              registry.get_categories(extras)))
 
     for attr in data.attributes:
         key, value = parser.get_attributes(attr)
@@ -388,9 +388,9 @@ class TextOcciRendering(Rendering):
         mixin = _to_mixins(data, self.registry, extras)
         return mixin
 
-    def get_filters(self, headers, body):
+    def get_filters(self, headers, body, extras):
         data = self.get_data(headers, body)
-        categories, attributes = _get_filter(data, self.registry)
+        categories, attributes = _get_filter(data, self.registry, extras)
         return categories, attributes
 
 
@@ -507,5 +507,5 @@ class TextUriListRendering(Rendering):
     def to_mixins(self, headers, body, extras):
         raise AttributeError(self.error)
 
-    def get_filters(self, headers, body):
+    def get_filters(self, headers, body, extras):
         raise AttributeError(self.error)

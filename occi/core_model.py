@@ -50,13 +50,13 @@ class Category(object):
     def __eq__(self, instance):
         if instance is None or not isinstance(instance, Category):
             return False
-        if self.term == instance.term and self.scheme == instance.scheme and self.extras == instance.extras:
+        if self.term == instance.term and self.scheme == instance.scheme \
+            and self.extras == instance.extras:
             return True
         else:
             return False
 
     def __hash__(self):
-        # print hash(self.scheme) ^ hash(self.term) ^ hash(str(self.extras))
         return hash(self.scheme) ^ hash(self.term) ^ hash(str(self.extras))
 
     def __str__(self):

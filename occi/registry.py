@@ -261,6 +261,8 @@ class NonePersistentRegistry(Registry):
         return list(set(res))
 
     def set_backend(self, category, backend, extras):
+        if category in self.BACKENDS.keys():
+            raise AttributeError('Category is already registered!')
         self.BACKENDS[category] = backend
 
     def delete_mixin(self, mixin, extras):

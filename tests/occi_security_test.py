@@ -82,7 +82,7 @@ class SecurityChecksTest(unittest.TestCase):
         for item in self.registry.get_resources(None):
             self.registry.delete_resource(item.identifier)
         for item in self.registry.get_categories({'sec': {'id': 'foo'}}):
-            self.registry.delete_mixin(item, {'sec': {'id': 'foo'}})
+            self.registry.delete_mixin(item, None)
 
     #==========================================================================
     # Test for failure
@@ -98,8 +98,8 @@ class SecurityChecksTest(unittest.TestCase):
         env1['PATH_INFO'] = '/-/'
         env1['REQUEST_METHOD'] = 'POST'
         env1['CONTENT_TYPE'] = 'text/occi'
-        env1['HTTP_CATEGORY'] = occi_parser.get_category_str(Mixin('foo',
-                                                                   'bar', location="/bar/"),
+        env1['HTTP_CATEGORY'] = occi_parser.get_category_str(Mixin('foo#',
+                                                                   'bar'),
                                                              self.registry)
         self.app(env1, Response())
 
@@ -109,10 +109,9 @@ class SecurityChecksTest(unittest.TestCase):
         env2['PATH_INFO'] = '/-/'
         env2['REQUEST_METHOD'] = 'POST'
         env2['CONTENT_TYPE'] = 'text/occi'
-        env2['HTTP_CATEGORY'] = occi_parser.get_category_str(Mixin('foo',
-                                                                   'bar', location="/bar/"),
+        env2['HTTP_CATEGORY'] = occi_parser.get_category_str(Mixin('foo#',
+                                                                   'bar'),
                                                              self.registry)
-        print self.app(env2, Response())
         self.assertRaises(AttributeError, self.app, env2, Response())
 
     #==========================================================================
