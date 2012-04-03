@@ -29,7 +29,7 @@ from occi.backend import ActionBackend, KindBackend, MixinBackend
 from occi.extensions.infrastructure import START, STOP, SUSPEND, RESTART, UP, \
     DOWN, ONLINE, BACKUP, SNAPSHOT, RESIZE, OFFLINE, NETWORK, \
     NETWORKINTERFACE, COMPUTE, STORAGE, IPNETWORK, IPNETWORKINTERFACE, \
-    STORAGELINK
+    STORAGELINK, RESOURCE_TEMPLATE, OS_TEMPLATE
 from occi.wsgi import Application
 from wsgiref.simple_server import make_server
 from wsgiref.validate import validator
@@ -271,6 +271,9 @@ class NetworkInterfaceBackend(KindBackend):
 
 
 class MyAPP(Application):
+    '''
+    An OCCI WSGI application.
+    '''
 
     def __call__(self, environ, response):
         sec_obj = {'username': 'password'}
@@ -280,7 +283,7 @@ if __name__ == '__main__':
 # When using own registry and custom HTMLRendering:
 #    registry = NonePersistentRegistry()
 #    renderings = {'text/html': HTMLRendering(registry)}
-    app = MyAPP()
+    APP = MyAPP()
 
     COMPUTE_BACKEND = ComputeBackend()
     NETWORK_BACKEND = NetworkBackend()
@@ -292,37 +295,40 @@ if __name__ == '__main__':
     STORAGE_LINK_BACKEND = StorageLinkBackend()
     NETWORKINTERFACE_BACKEND = NetworkInterfaceBackend()
 
-    app.register_backend(COMPUTE, COMPUTE_BACKEND)
-    app.register_backend(START, COMPUTE_BACKEND)
-    app.register_backend(STOP, COMPUTE_BACKEND)
-    app.register_backend(RESTART, COMPUTE_BACKEND)
-    app.register_backend(SUSPEND, COMPUTE_BACKEND)
+    APP.register_backend(COMPUTE, COMPUTE_BACKEND)
+    APP.register_backend(START, COMPUTE_BACKEND)
+    APP.register_backend(STOP, COMPUTE_BACKEND)
+    APP.register_backend(RESTART, COMPUTE_BACKEND)
+    APP.register_backend(SUSPEND, COMPUTE_BACKEND)
 
-    app.register_backend(NETWORK, NETWORK_BACKEND)
-    app.register_backend(UP, NETWORK_BACKEND)
-    app.register_backend(DOWN, NETWORK_BACKEND)
+    APP.register_backend(NETWORK, NETWORK_BACKEND)
+    APP.register_backend(UP, NETWORK_BACKEND)
+    APP.register_backend(DOWN, NETWORK_BACKEND)
 
-    app.register_backend(STORAGE, STORAGE_BACKEND)
-    app.register_backend(ONLINE, STORAGE_BACKEND)
-    app.register_backend(OFFLINE, STORAGE_BACKEND)
-    app.register_backend(BACKUP, STORAGE_BACKEND)
-    app.register_backend(SNAPSHOT, STORAGE_BACKEND)
-    app.register_backend(RESIZE, STORAGE_BACKEND)
+    APP.register_backend(STORAGE, STORAGE_BACKEND)
+    APP.register_backend(ONLINE, STORAGE_BACKEND)
+    APP.register_backend(OFFLINE, STORAGE_BACKEND)
+    APP.register_backend(BACKUP, STORAGE_BACKEND)
+    APP.register_backend(SNAPSHOT, STORAGE_BACKEND)
+    APP.register_backend(RESIZE, STORAGE_BACKEND)
 
-    app.register_backend(IPNETWORK, IPNETWORK_BACKEND)
-    app.register_backend(IPNETWORKINTERFACE, IPNETWORKINTERFACE_BACKEND)
+    APP.register_backend(IPNETWORK, IPNETWORK_BACKEND)
+    APP.register_backend(IPNETWORKINTERFACE, IPNETWORKINTERFACE_BACKEND)
 
-    app.register_backend(STORAGELINK, STORAGE_LINK_BACKEND)
-    app.register_backend(NETWORKINTERFACE, NETWORKINTERFACE_BACKEND)
+    APP.register_backend(STORAGELINK, STORAGE_LINK_BACKEND)
+    APP.register_backend(NETWORKINTERFACE, NETWORKINTERFACE_BACKEND)
 
-    validator_app = validator(app)
+    APP.register_backend(RESOURCE_TEMPLATE, MixinBackend())
+    APP.register_backend(OS_TEMPLATE, MixinBackend())
 
-    httpd = make_server('', 8888, validator_app)
+    VALIDATOR_APP = validator(APP)
 
-    httpd.serve_forever()
+    HTTPD = make_server('', 8888, VALIDATOR_APP)
+
+    HTTPD.serve_forever()
 
 # Or when using Tornado:
-#    container = tornado.wsgi.WSGIContainer(app)
+#    container = tornado.wsgi.WSGIContainer(APP)
 #    http_server = tornado.httpserver.HTTPServer(container)
 #    http_server.listen(8888)
 #    tornado.ioloop.IOLoop.instance().start()
