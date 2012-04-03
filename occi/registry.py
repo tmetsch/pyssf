@@ -239,10 +239,11 @@ class NonePersistentRegistry(Registry):
     def set_renderer(self, mime_type, renderer):
         if not isinstance(renderer, Rendering):
             raise AttributeError('renderer needs to derive from Rendering.')
-
         self.renderings[mime_type] = renderer
 
     def get_backend(self, category, extras):
+        # no need to check - a get_categories or get_categroy will be called
+        # first.
         try:
             back = self.backends[category]
             if repr(category) == 'kind' and isinstance(back, KindBackend):
@@ -270,9 +271,13 @@ class NonePersistentRegistry(Registry):
         self.backends[category] = backend
 
     def delete_mixin(self, mixin, extras):
+        # no need to check because in get_category in renderer it is assured
+        # that the user only sees own. Will get not found if he tries to delete
+        # mixin from other user.
         self.backends.pop(mixin)
 
     def get_category(self, path, extras):
+        # no need for ownership check - paths cannot overlap!
         for category in self.backends.keys():
             if category.location == path:
                 return category
@@ -300,9 +305,14 @@ class NonePersistentRegistry(Registry):
         self.resources[key] = resource
 
     def delete_resource(self, key, extras):
+        # get_resources and get_resource is called before this - no need for
+        # ownership checking.
         self.resources.pop(key)
 
     def get_resource_keys(self, extras):
+        # will only be called after a get_resource - no need for ownership
+        # checking.
+        # FUTURE_IMPROVEMENT: check on specified link identifiers
         return self.resources.keys()
 
     def get_resources(self, extras):

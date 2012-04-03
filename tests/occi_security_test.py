@@ -108,8 +108,6 @@ class SecurityChecksTest(unittest.TestCase):
         self.my_registry.set_backend(COMPUTE, backend, None)
 
     def tearDown(self):
-        for item in self.my_registry.get_resource_keys(None):
-            self.my_registry.delete_resource(item, None)
         self.my_registry.backends = {}
         self.my_registry.resources = {}
         self.my_registry = None
