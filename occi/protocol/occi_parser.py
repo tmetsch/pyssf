@@ -62,7 +62,7 @@ def get_category(category_string, categories, is_mixin=False):
         mixin = Mixin(scheme, term, location=location)
 
         try:
-            related = find_in_string(category_string, 'related')
+            related = find_in_string(category_string, 'rel')
         except AttributeError:
             return mixin
         else:

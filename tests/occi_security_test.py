@@ -99,19 +99,20 @@ class SecurityChecksTest(unittest.TestCase):
         env1['REQUEST_METHOD'] = 'POST'
         env1['CONTENT_TYPE'] = 'text/occi'
         env1['HTTP_CATEGORY'] = occi_parser.get_category_str(Mixin('foo',
-                                                                   'bar'),
+                                                                   'bar', location="/bar/"),
                                                              self.registry)
         self.app(env1, Response())
 
         # create a second user defined mixin
         env2 = self.env.copy()
-        env2['username'] = 'bar'
+        env2['username'] = 'foo'
         env2['PATH_INFO'] = '/-/'
         env2['REQUEST_METHOD'] = 'POST'
         env2['CONTENT_TYPE'] = 'text/occi'
         env2['HTTP_CATEGORY'] = occi_parser.get_category_str(Mixin('foo',
-                                                                   'bar'),
+                                                                   'bar', location="/bar/"),
                                                              self.registry)
+        print self.app(env2, Response())
         self.assertRaises(AttributeError, self.app, env2, Response())
 
     #==========================================================================

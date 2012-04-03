@@ -349,6 +349,7 @@ def append_mixins(mixins, registry, extras):
     extras -- Passed on extra object.
     '''
     for mixin in mixins:
+        print mixin, repr(registry.get_categories(extras))
         if not isinstance(mixin, Mixin):
             raise AttributeError('Needs to be of type Mixin.')
         if registry.get_category(mixin.location, extras):

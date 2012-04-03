@@ -51,6 +51,31 @@ class TestCore(unittest.TestCase):
         self.assertFalse(cat1 == str)
         self.assertFalse(cat1 == kind)
 
+        # make sure that two user can have same category term + scheme
+
+        # default case:
+        dictionary = {}
+        dictionary[cat1] = 'foo'
+        dictionary[cat2] = 'foo'
+        self.assertTrue(len(dictionary.keys()) == 1)
+
+        # case with extras
+        cat2.extras = {'id': 'foobar'}
+        dictionary = {}
+        dictionary[cat1] = 'foo'
+        dictionary[cat2] = 'foo'
+        self.assertTrue(len(dictionary.keys()) == 2)
+        self.assertNotEquals(cat1, cat2)
+
+        # case with both set to same extras
+        cat1.extras = {'id': 'foobar'}
+        self.assertTrue(hash(str(cat1.extras)), hash(str(cat2.extras)))
+        dictionary = {}
+        dictionary[cat1] = 'foo'
+        dictionary[cat2] = 'foo'
+        self.assertTrue(len(dictionary.keys()) == 1)
+        self.assertNotEquals(cat1, cat2)
+
         # test str
         self.assertEqual(str(cat1), 'http://example.com#foo')
 

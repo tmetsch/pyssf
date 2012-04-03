@@ -126,7 +126,7 @@ class TestParser(unittest.TestCase):
                           self.registry.get_categories(None), True)
 
         # related mixin not found!
-        tmp = 'foo; scheme="http://example.com#"; related="http://foo.com#' \
+        tmp = 'foo; scheme="http://example.com#"; rel="http://foo.com#' \
               'bar,http://bar.com#foo"; location="/sdf/"'
         self.assertRaises(AttributeError, parser.get_category, tmp,
                           self.registry.get_categories(None), True)
@@ -171,7 +171,7 @@ class TestParser(unittest.TestCase):
         self.assertEqual(res, self.compute)
 
         # user defined mixin...related to compute
-        tmp = 'foo; scheme="http://example.com#"; related="http://schemas.ogf'\
+        tmp = 'foo; scheme="http://example.com#"; rel="http://schemas.ogf'\
               '.org/occi/infrastructure#compute"; location="/sdf/"'
         res = parser.get_category(tmp, self.registry.get_categories(None),
                                   True)
