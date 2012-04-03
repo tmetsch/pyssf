@@ -255,8 +255,8 @@ class NonePersistentRegistry(Registry):
         for mixin in entity.mixins:
             res.append(self.get_backend(mixin, extras))
             # making sure related mixin backends get called...
-            for mixin_related in mixin.related:
-                res.append(self.get_backend(mixin_related, extras))
+            #for mixin_related in mixin.related:
+            #    res.append(self.get_backend(mixin_related, extras))
         # remove duplicates - only need to call backs once - right?
         return list(set(res))
 
