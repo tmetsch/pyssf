@@ -121,11 +121,18 @@ Implementing a self written registry
 ------------------------------------
 
 (Optional) The implementation of a registry is optional. The registry is a
-container for the current resources and renderings which are available within
-the service. By default the service will use a non persistent registry which
-uses dictionaries. This might be sub-optimal since their are many lookups
-needed. The use of a simple Database (like Python's build-in sqlite) might be
-a faster and better solution for large deployments.
+container for the current resources, categories and renderings which are
+available within the service.
+
+By default the service will use a non persistent registry which uses
+dictionaries. This might be sub-optimal since their are many lookups needed. 
+The use of a simple Database (like Python's build-in sqlite) might be a faster
+and better solution for large deployments (Or hook it up to an existing DB of
+your application)
+
+Also by implementing a registry it is possible to do security checks on
+ownership of resource, categories as well as backends. Also if the the core.id
+should be set to a specific value this can be realized in the registry.
 
 To defined an own registry implement the routines from the abstract class
 *Registry*. When instantiating the service provide the registry::
