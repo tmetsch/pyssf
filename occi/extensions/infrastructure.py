@@ -157,3 +157,12 @@ STORAGELINK = Kind('http://schemas.ogf.org/occi/infrastructure#',
                    'A link to a storage resource',
                    STORAGELINK_ATTRIBUTES,
                    '/storage/link/')
+
+#==============================================================================
+# Templates
+#==============================================================================
+
+RESOURCE_TEMPLATE = Mixin('http://schemas.ogf.org/occi/infrastructure#',
+                          'resource_tpl')
+
+OS_TEMPLATE = Mixin('http://schemas.ogf.org/occi/infrastructure#', 'os_tpl')
