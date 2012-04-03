@@ -84,14 +84,7 @@ class ComputeBackend(MyBackend):
 
     def retrieve(self, entity, extras):
         # trigger your management framework to get most up to date information
-
-        # add up to date actions...
-        if entity.attributes['occi.compute.state'] == 'inactive':
-            entity.actions = [START]
-        if entity.attributes['occi.compute.state'] == 'active':
-            entity.actions = [STOP, SUSPEND, RESTART]
-        if entity.attributes['occi.compute.state'] == 'suspended':
-            entity.actions = [START]
+        pass
 
     def delete(self, entity, extras):
         # call the management framework to delete this compute instance...
@@ -105,18 +98,22 @@ class ComputeBackend(MyBackend):
             entity.attributes['occi.compute.state'] = 'active'
             # read attributes from action and do something with it :-)
             print('Starting virtual machine with id' + entity.identifier)
+            entity.actions = [STOP, SUSPEND, RESTART]
         elif action == STOP:
             entity.attributes['occi.compute.state'] = 'inactive'
             # read attributes from action and do something with it :-)
             print('Stopping virtual machine with id' + entity.identifier)
+            entity.actions = [START]
         elif action == RESTART:
             entity.attributes['occi.compute.state'] = 'active'
             # read attributes from action and do something with it :-)
             print('Restarting virtual machine with id' + entity.identifier)
+            entity.actions = [STOP, SUSPEND, RESTART]
         elif action == SUSPEND:
             entity.attributes['occi.compute.state'] = 'suspended'
             # read attributes from action and do something with it :-)
             print('Suspending virtual machine with id' + entity.identifier)
+            entity.actions = [START]
 
 
 class NetworkBackend(MyBackend):
@@ -134,10 +131,7 @@ class NetworkBackend(MyBackend):
 
     def retrieve(self, entity, extras):
         # update a VNIC
-        if entity.attributes['occi.network.state'] == 'active':
-            entity.actions = [DOWN]
-        elif entity.attributes['occi.network.state'] == 'inactive':
-            entity.actions = [UP]
+        pass
 
     def delete(self, entity, extras):
         # and deactivate it
@@ -150,10 +144,12 @@ class NetworkBackend(MyBackend):
             entity.attributes['occi.network.state'] = 'active'
             # read attributes from action and do something with it :-)
             print('Starting VNIC with id: ' + entity.identifier)
+            entity.actions = [DOWN]
         elif action.kind == DOWN:
             entity.attributes['occi.network.state'] = 'inactive'
             # read attributes from action and do something with it :-)
             print('Stopping VNIC with id: ' + entity.identifier)
+            entity.actions = [UP]
 
 
 class StorageBackend(MyBackend):
@@ -171,11 +167,7 @@ class StorageBackend(MyBackend):
 
     def retrieve(self, entity, extras):
         # check the state and return it!
-
-        if entity.attributes['occi.storage.state'] == 'offline':
-            entity.actions = [ONLINE]
-        if entity.attributes['occi.storage.state'] == 'online':
-            entity.actions = [BACKUP, SNAPSHOT, RESIZE]
+        pass
 
     def delete(self, entity, extras):
         # call the management framework to delete this storage instance...
@@ -188,10 +180,12 @@ class StorageBackend(MyBackend):
             entity.attributes['occi.storage.state'] = 'online'
             # read attributes from action and do something with it :-)
             print('Bringing up storage with id: ' + entity.identifier)
+            entity.actions = [BACKUP, SNAPSHOT, RESIZE]
         elif action == OFFLINE:
             entity.attributes['occi.storage.state'] = 'offline'
             # read attributes from action and do something with it :-)
             print('Bringing down storage with id: ' + entity.identifier)
+            entity.actions = [ONLINE]
         elif action == BACKUP:
             print('Backing up...storage resource with id: '
                   + entity.identifier)
