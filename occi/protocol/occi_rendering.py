@@ -69,8 +69,8 @@ def _to_entity(data, def_kind, registry, extras):
     # first kind & mixins
     kind_found = False
     for category_string in data.categories:
-        category = parser.get_category(category_string.strip(),
-                                       registry.get_categories(extras))
+        category = parser.get_category(category_string.strip(), registry,
+                                       extras)
         if repr(category) == 'kind' and not kind_found:
             kind = category
             kind_found = True
@@ -232,8 +232,7 @@ def _to_action(data, registry, extras):
     registry -- The registry used for this call.
     extras -- Passed on extra object.
     '''
-    action = parser.get_category(data.categories[0].strip(),
-                                 registry.get_categories(extras))
+    action = parser.get_category(data.categories[0].strip(), registry, extras)
 
     return action
 
@@ -248,8 +247,7 @@ def _to_mixins(data, registry, extras):
     '''
     result = []
     for cat_str in data.categories:
-        result.append(parser.get_category(cat_str,
-                                          registry.get_categories(extras),
+        result.append(parser.get_category(cat_str, registry, extras,
                                           is_mixin=True))
     return result
 
@@ -266,8 +264,7 @@ def _get_filter(data, registry, extras):
     attributes = {}
 
     for cat in data.categories:
-        categories.append(parser.get_category(cat,
-                                              registry.get_categories(extras)))
+        categories.append(parser.get_category(cat, registry, extras))
 
     for attr in data.attributes:
         key, value = parser.get_attributes(attr)

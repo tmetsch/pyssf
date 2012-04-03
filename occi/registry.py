@@ -187,6 +187,13 @@ class Registry(object):
         raise NotImplementedError('Registry implementation seems to be' \
                                   ' incomplete.')
 
+    def get_extras(self, extras):
+        '''
+        Will return what goes into the extras attribute of the entity and
+        category.
+        '''
+        return None
+
 
 class NonePersistentRegistry(Registry):
     '''
@@ -261,8 +268,8 @@ class NonePersistentRegistry(Registry):
         return list(set(res))
 
     def set_backend(self, category, backend, extras):
-        if category in self.BACKENDS.keys():
-            raise AttributeError('Category is already registered!')
+        #if category in self.BACKENDS.keys():
+        #    raise AttributeError('Category is already registered!')
         self.BACKENDS[category] = backend
 
     def delete_mixin(self, mixin, extras):

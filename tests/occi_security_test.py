@@ -164,15 +164,20 @@ class SecurityChecksTest(unittest.TestCase):
         env1['REQUEST_METHOD'] = 'POST'
         env1['CONTENT_TYPE'] = 'text/occi'
         env1['HTTP_CATEGORY'] = occi_parser.get_category_str(Mixin('foo',
-                                                                   'bar'),
+                                                                   'bar',
+                                                        location='/bar/'),
                                                              self.registry)
         self.app(env1, Response())
 
         # check that they can't list and see each others VMs
         self.assertTrue(len(self.registry.get_categories(None)) == 1)
         self.assertTrue(len(self.registry.get_categories({'sec':
-                                                          {'id': 'foo'}}))
+                                                         {'id': 'foo'}}))
                         == 2)
+
+        env2 = env1.copy()
+        env2['REQUEST_METHOD'] = 'DELETE'
+        self.app(env2, Response())
 
 
 class MyApplication(Application):
@@ -199,10 +204,13 @@ class MyRegistry(NonePersistentRegistry):
     perfect.
     '''
 
+    def get_extras(self, extras):
+        return extras['sec']['id']
+
     def set_backend(self, category, backend, extras):
         if extras is not None:
             # category belongs to single user...
-            category.extras = extras['sec']['id']
+            category.extras = self.get_extras(extras)
         super(MyRegistry, self).set_backend(category, backend, extras)
 
     def get_categories(self, extras):
@@ -211,7 +219,7 @@ class MyRegistry(NonePersistentRegistry):
             if item.extras == None:
                 # categories visible to all!
                 result.append(item)
-            elif extras is not None and extras['sec']['id'] == item.extras:
+            elif extras is not None and self.get_extras(extras) == item.extras:
                 # categories visible to this user!
                 result.append(item)
             else:
@@ -221,7 +229,7 @@ class MyRegistry(NonePersistentRegistry):
     def get_resources(self, extras):
         result = []
         for item in self.RESOURCES.values():
-            if extras is not None and extras['sec']['id'] == item.extras:
+            if extras is not None and self.get_extras(extras) == item.extras:
                 result.append(item)
             else:
                 continue
@@ -257,4 +265,4 @@ class Response(object):
 
     def __call__(self, one, two):
         if one == '400 Bad Request':
-            raise AttributeError()
+            raise AttributeError(one + str(two))

@@ -94,8 +94,7 @@ class TestParser(unittest.TestCase):
 
         # mixin check...
         tmp = 'foo; scheme="http://example.com#"; location="/foo_bar/"'
-        parser.get_category(tmp, self.registry.get_categories(None),
-                            is_mixin=True)
+        parser.get_category(tmp, self.registry, None, is_mixin=True)
 
     #==========================================================================
     # Failure
@@ -106,30 +105,29 @@ class TestParser(unittest.TestCase):
         Test with faulty category.
         '''
         self.assertRaises(AttributeError, parser.get_category, 'some crap',
-                          self.registry.get_categories(None))
+                          self.registry, None)
         self.assertRaises(AttributeError, parser.get_category,
-                          'foo; scheme="bar"',
-                          self.registry.get_categories(None))
+                          'foo; scheme="bar"', self.registry, None)
 
         # mixin with msg location check...
         tmp = 'foo; scheme="http://example.com#"'
         self.assertRaises(AttributeError, parser.get_category, tmp,
-                          self.registry.get_categories(None), True)
+                          self.registry, None, True)
 
         # mixin with faulty location check...
         tmp = 'foo; scheme="http://example.com#"; location="sdf"'
         self.assertRaises(AttributeError, parser.get_category, tmp,
-                          self.registry.get_categories(None), True)
+                          self.registry, None, True)
 
         tmp = 'foo; scheme="http://example.com#"; location="sdf/"'
         self.assertRaises(AttributeError, parser.get_category, tmp,
-                          self.registry.get_categories(None), True)
+                          self.registry, None, True)
 
         # related mixin not found!
         tmp = 'foo; scheme="http://example.com#"; rel="http://foo.com#' \
               'bar,http://bar.com#foo"; location="/sdf/"'
         self.assertRaises(AttributeError, parser.get_category, tmp,
-                          self.registry.get_categories(None), True)
+                          self.registry, None, True)
 
     def test_get_link_for_failure(self):
         '''
@@ -137,7 +135,7 @@ class TestParser(unittest.TestCase):
         '''
         # no valid string...
         self.assertRaises(AttributeError, parser.get_link, 'some crap', None,
-                          self.registry.get_categories(None), None)
+                          None, None)
 
         # no target...
         link_string = parser.get_link_str(self.link1)
@@ -167,14 +165,13 @@ class TestParser(unittest.TestCase):
         '''
         res = parser.get_category(parser.get_category_str(self.compute,
                                                           self.registry),
-                          self.registry.get_categories(None))
+                                  self.registry, None)
         self.assertEqual(res, self.compute)
 
         # user defined mixin...related to compute
         tmp = 'foo; scheme="http://example.com#"; rel="http://schemas.ogf'\
               '.org/occi/infrastructure#compute"; location="/sdf/"'
-        res = parser.get_category(tmp, self.registry.get_categories(None),
-                                  True)
+        res = parser.get_category(tmp, self.registry, None, True)
         self.assertEquals(res.related, [self.compute])
 
     def test_get_link_for_sanity(self):

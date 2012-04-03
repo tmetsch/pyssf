@@ -33,7 +33,7 @@ from occi.core_model import Category, Link, Mixin, Kind
 #==============================================================================
 
 
-def get_category(category_string, categories, is_mixin=False):
+def get_category(category_string, registry, extras, is_mixin=False):
     '''
     Create a Category from a string rendering.
 
@@ -43,9 +43,11 @@ def get_category(category_string, categories, is_mixin=False):
     return a Mixin.
 
     category_string -- A string rendering of a category.
-    categories -- A list of registered categories.
+    registry -- To generate a list of registered categories.
+    extras -- The passed on extras argument
     is_mixin -- Mixin will be created and no matching will be done.
     '''
+    categories = registry.get_categories(extras)
     # find term
     term = category_string[:category_string.find(';')].strip()
 
@@ -60,6 +62,7 @@ def get_category(category_string, categories, is_mixin=False):
             raise AttributeError('Illegal location; Either provide full URL' \
                                  ' or just a path starting with /.')
         mixin = Mixin(scheme, term, location=location)
+        mixin.extras = registry.get_extras(extras)
 
         try:
             related = find_in_string(category_string, 'rel')
@@ -75,9 +78,15 @@ def get_category(category_string, categories, is_mixin=False):
     # return the category from registry...
     tmp = Category(scheme, term, '', {}, '')
     for item in categories:
-        if tmp == item:
+        if item.extras is None and tmp == item:
             del(tmp)
             return item
+        elif item.extras is not None:
+            tmp.extras = registry.get_extras(extras)
+            if tmp == item:
+                del(tmp)
+                return item
+            tmp.extras = None
     raise AttributeError('The following category is not registered within'
                          + ' this service (See Query interfaces): '
                          + str(scheme) + str(term))
@@ -138,8 +147,8 @@ def _get_link_categories(categories, registry, extras):
     for tmp_cat in categories.split(' '):
         tempus = tmp_cat.split('#')
         link_category = get_category(tempus[1].strip() + ';scheme="'
-                                     + tempus[0].strip() + '#"',
-                                     registry.get_categories(extras))
+                                     + tempus[0].strip() + '#"', registry,
+                                     extras)
         if isinstance(link_category, Kind):
             tmp_kind = link_category
         else:
