@@ -285,8 +285,12 @@ Notes on Backend Implementations
 
 .. note::
     It is possible to influence the behaviour of which backends are called by
-    overwritting the get_all_backends() routine in the registry. By default
+    overwriting the get_all_backends() routine in the registry. By default
     (in the NonePersitentRegistry) the backends which define the kinds and
-    mixins are called as well as the backends defining the related mixins.
-    This could be altered to also call the backends from related kinds for
-    example.
+    mixins are called. This could be altered to also call the backends from
+    related kinds for example.
+    
+.. note::
+    By implementing switch cases in the set_backend() and remove_mixin()
+    routine in the registry will allow you to set backends for user defined
+    Mixins which actually do something.

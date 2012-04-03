@@ -135,7 +135,7 @@ class HTMLRendering(Rendering):
                     tmp += '<tr><td>' + item.kind.term + '</td>'
                     tmp += '<td><a href="' + item.identifier + '">'
                     tmp += item.identifier + '</a></td>'
-                    # TODO: string links
+                    # FUTURE_IMPROVEMENT: string links
                     tmp += '<td><a href="' + item.target.identifier + '">'
                     tmp += item.target.identifier + '</a></td>'
                     tmp += '</tr>'
@@ -146,7 +146,7 @@ class HTMLRendering(Rendering):
             tmp += '<li><strong>Source: </strong>'
             tmp += '<a href="' + entity.source.identifier + '">'
             tmp += entity.source.identifier + '</a></li>'
-            # TODO: string links
+            # FUTURE_IMPROVEMENT: string links
             tmp += '<li><strong>Target: </strong>'
             tmp += '<a href="' + entity.target.identifier + '">'
             tmp += entity.target.identifier + '</a></li></ul>\n'

@@ -190,7 +190,7 @@ def get_link(link_string, source, registry, extras):
             target_id = target_id.replace(registry.get_hostname(), '')
         target = registry.get_resource(target_id, extras)
     except KeyError:
-        # TODO: string links
+        # FUTURE_IMPROVEMENT: string links
         raise AttributeError('The target for the link cannot be found: '
                              + target_id)
 
@@ -218,7 +218,7 @@ def get_link_str(link):
 
     link.attributes['occi.core.id'] = link.identifier
     link.attributes['occi.core.source'] = link.source.identifier
-    # TODO: string links
+    # FUTURE_IMPROVEMENT: string links
     link.attributes['occi.core.target'] = link.target.identifier
 
     if len(link.attributes) > 0:
