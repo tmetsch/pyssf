@@ -34,6 +34,15 @@ from occi.registry import NonePersistentRegistry
 import unittest
 
 
+class MyRegistry(NonePersistentRegistry):
+    '''
+    Dummy registry.
+    '''
+
+    def get_extras(self, extras):
+        return extras
+
+
 class TestParser(unittest.TestCase):
     '''
     Test for the parser.
@@ -173,6 +182,21 @@ class TestParser(unittest.TestCase):
               '.org/occi/infrastructure#compute"; location="/sdf/"'
         res = parser.get_category(tmp, self.registry, None, True)
         self.assertEquals(res.related, [self.compute])
+
+        # check if the mechanism for setting/getting the extras works
+        reg = MyRegistry()
+        mixin1 = Mixin('http://example.com#', 'foo1')
+        mixin1.extras = 'foo'
+        mixin2 = Mixin('http://example.com#', 'foo1')
+        mixin2.extras = 'bar'
+        reg.set_backend(mixin1, None, 'foo')
+        reg.set_backend(mixin2, None, 'bar')
+        self.assertEqual(mixin1,
+                         parser.get_category('foo1; \
+                         scheme="http://example.com#"', reg, 'foo'))
+        self.assertEqual(mixin2,
+                         parser.get_category('foo1; \
+                         scheme="http://example.com#"', reg, 'bar'))
 
     def test_get_link_for_sanity(self):
         '''

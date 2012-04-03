@@ -39,6 +39,34 @@ from occi.wsgi import Application
 import unittest
 
 
+class MyRegistry(NonePersistentRegistry):
+    '''
+    An self written registry which does security checks on listings.
+
+    NOTE: you would need to overwrite get_resource_keys as well to be ueber
+    perfect.
+    '''
+
+    def get_extras(self, extras):
+        return extras['sec']['id']
+
+
+class MyApplication(Application):
+    '''
+    Overwritten OCCI app with security handling
+    '''
+
+    def __call__(self, environ, response):
+        '''
+        Create a security object.
+
+        environ -- environment.
+        response -- The reponse object.
+        '''
+        sec_obj = {'id': environ['username']}
+        return self._call_occi(environ, response, sec=sec_obj)
+
+
 class SecurityChecksTest(unittest.TestCase):
     '''
     Following assumptions are made:
@@ -60,29 +88,31 @@ class SecurityChecksTest(unittest.TestCase):
            'PATH_INFO': '/compute/',
            'REQUEST_METHOD': 'GET'}
 
+    my_registry = MyRegistry()
+
     def setUp(self):
         '''
         Setup an OCCI app with own registry and overwritten call methid (for
         the extras argument).
         '''
-        self.registry = MyRegistry()
-        self.app = MyApplication(registry=self.registry)
+        unittest.TestCase.setUp(self)
 
-        self.registry.set_renderer('text/occi',
-                                   TextOcciRendering(self.registry))
+        self.my_registry.set_renderer('text/occi',
+                                 TextOcciRendering(self.my_registry))
 
         tmp = Entity('foo', '', COMPUTE, [])
-        self.registry.add_resource('foo', tmp, None)
+        self.my_registry.add_resource('foo', tmp, None)
 
         backend = MyBackend()
 
-        self.registry.set_backend(COMPUTE, backend, None)
+        self.my_registry.set_backend(COMPUTE, backend, None)
 
     def tearDown(self):
-        for item in self.registry.get_resources(None):
-            self.registry.delete_resource(item.identifier)
-        for item in self.registry.get_categories({'sec': {'id': 'foo'}}):
-            self.registry.delete_mixin(item, None)
+        for item in self.my_registry.get_resource_keys(None):
+            self.my_registry.delete_resource(item, None)
+        self.my_registry.backends = {}
+        self.my_registry.resources = {}
+        self.my_registry = None
 
     #==========================================================================
     # Test for failure
@@ -92,6 +122,7 @@ class SecurityChecksTest(unittest.TestCase):
         '''
         Check that only resource belong to a user are shown.
         '''
+        app = MyApplication(registry=self.my_registry)
         # create a user defined mixin
         env1 = self.env.copy()
         env1['username'] = 'foo'
@@ -100,8 +131,8 @@ class SecurityChecksTest(unittest.TestCase):
         env1['CONTENT_TYPE'] = 'text/occi'
         env1['HTTP_CATEGORY'] = occi_parser.get_category_str(Mixin('foo#',
                                                                    'bar'),
-                                                             self.registry)
-        self.app(env1, Response())
+                                                             app.registry)
+        app(env1, Response())
 
         # create a second user defined mixin
         env2 = self.env.copy()
@@ -111,52 +142,72 @@ class SecurityChecksTest(unittest.TestCase):
         env2['CONTENT_TYPE'] = 'text/occi'
         env2['HTTP_CATEGORY'] = occi_parser.get_category_str(Mixin('foo#',
                                                                    'bar'),
-                                                             self.registry)
-        self.assertRaises(AttributeError, self.app, env2, Response())
+                                                             app.registry)
+        self.assertRaises(AttributeError, app, env2, Response())
 
     #==========================================================================
     # Test for sanity
     #==========================================================================
 
-    def test_get_resources_for_sanity(self):
+    def test_get_resource_for_sanity(self):
         '''
         Check that only resource belong to a user are shown.
         '''
+        app = MyApplication(registry=self.my_registry)
         # create one vm for user foo1
         env1 = self.env.copy()
         env1['username'] = 'foo'
         env1['REQUEST_METHOD'] = 'POST'
         env1['CONTENT_TYPE'] = 'text/occi'
         env1['HTTP_CATEGORY'] = occi_parser.get_category_str(COMPUTE,
-                                                             self.registry)
-        self.app(env1, Response())
+                                                             app.registry)
+        app(env1, Response())
+
+        env2 = env1.copy()
+        env2['username'] = 'bar'
+        app(env2, Response())
+
+    def test_get_resources_for_sanity(self):
+        '''
+        Check that only resource belong to a user are shown.
+        '''
+        app = MyApplication(registry=self.my_registry)
+        # create one vm for user foo1
+        env1 = self.env.copy()
+        env1['username'] = 'foo'
+        env1['REQUEST_METHOD'] = 'POST'
+        env1['CONTENT_TYPE'] = 'text/occi'
+        env1['HTTP_CATEGORY'] = occi_parser.get_category_str(COMPUTE,
+                                                             app.registry)
+        app(env1, Response())
 
         # create one vm for user foo2
         env2 = env1.copy()
         env2['username'] = 'bar'
-        self.app(env2, Response())
+        app(env2, Response())
 
         # check that they can't list and see each others VMs
-        self.assertTrue(len(self.registry.get_resource_keys(None)) == 3)
+        self.assertTrue(len(app.registry.get_resource_keys(None)) == 3)
 
         env1_list = self.env.copy()
         env1_list['username'] = 'foo'
-        id1 = self.app(env1_list, Response())[0]. strip().split('\n')
-        self.assertTrue(len(self.app(env1_list,
-                                     Response())[0].strip().split('\n')) == 1)
+        id1 = app(env1_list, Response())[0]. strip().split('\n')
+        self.assertTrue(len(app(env1_list,
+                                Response())[0].strip().split('\n')) == 2)
 
         env2_list = self.env.copy()
         env2_list['username'] = 'bar'
-        id2 = self.app(env2_list, Response())[0]. strip().split('\n')
-        self.assertTrue(len(self.app(env2_list,
-                                     Response())[0].strip().split('\n')) == 1)
+        id2 = app(env2_list, Response())[0]. strip().split('\n')
+        self.assertTrue(len(app(env2_list,
+                                Response())[0].strip().split('\n')) == 2)
 
         self.assertTrue(id1 != id2)
 
     def test_get_query_interface_for_sanity(self):
         '''
-        Check that only resource belong to a user are shown.
+        Check that only categories belong to a user are shown.
         '''
+        app = MyApplication(registry=self.my_registry)
         # create a user defined mixin
         env1 = self.env.copy()
         env1['username'] = 'foo'
@@ -166,74 +217,18 @@ class SecurityChecksTest(unittest.TestCase):
         env1['HTTP_CATEGORY'] = occi_parser.get_category_str(Mixin('foo',
                                                                    'bar',
                                                         location='/bar/'),
-                                                             self.registry)
-        self.app(env1, Response())
+                                                             app.registry)
+        app(env1, Response())
 
-        # check that they can't list and see each others VMs
-        self.assertTrue(len(self.registry.get_categories(None)) == 1)
-        self.assertTrue(len(self.registry.get_categories({'sec':
+        # check that they can't list and see each others categories
+        self.assertTrue(len(app.registry.get_categories(None)) == 1)
+        self.assertTrue(len(app.registry.get_categories({'sec':
                                                          {'id': 'foo'}}))
                         == 2)
 
         env2 = env1.copy()
         env2['REQUEST_METHOD'] = 'DELETE'
-        self.app(env2, Response())
-
-
-class MyApplication(Application):
-    '''
-    Overwritten OCCI app with security handling
-    '''
-
-    def __call__(self, environ, response):
-        '''
-        Create a security object.
-
-        environ -- environment.
-        response -- The reponse object.
-        '''
-        sec_obj = {'id': environ['username']}
-        return self._call_occi(environ, response, sec=sec_obj)
-
-
-class MyRegistry(NonePersistentRegistry):
-    '''
-    An self written registry which does security checks on listings.
-
-    NOTE: you would need to overwrite get_resource_keys as well to be ueber
-    perfect.
-    '''
-
-    def get_extras(self, extras):
-        return extras['sec']['id']
-
-    def set_backend(self, category, backend, extras):
-        if extras is not None:
-            # category belongs to single user...
-            category.extras = self.get_extras(extras)
-        super(MyRegistry, self).set_backend(category, backend, extras)
-
-    def get_categories(self, extras):
-        result = []
-        for item in self.BACKENDS.keys():
-            if item.extras == None:
-                # categories visible to all!
-                result.append(item)
-            elif extras is not None and self.get_extras(extras) == item.extras:
-                # categories visible to this user!
-                result.append(item)
-            else:
-                continue
-        return result
-
-    def get_resources(self, extras):
-        result = []
-        for item in self.RESOURCES.values():
-            if extras is not None and self.get_extras(extras) == item.extras:
-                result.append(item)
-            else:
-                continue
-        return result
+        app(env2, Response())
 
 
 class MyBackend(KindBackend):

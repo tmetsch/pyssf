@@ -268,7 +268,7 @@ class ResourceHandler(BaseHandler):
 
                 return self.render_entity(old)
             except AttributeError as attr:
-                raise HTTPError(400, str(key))
+                raise HTTPError(400, str(attr))
         else:
             # create...
             try:

@@ -446,6 +446,8 @@ class TestResourceCapabilites(unittest.TestCase):
     def setUp(self):
         self.registry.set_renderer('text/occi',
                                    TextOcciRendering(self.registry))
+        self.registry.set_renderer('text/plain',
+                                   TextPlainRendering(self.registry))
 
         self.registry.set_backend(COMPUTE, SimpleComputeBackend(), None)
         self.registry.set_backend(NETWORK, KindBackend(), None)

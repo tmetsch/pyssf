@@ -24,7 +24,8 @@ Created on Jun 28, 2011
 '''
 
 # disabling 'Too many local variables' pylint check (text renderings :-()
-# pylint: disable=R0914
+# disabling 'Too many branches' pylint check (text renderings :-()
+# pylint: disable=R0914,R0912
 
 from occi.core_model import Category, Link, Mixin, Kind
 
@@ -77,16 +78,19 @@ def get_category(category_string, registry, extras, is_mixin=False):
 
     # return the category from registry...
     tmp = Category(scheme, term, '', {}, '')
+    if extras is not None:
+        tmp.extras = registry.get_extras(extras)
     for item in categories:
-        if item.extras is None and tmp == item:
-            del(tmp)
-            return item
-        elif item.extras is not None:
-            tmp.extras = registry.get_extras(extras)
+        if item.extras is None:
+            tmp.extras = None
             if tmp == item:
                 del(tmp)
                 return item
-            tmp.extras = None
+            tmp.extras = registry.get_extras(extras)
+        elif item.extras is not None:
+            if tmp == item:
+                del(tmp)
+                return item
     raise AttributeError('The following category is not registered within'
                          + ' this service (See Query interfaces): '
                          + str(scheme) + str(term))

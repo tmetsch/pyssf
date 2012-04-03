@@ -236,6 +236,15 @@ class CategoryRegistryTest(unittest.TestCase):
         self.assertEqual(cat1, cat2)
 
 
+class MyRegistry(NonePersistentRegistry):
+    '''
+    Dummy registry.
+    '''
+
+    def get_extras(self, extras):
+        return extras
+
+
 class ResourcesTest(unittest.TestCase):
     '''
     Tests the reigstry's resource handling.
@@ -248,8 +257,16 @@ class ResourcesTest(unittest.TestCase):
         self.res2 = Resource('bar', None, None)
 
     def tearDown(self):
-        for resource in self.registry.get_resources(None):
-            self.registry.delete_resource(resource.identifier, None)
+        for resource in self.registry.get_resource_keys(None):
+            self.registry.delete_resource(resource, None)
+
+    def test_get_resource_for_failure(self):
+        '''
+        assure bar can't see foo's resources
+        '''
+        my_reg = MyRegistry()
+        my_reg.add_resource('tmp1', self.res1, 'foo')
+        self.assertRaises(KeyError, my_reg.get_resource, 'tmp1', 'bar')
 
     def test_get_resource_for_sanity(self):
         '''

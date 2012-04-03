@@ -25,7 +25,9 @@ Created on Aug 22, 2011
 '''
 
 # disabling 'Abstract class only ref. once' pylint check (designed for ext.)
-# pylint: disable=R0922
+# disabling 'Unsued argument' pylint check (is there to be overwritten)
+# disabling 'Method could be function' pylint check (see above)
+# pylint: disable=R0922,W0613,R0201
 
 from occi.backend import KindBackend, ActionBackend, MixinBackend
 from occi.exceptions import HTTPError
@@ -206,13 +208,12 @@ class NonePersistentRegistry(Registry):
     @author: tmetsch
     '''
 
-    BACKENDS = {}
-
-    RENDERINGS = {}
-
-    RESOURCES = {}
-
-    HOST = ''
+    def __init__(self):
+        self.backends = {}
+        self.renderings = {}
+        self.resources = {}
+        self.host = ''
+        super(NonePersistentRegistry, self).__init__()
 
     def get_renderer(self, mime_type):
         parser = None
@@ -222,11 +223,11 @@ class NonePersistentRegistry(Registry):
             if type_str.find(';q=') > -1:
                 type_str = type_str[:type_str.find(';q=')]
 
-            if type_str in self.RENDERINGS:
-                parser = self.RENDERINGS[type_str]
+            if type_str in self.renderings:
+                parser = self.renderings[type_str]
                 break
             elif type_str == '*/*':
-                parser = self.RENDERINGS[self.get_default_type()]
+                parser = self.renderings[self.get_default_type()]
                 break
 
         if parser is None:
@@ -239,11 +240,11 @@ class NonePersistentRegistry(Registry):
         if not isinstance(renderer, Rendering):
             raise AttributeError('renderer needs to derive from Rendering.')
 
-        self.RENDERINGS[mime_type] = renderer
+        self.renderings[mime_type] = renderer
 
     def get_backend(self, category, extras):
         try:
-            back = self.BACKENDS[category]
+            back = self.backends[category]
             if repr(category) == 'kind' and isinstance(back, KindBackend):
                 return back
             if repr(category) == 'action' and isinstance(back,
@@ -257,44 +258,59 @@ class NonePersistentRegistry(Registry):
     def get_all_backends(self, entity, extras):
         res = []
         res.append(self.get_backend(entity.kind, extras))
-        #for kind_related in entity.kind.related:
-        #    res.append(self.get_backend(kind_related, extras))
         for mixin in entity.mixins:
             res.append(self.get_backend(mixin, extras))
-            # making sure related mixin backends get called...
-            #for mixin_related in mixin.related:
-            #    res.append(self.get_backend(mixin_related, extras))
         # remove duplicates - only need to call backs once - right?
         return list(set(res))
 
     def set_backend(self, category, backend, extras):
-        #if category in self.BACKENDS.keys():
-        #    raise AttributeError('Category is already registered!')
-        self.BACKENDS[category] = backend
+        if extras is not None:
+            # category belongs to single user...
+            category.extras = self.get_extras(extras)
+        self.backends[category] = backend
 
     def delete_mixin(self, mixin, extras):
-        self.BACKENDS.pop(mixin)
+        self.backends.pop(mixin)
 
     def get_category(self, path, extras):
-        for category in self.BACKENDS.keys():
+        for category in self.backends.keys():
             if category.location == path:
                 return category
         return None
 
     def get_categories(self, extras):
-        return self.BACKENDS.keys()
+        result = []
+        for item in self.backends.keys():
+            if item.extras == None:
+                # categories visible to all!
+                result.append(item)
+            elif extras is not None and self.get_extras(extras) == item.extras:
+                # categories visible to this user!
+                result.append(item)
+        return result
 
     def get_resource(self, key, extras):
-        return self.RESOURCES[key]
+        if self.resources[key].extras != self.get_extras(extras):
+            raise KeyError
+        return self.resources[key]
 
     def add_resource(self, key, resource, extras):
-        self.RESOURCES[key] = resource
+        if extras is not None:
+            resource.extras = self.get_extras(extras)
+        self.resources[key] = resource
 
     def delete_resource(self, key, extras):
-        self.RESOURCES.pop(key)
+        self.resources.pop(key)
 
     def get_resource_keys(self, extras):
-        return self.RESOURCES.keys()
+        return self.resources.keys()
 
     def get_resources(self, extras):
-        return self.RESOURCES.values()
+        result = []
+        for item in self.resources.values():
+            if item.extras is None:
+                result.append(item)
+            elif item.extras is not None and \
+                 item.extras == self.get_extras(extras):
+                result.append(item)
+        return result
