@@ -310,10 +310,14 @@ class NonePersistentRegistry(Registry):
         self.resources.pop(key)
 
     def get_resource_keys(self, extras):
-        # will only be called after a get_resource - no need for ownership
-        # checking.
-        # FUTURE_IMPROVEMENT: check on specified link identifiers
-        return self.resources.keys()
+        result = []
+        for key in self.resources.keys():
+            if self.resources[key].extras is None:
+                result.append(key)
+            elif self.resources[key].extras is not None and \
+                 self.resources[key].extras == self.get_extras(extras):
+                result.append(key)
+        return result
 
     def get_resources(self, extras):
         result = []

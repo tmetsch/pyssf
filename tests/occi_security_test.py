@@ -185,7 +185,11 @@ class SecurityChecksTest(unittest.TestCase):
         app(env2, Response())
 
         # check that they can't list and see each others VMs
-        self.assertTrue(len(app.registry.get_resource_keys(None)) == 3)
+        self.assertTrue(len(app.registry.get_resource_keys({'sec':
+                                                         {'id': 'foo'}})) == 2)
+        self.assertTrue(len(app.registry.get_resource_keys({'sec':
+                                                         {'id': 'bar'}})) == 2)
+        self.assertTrue(len(app.registry.resources) == 3)
 
         env1_list = self.env.copy()
         env1_list['username'] = 'foo'
