@@ -183,8 +183,16 @@ class TestTextOcciRendering(unittest.TestCase):
         '''
         heads = {'Category': self.action.term + '; scheme="'
                  + self.action.scheme + '"'}
-        action = self.rendering.to_action(heads, None, None)
+        action, attr = self.rendering.to_action(heads, None, None)
         self.assertEqual(action, self.action)
+        self.assertTrue(len(attr) == 0)
+
+        # test with action attributes!
+        heads = {'Category': self.action.term + '; scheme="' +
+                 self.action.scheme + '"', 'X-OCCI-Attribute': 'foo=bar'}
+        action, attr = self.rendering.to_action(heads, None, None)
+        self.assertEqual(action, self.action)
+        self.assertTrue(len(attr) == 1)
 
     def test_get_filters_for_sanity(self):
         '''

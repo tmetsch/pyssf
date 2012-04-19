@@ -91,7 +91,8 @@ class ComputeBackend(MyBackend):
         print('Removing representation of virtual machine with id: '
               + entity.identifier)
 
-    def action(self, entity, action, extras):
+    def action(self, entity, action, attributes, extras):
+        print attributes
         if action not in entity.actions:
             raise AttributeError("This action is currently no applicable.")
         elif action == START:
@@ -137,7 +138,7 @@ class NetworkBackend(MyBackend):
         # and deactivate it
         print('Removing representation of a VNIC with id:' + entity.identifier)
 
-    def action(self, entity, action, extras):
+    def action(self, entity, action, attributes, extras):
         if action not in entity.actions:
             raise AttributeError("This action is currently no applicable.")
         elif action.kind == UP:
@@ -173,7 +174,7 @@ class StorageBackend(MyBackend):
         # call the management framework to delete this storage instance...
         print('Removing storage device with id: ' + entity.identifier)
 
-    def action(self, entity, action, extras):
+    def action(self, entity, action, attributes, extras):
         if action not in entity.actions:
             raise AttributeError("This action is currently no applicable.")
         elif action == ONLINE:

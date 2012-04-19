@@ -105,9 +105,10 @@ class BaseHandler():
         '''
         rendering = self.get_renderer(CONTENT_TYPE)
 
-        action = rendering.to_action(self.headers, self.body, self.extras)
+        action, attr = rendering.to_action(self.headers, self.body,
+                                           self.extras)
 
-        return action
+        return action, attr
 
     def parse_filter(self):
         '''
@@ -228,9 +229,9 @@ class ResourceHandler(BaseHandler):
             # action
             try:
                 entity = self.registry.get_resource(key, self.extras)
-                action = self.parse_action()
+                action, attr = self.parse_action()
 
-                workflow.action_entity(entity, action, self.registry,
+                workflow.action_entity(entity, action, self.registry, attr,
                                        self.extras)
 
                 return self.render_entity(entity)
@@ -332,11 +333,11 @@ class CollectionHandler(BaseHandler):
         if self.query is not ():
             # action
             try:
-                action = self.parse_action()
+                action, attr = self.parse_action()
                 entities = workflow.get_entities_under_path(key, self.registry,
                                                             self.extras)
                 for entity in entities:
-                    workflow.action_entity(entity, action, self.registry,
+                    workflow.action_entity(entity, action, self.registry, attr,
                                            self.extras)
 
                 return self.response(200)

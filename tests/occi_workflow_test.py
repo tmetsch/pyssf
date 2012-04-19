@@ -103,8 +103,9 @@ class EntityWorkflowTest(unittest.TestCase):
         '''
         # not much to verify here - just calls backends...
         workflow.action_entity(self.src_entity, self.action, self.registry,
+                               None, None)
+        workflow.action_entity(self.link1, self.action, self.registry, None,
                                None)
-        workflow.action_entity(self.link1, self.action, self.registry, None)
 
     #==========================================================================
     # Failure

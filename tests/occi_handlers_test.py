@@ -785,5 +785,5 @@ class SimpleComputeBackend(KindBackend, ActionBackend):
         if 'undeletable' in entity.attributes:
             raise AttributeError("I cannot be delete...")
 
-    def action(self, entity, action, extras):
+    def action(self, entity, action, attributes, extras):
         entity.attributes['occi.compute.state'] = 'active'

@@ -157,12 +157,13 @@ class ActionBackend(object):
     # disabling 'Too few public...' pylint check (this is for extension)
     # pylint: disable=R0903
 
-    def action(self, entity, action, extras):
+    def action(self, entity, action, attributes, extras):
         '''
         Call the Resource Management and perform this action.
 
         entity -- The entity on which the action is going to be performed.
         action -- The action category definition.
+        attributes -- The acctributes for this action.
         extras -- Any extra arguments which are defined by the user.
         '''
         pass

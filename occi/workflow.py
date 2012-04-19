@@ -173,17 +173,18 @@ def retrieve_entity(entity, registry, extras):
         backend.retrieve(entity, extras)
 
 
-def action_entity(entity, action, registry, extras):
+def action_entity(entity, action, registry, attributes, extras):
     '''
     Performs an action on the entity.
 
     entity -- The entity on which to perform the operation.
     action -- The action definition.
     registry -- The registry used for this process.
+    attributes -- The attributes fro the operation.
     extras -- Any extra arguments which are defined by the user.
     '''
     backend = registry.get_backend(action, extras)
-    backend.action(entity, action, extras)
+    backend.action(entity, action, attributes, extras)
 
 #==============================================================================
 # Collections

@@ -234,7 +234,12 @@ def _to_action(data, registry, extras):
     '''
     action = parser.get_category(data.categories[0].strip(), registry, extras)
 
-    return action
+    attributes = {}
+    for attr in data.attributes:
+        key, val = parser.get_attributes(attr)
+        attributes[key] = val
+
+    return action, attributes
 
 
 def _to_mixins(data, registry, extras):
