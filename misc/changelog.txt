@@ -1,4 +1,9 @@
 
+Version 0.4.6
+-------------
+
+Minor update release
+
 Version 0.4.5
 -------------
 
