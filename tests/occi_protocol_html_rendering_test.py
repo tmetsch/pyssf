@@ -100,7 +100,7 @@ class TestHTMLRendering(unittest.TestCase):
         '''
         self.parser.to_action({'Query_String':
                                'action=action?scheme=http://example.com/foo'},
-                              'foobar', None)
+                               'foobar', None)
 
     #==========================================================================
     # Test for failure

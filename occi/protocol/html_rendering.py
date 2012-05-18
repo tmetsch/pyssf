@@ -322,6 +322,6 @@ class HTMLRendering(Rendering):
             for item in self.registry.get_categories(extras):
                 if tmp == item:
                     del(tmp)
-                    return item
+                    return item, {}
         else:
             raise AttributeError('Action is not defined. Check the QI.')
