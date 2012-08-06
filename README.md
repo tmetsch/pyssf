@@ -12,3 +12,4 @@ http://www.pip-installer.org/en/latest/requirement-format.html).
 Licensed under a LGPL license.
 
 (c) 2010-2012 Platform Computing
+(c) 2012 engjoy UG (haftungsbschraenkt)
