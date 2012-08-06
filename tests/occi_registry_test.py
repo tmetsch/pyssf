@@ -1,3 +1,4 @@
+# coding=utf-8
 #
 # Copyright (C) 2010-2012 Platform Computing
 #
@@ -224,7 +225,7 @@ class CategoryRegistryTest(unittest.TestCase):
         self.assertTrue(self.kind2 == result)
 
         result = self.registry.get_category('/bar/', None)
-        self.assertTrue(result == None)
+        self.assertTrue(result is None)
 
     def test_set_category_for_sanity(self):
         '''

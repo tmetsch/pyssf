@@ -1,3 +1,4 @@
+# coding=utf-8
 #
 # Copyright (C) 2010-2012 Platform Computing
 #
@@ -54,25 +55,19 @@ class TestCore(unittest.TestCase):
         # make sure that two user can have same category term + scheme
 
         # default case:
-        dictionary = {}
-        dictionary[cat1] = 'foo'
-        dictionary[cat2] = 'foo'
+        dictionary = {cat1: 'foo', cat2: 'foo'}
         self.assertTrue(len(dictionary.keys()) == 1)
 
         # case with extras
         cat2.extras = {'id': 'foobar'}
-        dictionary = {}
-        dictionary[cat1] = 'foo'
-        dictionary[cat2] = 'foo'
+        dictionary = {cat1: 'foo', cat2: 'foo'}
         self.assertTrue(len(dictionary.keys()) == 2)
         self.assertNotEqual(cat1, cat2)
 
         # case with both set to same extras
         cat1.extras = {'id': 'foobar'}
         self.assertTrue(hash(str(cat1.extras)) == hash(str(cat2.extras)))
-        dictionary = {}
-        dictionary[cat1] = 'foo'
-        dictionary[cat2] = 'foo'
+        dictionary = {cat1: 'foo', cat2: 'foo'}
         self.assertTrue(len(dictionary.keys()) == 1)
         self.assertEqual(cat1, cat2)
         self.assertTrue(cat1 != cat2)

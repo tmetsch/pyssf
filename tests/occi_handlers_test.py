@@ -1,3 +1,4 @@
+# coding=utf-8
 #
 # Copyright (C) 2010-2012 Platform Computing
 #
@@ -112,25 +113,25 @@ class TestQueryCapabilites(unittest.TestCase):
         # existing location -> reject
         headers = {ACCEPT: 'text/occi',
                    CONTENT_TYPE: 'text/occi',
-                   CATEGORY: 'foo; scheme = "http://example.com#";' \
-                   ' location = "/compute/"'}
+                   CATEGORY: 'foo; scheme = "http://example.com#";'
+                             ' location = "/compute/"'}
         handler = QueryHandler(self.registry, headers, '', [])
         self.assertRaises(HTTPError, handler.post)
 
         # faulty location -> reject
         headers = {ACCEPT: 'text/occi',
                    CONTENT_TYPE: 'text/occi',
-                   CATEGORY: 'foo; scheme = "http://example.com#";' \
-                   ' location = "/sdf"'}
+                   CATEGORY: 'foo; scheme = "http://example.com#";'
+                             ' location = "/sdf"'}
         handler = QueryHandler(self.registry, headers, '', [])
         self.assertRaises(HTTPError, handler.post)
 
         # already existing...
         headers = {ACCEPT: 'text/occi',
                    CONTENT_TYPE: 'text/occi',
-                   CATEGORY: 'compute; scheme = "http://schemas.ogf.org' \
-                   '/occi/infrastructure#";' \
-                   ' location = "/bla/"'}
+                   CATEGORY: 'compute; scheme = "http://schemas.ogf.org'
+                             '/occi/infrastructure#";'
+                             ' location = "/bla/"'}
         handler = QueryHandler(self.registry, headers, '', [])
         self.assertRaises(HTTPError, handler.post)
 
@@ -148,8 +149,8 @@ class TestQueryCapabilites(unittest.TestCase):
         # not available
         headers = {ACCEPT: 'text/occi',
                    CONTENT_TYPE: 'text/occi',
-                   CATEGORY: 'foo2; scheme="http://example.com#";' \
-                   ' location="/foo/"'}
+                   CATEGORY: 'foo2; scheme="http://example.com#";'
+                             ' location="/foo/"'}
         handler = QueryHandler(self.registry, headers, '', [])
         self.assertRaises(HTTPError, handler.delete)
 
@@ -182,8 +183,8 @@ class TestQueryCapabilites(unittest.TestCase):
         # add a mixin.
         headers = {ACCEPT: 'text/occi',
                    CONTENT_TYPE: 'text/occi',
-                   CATEGORY: 'foo; scheme="http://example.com#";' \
-                   ' location="/foo/"'}
+                   CATEGORY: 'foo; scheme="http://example.com#";'
+                             ' location="/foo/"'}
         handler = QueryHandler(self.registry, headers, '', [])
         status, headers, body = handler.post()
         self.assertTrue(body == 'OK')
@@ -191,8 +192,8 @@ class TestQueryCapabilites(unittest.TestCase):
         # remove the mixin.
         headers = {ACCEPT: 'text/occi',
                    CONTENT_TYPE: 'text/occi',
-                   CATEGORY: 'foo; scheme="http://example.com#";' \
-                   ' location="/foo/"'}
+                   CATEGORY: 'foo; scheme="http://example.com#";'
+                             ' location="/foo/"'}
         handler = QueryHandler(self.registry, headers, '', [])
         status, headers, body = handler.delete()
         self.assertTrue(body == 'OK')
@@ -579,8 +580,8 @@ class TestResourceCapabilites(unittest.TestCase):
         headers = {CONTENT_TYPE: 'text/occi',
                    CATEGORY: parser.get_category_str(NETWORKINTERFACE,
                                                      self.registry),
-                   ATTRIBUTE: 'occi.core.source="/compute/1",' \
-                                       ' occi.core.target="/network/1"'}
+                   ATTRIBUTE: 'occi.core.source="/compute/1",'
+                              ' occi.core.target="/network/1"'}
         handler = ResourceHandler(self.registry, headers, '', [])
         status, headers, body = handler.put('/network/link/1')
         self.assertTrue('/network/link/1' in
@@ -722,13 +723,13 @@ class TestLinkHandling(unittest.TestCase):
         '''
         headers = {CONTENT_TYPE: 'text/occi',
                    CATEGORY: parser.get_category_str(COMPUTE, self.registry),
-                   LINK: '</network/1>;' \
-                   'rel="http://schemas.ogf.org/occi/infrastructure#' \
-                   'network";' \
-                   'category="http://schemas.ogf.org/occi/infrastructure#' \
-                   'networkinterface";' \
-                   'occi.networkinterface.interface="eth0";' \
-                   'occi.networkinterface.mac="00:11:22:33:44:55";'}
+                   LINK: '</network/1>;'
+                         'rel="http://schemas.ogf.org/occi/infrastructure#'
+                         'network";'
+                         'category="http://schemas.ogf.org/occi/infrastructure#'
+                         'networkinterface";'
+                         'occi.networkinterface.interface="eth0";'
+                         'occi.networkinterface.mac="00:11:22:33:44:55";'}
         handler = ResourceHandler(self.registry, headers, '', [])
         handler.put('/compute/2')
         self.assertTrue('/compute/2' in self.registry.get_resource_keys(None))
@@ -779,7 +780,7 @@ class SimpleComputeBackend(KindBackend, ActionBackend):
 
     def replace(self, old, new, extras):
         old.attributes = new.attributes
-        del(new)
+        del new
 
     def delete(self, entity, extras):
         if 'undeletable' in entity.attributes:

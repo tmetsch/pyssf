@@ -1,3 +1,4 @@
+# coding=utf-8
 #
 # Copyright (C) 2010-2012 Platform Computing
 #
@@ -67,7 +68,7 @@ class Registry(object):
 
         mime_type -- The mime type you a looking for.
         '''
-        raise NotImplementedError('Registry implementation seems to be' \
+        raise NotImplementedError('Registry implementation seems to be'
                                   ' incomplete.')
 
     def set_renderer(self, mime_type, renderer):
@@ -77,7 +78,7 @@ class Registry(object):
         mime_type -- The mime type you want to add a rendering for.
         renderer -- Instance of an Rendering class.
         '''
-        raise NotImplementedError('Registry implementation seems to be' \
+        raise NotImplementedError('Registry implementation seems to be'
                                   ' incomplete.')
 
     def get_backend(self, category, extras):
@@ -87,7 +88,7 @@ class Registry(object):
         category -- The category a backend is needed for.
         extras -- Extras object - same as the one passed on to the backends.
         """
-        raise NotImplementedError('Registry implementation seems to be' \
+        raise NotImplementedError('Registry implementation seems to be'
                                   ' incomplete.')
 
     def get_all_backends(self, entity, extras):
@@ -97,7 +98,7 @@ class Registry(object):
         entity -- The resource instance.
         extras -- Extras object - same as the one passed on to the backends.
         """
-        raise NotImplementedError('Registry implementation seems to be' \
+        raise NotImplementedError('Registry implementation seems to be'
                                   ' incomplete.')
 
     def set_backend(self, category, backend, extras):
@@ -108,7 +109,7 @@ class Registry(object):
         backend -- The backend which should handle this category.
         extras -- Extras object - same as the one passed on to the backends.
         """
-        raise NotImplementedError('Registry implementation seems to be' \
+        raise NotImplementedError('Registry implementation seems to be'
                                   ' incomplete.')
 
     def delete_mixin(self, mixin, extras):
@@ -118,7 +119,7 @@ class Registry(object):
         mixin -- The mixin
         extras -- Extras object - same as the one passed on to the backends.
         '''
-        raise NotImplementedError('Registry implementation seems to be' \
+        raise NotImplementedError('Registry implementation seems to be'
                                   ' incomplete.')
 
     def get_category(self, path, extras):
@@ -128,7 +129,7 @@ class Registry(object):
         path -- The location which the category should define.
         extras -- Extras object - same as the one passed on to the backends.
         '''
-        raise NotImplementedError('Registry implementation seems to be' \
+        raise NotImplementedError('Registry implementation seems to be'
                                   ' incomplete.')
 
     def get_categories(self, extras):
@@ -137,7 +138,7 @@ class Registry(object):
 
         extras -- Extras object - same as the one passed on to the backends.
         '''
-        raise NotImplementedError('Registry implementation seems to be' \
+        raise NotImplementedError('Registry implementation seems to be'
                                   ' incomplete.')
 
     def get_resource(self, key, extras):
@@ -147,7 +148,7 @@ class Registry(object):
         key -- Unique identifier of the resource.
         extras -- Extras object - same as the one passed on to the backends.
         '''
-        raise NotImplementedError('Registry implementation seems to be' \
+        raise NotImplementedError('Registry implementation seems to be'
                                   ' incomplete.')
 
     def add_resource(self, key, entity, extras):
@@ -158,7 +159,7 @@ class Registry(object):
         entity -- the OCCI representation.
         extras -- Extras object - same as the one passed on to the backends.
         '''
-        raise NotImplementedError('Registry implementation seems to be' \
+        raise NotImplementedError('Registry implementation seems to be'
                                   ' incomplete.')
 
     def delete_resource(self, key, extras):
@@ -168,7 +169,7 @@ class Registry(object):
         key -- Unique identifier of the resource.
         extras -- Extras object - same as the one passed on to the backends.
         '''
-        raise NotImplementedError('Registry implementation seems to be' \
+        raise NotImplementedError('Registry implementation seems to be'
                                   ' incomplete.')
 
     def get_resource_keys(self, extras):
@@ -177,7 +178,7 @@ class Registry(object):
 
         extras -- Extras object - same as the one passed on to the backends.
         '''
-        raise NotImplementedError('Registry implementation seems to be' \
+        raise NotImplementedError('Registry implementation seems to be'
                                   ' incomplete.')
 
     def get_resources(self, extras):
@@ -186,7 +187,7 @@ class Registry(object):
 
         extras -- Extras object - same as the one passed on to the backends.
         '''
-        raise NotImplementedError('Registry implementation seems to be' \
+        raise NotImplementedError('Registry implementation seems to be'
                                   ' incomplete.')
 
     def get_extras(self, extras):
@@ -257,8 +258,7 @@ class NonePersistentRegistry(Registry):
             raise AttributeError('Cannot find corresponding Backend.')
 
     def get_all_backends(self, entity, extras):
-        res = []
-        res.append(self.get_backend(entity.kind, extras))
+        res = [self.get_backend(entity.kind, extras)]
         for mixin in entity.mixins:
             res.append(self.get_backend(mixin, extras))
         # remove duplicates - only need to call backs once - right?
@@ -286,7 +286,7 @@ class NonePersistentRegistry(Registry):
     def get_categories(self, extras):
         result = []
         for item in self.backends.keys():
-            if item.extras == None:
+            if item.extras is None:
                 # categories visible to all!
                 result.append(item)
             elif extras is not None and self.get_extras(extras) == item.extras:

@@ -1,3 +1,4 @@
+# coding=utf-8
 #
 # Copyright (C) 2010-2012 Platform Computing
 #
@@ -40,9 +41,7 @@ def _from_category(category):
     '''
     Create a JSON struct for a category.
     '''
-    data = {}
-    data['term'] = category.term
-    data['scheme'] = category.scheme
+    data = {'term': category.term, 'scheme': category.scheme}
     if hasattr(category, 'title') and category.title is not '':
         data['title'] = category.title
     if hasattr(category, 'related') and len(category.related) > 0:
@@ -74,9 +73,8 @@ def _from_entity(entity):
     '''
     Create a JSON struct for an entity.
     '''
-    data = {}
+    data = {'kind': _from_category(entity.kind)}
     # kind
-    data['kind'] = _from_category(entity.kind)
 
     # mixins
     mixins = []
@@ -88,9 +86,7 @@ def _from_entity(entity):
     # actions
     actions = []
     for action in entity.actions:
-        tmp = {}
-        tmp['kind'] = _from_category(action)
-        tmp['link'] = entity.identifier + '?action=' + action.term
+        tmp = {'kind': _from_category(action), 'link': entity.identifier + '?action=' + action.term}
         actions.append(tmp)
     data['actions'] = actions
 

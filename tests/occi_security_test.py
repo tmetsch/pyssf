@@ -1,3 +1,4 @@
+# coding=utf-8
 #
 # Copyright (C) 2010-2012 Platform Computing
 #
@@ -238,11 +239,11 @@ class MyBackend(KindBackend):
     Dummy impl...
     '''
 
-    def create(self, entity, extras):
+    def create(self, entity, extra_values):
         '''
         Set owner so registry has sth to compare :-)
         '''
-        entity.extras = extras['sec']['id']
+        entity.extras = extra_values['sec']['id']
 
     def retrieve(self, entity, extras):
         '''

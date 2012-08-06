@@ -1,3 +1,4 @@
+# coding=utf-8
 #
 # Copyright (C) 2010-2012 Platform Computing
 #
@@ -61,8 +62,8 @@ class TestParser(unittest.TestCase):
                         'networkinterface',
                         related=[Link.kind]
                         )
-    ipnetwork_mixin = Mixin('http://schemas.ogf.org/occi/infrastructure/' \
-                           'networkinterface#',
+    ipnetwork_mixin = Mixin('http://schemas.ogf.org/occi/infrastructure/'
+                            'networkinterface#',
                            'ipnetworkinterface')
 
     source = Resource('/1', compute, [])

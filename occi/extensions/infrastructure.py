@@ -1,3 +1,4 @@
+# coding=utf-8
 #
 # Copyright (C) 2010-2012 Platform Computing
 #
@@ -137,7 +138,7 @@ IPNETWORKINTERFACE_ATTRIBUTES = {'occi.networkinterface.address': '',
                                  'occi.networkinterface.gateway': '',
                                  'occi.networkinterface.allocation': ''}
 
-IPNETWORKINTERFACE = Mixin('http://schemas.ogf.org/occi/infrastructure/' \
+IPNETWORKINTERFACE = Mixin('http://schemas.ogf.org/occi/infrastructure/'
                            'networkinterface#',
                            'ipnetworkinterface',
                            [],

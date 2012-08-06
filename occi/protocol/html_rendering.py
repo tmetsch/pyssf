@@ -1,3 +1,4 @@
+# coding=utf-8
 #
 # Copyright (C) 2010-2012 Platform Computing
 #
@@ -234,7 +235,7 @@ class HTMLRendering(Rendering):
 
         # body
         tmp += '\t\t<div id="entity"><ul>\n'
-        if len(entities) == 0:
+        if not len(entities):
             tmp += '\t\t\t<li>No resources found</li>\n'
         for item in entities:
             tmp += '\t\t\t<li><a href="' + item.identifier + '">'
@@ -321,7 +322,7 @@ class HTMLRendering(Rendering):
         if tmp in cats:
             for item in self.registry.get_categories(extras):
                 if tmp == item:
-                    del(tmp)
+                    del tmp
                     return item, {}
         else:
             raise AttributeError('Action is not defined. Check the QI.')

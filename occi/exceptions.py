@@ -1,3 +1,4 @@
+# coding=utf-8
 #
 # Copyright (C) 2010-2012 Platform Computing
 #
@@ -33,7 +34,7 @@ class HTTPError(Exception):
         '''
         Creates an HTTP Error.
 
-        code -- the status code.
+        code -- the HTTP status code.
         msg -- the error message.
         '''
         Exception.__init__(self)

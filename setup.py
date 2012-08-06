@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding=utf-8
 
 #
 # Copyright (C) 2010-2012 Platform Computing
@@ -17,6 +18,10 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 #
+'''
+The setuptools script.
+'''
+
 from distutils.core import setup
 
 setup(name='pyssf',

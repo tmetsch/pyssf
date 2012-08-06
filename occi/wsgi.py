@@ -1,5 +1,7 @@
+# coding=utf-8
 #
 # Copyright (C) 2010-2012 Platform Computing
+# Copyright (C) 2012 engjoy UG (haftungsbeschraenkt)
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -37,7 +39,6 @@ from occi.protocol.occi_rendering import TextOcciRendering, \
 from occi.registry import NonePersistentRegistry
 import StringIO
 import logging
-
 
 RETURN_CODES = {201: '201 Created',
                 200: '200 OK',
@@ -180,10 +181,10 @@ class Application(object):
         if allow:
             self.registry.set_backend(category, backend, None)
         else:
-            raise AttributeError('Backends handling kinds need to derive' \
-                                 ' from KindBackend; Backends handling' \
-                                 ' actions need to derive from' \
-                                 ' ActionBackend and backends handling' \
+            raise AttributeError('Backends handling kinds need to derive'
+                                 ' from KindBackend; Backends handling'
+                                 ' actions need to derive from'
+                                 ' ActionBackend and backends handling'
                                  ' mixins need to derive from MixinBackend.')
 
     def _call_occi(self, environ, response, **kwargs):
@@ -209,7 +210,6 @@ class Application(object):
         _set_hostname(environ, self.registry)
 
         # find right handler
-        handler = None
         if environ['PATH_INFO'] == '/-/':
             handler = QueryHandler(self.registry, heads, body, query, extras)
         elif environ['PATH_INFO'] == '/.well-known/org/ogf/occi/-/':
@@ -226,7 +226,7 @@ class Application(object):
         try:
             key = environ['PATH_INFO']
             status, headers, body = handler.handle(mtd, key)
-            del(handler)
+            del handler
         except HTTPError as err:
             status = err.code
             headers = {CONTENT_TYPE: 'text/plain'}
@@ -239,9 +239,9 @@ class Application(object):
 
         code = RETURN_CODES[status]
 
-        # headers.items() because we need a list of sets...
-        response(code, headers.items())
-        return [body, ]
+        # headers.items() because we need a list of sets...& unicode handling
+        response(code, [(str(k), str(v)) for k, v in headers.items()])
+        return [str(body), ]
 
     def __call__(self, environ, response):
         '''

@@ -1,3 +1,4 @@
+# coding=utf-8
 #
 # Copyright (C) 2010-2012 Platform Computing
 #
@@ -60,7 +61,7 @@ def get_category(category_string, registry, extras, is_mixin=False):
         if not location[-1] == '/':
             raise AttributeError('Illegal location; must end with /')
         if location[0] != '/' and location.find('http') != 0:
-            raise AttributeError('Illegal location; Either provide full URL' \
+            raise AttributeError('Illegal location; Either provide full URL'
                                  ' or just a path starting with /.')
         mixin = Mixin(scheme, term, location=location)
         mixin.extras = registry.get_extras(extras)
@@ -84,12 +85,12 @@ def get_category(category_string, registry, extras, is_mixin=False):
         if item.extras is None:
             tmp.extras = None
             if tmp == item:
-                del(tmp)
+                del tmp
                 return item
             tmp.extras = registry.get_extras(extras)
         elif item.extras is not None:
             if tmp == item:
-                del(tmp)
+                del tmp
                 return item
     raise AttributeError('The following category is not registered within'
                          + ' this service (See Query interfaces): '
@@ -199,7 +200,7 @@ def get_link(link_string, source, registry, extras):
             attributes[tmp[0].strip()] = tmp[1].rstrip('"').lstrip('"').strip()
 
     try:
-        if target_id.find(registry.get_hostname()) == 0:
+        if not target_id.find(registry.get_hostname()):
             target_id = target_id.replace(registry.get_hostname(), '')
         target = registry.get_resource(target_id, extras)
     except KeyError:
@@ -219,15 +220,15 @@ def get_link_str(link):
     link -- A link.
     '''
     tmp = '<' + link.target.identifier + '>'
-    tmp = tmp + '; rel="' + str(link.target.kind) + '"'
-    tmp = tmp + '; self="' + str(link.identifier) + '"'
-    tmp = tmp + '; category="' + str(link.kind)
+    tmp += '; rel="' + str(link.target.kind) + '"'
+    tmp += '; self="' + str(link.identifier) + '"'
+    tmp += '; category="' + str(link.kind)
 
     if len(link.mixins) > 0:
         for mixin in link.mixins:
             tmp = tmp + ' ' + str(mixin)
 
-    tmp = tmp + '"'
+    tmp += '"'
 
     link.attributes['occi.core.id'] = link.identifier
     link.attributes['occi.core.source'] = link.source.identifier
@@ -238,7 +239,7 @@ def get_link_str(link):
         attr_str_list = []
         for item in link.attributes:
             attr_str_list.append(item + '="' + link.attributes[item] + '"')
-        tmp = tmp + '; ' + '; '.join(attr_str_list)
+        tmp += '; ' + '; '.join(attr_str_list)
     return tmp
 
 

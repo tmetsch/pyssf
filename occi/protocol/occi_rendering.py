@@ -1,3 +1,4 @@
+# coding=utf-8
 #
 # Copyright (C) 2010-2012 Platform Computing
 #
@@ -101,9 +102,9 @@ def _to_entity(data, def_kind, registry, extras):
             source_attr = attributes['occi.core.source']
             target_attr = attributes['occi.core.target']
 
-            if source_attr.find(registry.get_hostname()) == 0:
+            if not source_attr.find(registry.get_hostname()):
                 source_attr = source_attr.replace(registry.get_hostname(), '')
-            if target_attr.find(registry.get_hostname()) == 0:
+            if not target_attr.find(registry.get_hostname()):
                 target_attr = target_attr.replace(registry.get_hostname(), '')
 
             source = registry.get_resource(source_attr, extras)
@@ -131,8 +132,7 @@ def _from_entity(entity, registry):
     data = HTTPData()
 
     # categories
-    cat_str_list = []
-    cat_str_list.append(parser.get_category_str(entity.kind, registry))
+    cat_str_list = [parser.get_category_str(entity.kind, registry)]
 
     for category in entity.mixins:
         cat_str_list.append(parser.get_category_str(category, registry))
@@ -184,7 +184,7 @@ def _to_entities(data, registry, extras):
     result = []
     for item in data.locations:
         try:
-            if item.find(registry.get_hostname()) == 0:
+            if not item.find(registry.get_hostname()):
                 item = item.replace(registry.get_hostname(), '')
 
             result.append(registry.get_resource(item.strip(), extras))

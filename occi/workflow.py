@@ -1,3 +1,4 @@
+# coding=utf-8
 #
 # Copyright (C) 2010-2012 Platform Computing
 #
@@ -125,7 +126,7 @@ def replace_entity(old, new, registry, extras):
     backends = registry.get_all_backends(old, extras)
     for backend in backends:
         backend.replace(old, new, extras)
-    del(new)
+    del new
 
 
 def update_entity(old, new, registry, extras):
@@ -147,7 +148,7 @@ def update_entity(old, new, registry, extras):
     backends = registry.get_all_backends(old, extras)
     for backend in backends:
         backend.update(old, new, extras)
-    del(new)
+    del new
 
 
 def retrieve_entity(entity, registry, extras):
@@ -209,7 +210,7 @@ def update_collection(mixin, old_entities, new_entities, registry, extras):
         entity.mixins.append(mixin)
         backend = registry.get_backend(mixin, extras)
         backend.create(entity, extras)
-    del(new_entities)
+    del new_entities
 
 
 def replace_collection(mixin, old_entities, new_entities, registry, extras):
@@ -236,7 +237,7 @@ def replace_collection(mixin, old_entities, new_entities, registry, extras):
         backend = registry.get_backend(mixin, extras)
         backend.delete(entity, extras)
         entity.mixins.remove(mixin)
-    del(new_entities)
+    del new_entities
 
 
 def delete_from_collection(mixin, entities, registry, extras):
@@ -274,7 +275,7 @@ def get_entities_under_path(path, registry, extras):
     result = []
     if registry.get_category(path, extras) is None:
         for res in registry.get_resources(extras):
-            if res.identifier.find(path) == 0:
+            if not res.identifier.find(path):
                 result.append(res)
         return result
     else:
@@ -302,7 +303,7 @@ def filter_entities(entities, categories, attributes):
         indy = 0
         if entity.kind in categories:
             indy += 1
-        if len(intersect(categories, entity.mixins)) != 0:
+        if len(intersect(categories, entity.mixins)):
             indy += 1
         for attr in intersect(attributes.keys(), entity.attributes.keys()):
             if entity.attributes[attr] == attributes[attr]:
@@ -331,7 +332,7 @@ def filter_categories(categories, registry, extras):
     registry -- The registry used for this process.
     extras -- Passed on extra object.
     '''
-    if len(categories) == 0:
+    if not len(categories):
         return registry.get_categories(extras)
 
     result = []
@@ -390,7 +391,7 @@ def remove_mixins(mixins, registry, extras):
         for entity in entities:
             entity.mixins.remove(mixin)
         registry.delete_mixin(mixin, extras)
-        del(mixin)
+        del mixin
 
 #==============================================================================
 # Convenient stuff
@@ -406,6 +407,8 @@ def create_id(kind):
     if hasattr(kind, 'location'):
         key = kind.location
         key += str(uuid.uuid4())
+    else:
+        key = str(uuid.uuid4())
     return key
 
 
@@ -416,7 +419,7 @@ def intersect(list_a, list_b):
     list_a -- The first list.
     list_b -- Another list.
     '''
-    if (len(list_a) > 0 and len(list_b) > 0):
+    if len(list_a) > 0 and len(list_b) > 0:
         return list(set(list_a) & set(list_b))
     else:
         return list()

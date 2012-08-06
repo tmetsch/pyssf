@@ -1,3 +1,4 @@
+# coding=utf-8
 #
 # Copyright (C) 2010-2012 Platform Computing
 #
@@ -39,7 +40,7 @@ CATEGORY = 'Category'
 QUERY_STRING = 'Query_String'
 
 
-class BaseHandler():
+class BaseHandler(object):
     '''
     General request handler.
     '''
@@ -106,7 +107,7 @@ class BaseHandler():
         rendering = self.get_renderer(CONTENT_TYPE)
 
         action, attr = rendering.to_action(self.headers, self.body,
-                                           self.extras)
+            self.extras)
 
         return action, attr
 
@@ -125,7 +126,7 @@ class BaseHandler():
         rendering = self.get_renderer(CONTENT_TYPE)
 
         categories, attributes = rendering.get_filters(self.headers, self.body,
-                                                       self.extras)
+            self.extras)
 
         return categories, attributes
 
@@ -138,7 +139,7 @@ class BaseHandler():
         rendering = self.get_renderer(CONTENT_TYPE)
 
         entity = rendering.to_entity(self.headers, self.body, def_kind,
-                                     self.extras)
+            self.extras)
 
         return entity
 
@@ -343,7 +344,7 @@ class CollectionHandler(BaseHandler):
                 return self.response(200)
             except AttributeError as attr:
                 raise HTTPError(400, str(attr))
-        elif len(self.parse_entities()) == 0:
+        elif not len(self.parse_entities()):
             # create resource (&links)
             try:
                 entity = self.parse_entity()
@@ -396,7 +397,7 @@ class CollectionHandler(BaseHandler):
 
         key -- The resource id.
         '''
-        if len(self.parse_entities()) == 0:
+        if not len(self.parse_entities()):
             # delete entities
             entities = workflow.get_entities_under_path(key, self.registry,
                                                         self.extras)
