@@ -726,7 +726,8 @@ class TestLinkHandling(unittest.TestCase):
                    LINK: '</network/1>;'
                          'rel="http://schemas.ogf.org/occi/infrastructure#'
                          'network";'
-                         'category="http://schemas.ogf.org/occi/infrastructure#'
+                         'category=\
+                                 "http://schemas.ogf.org/occi/infrastructure#'
                          'networkinterface";'
                          'occi.networkinterface.interface="eth0";'
                          'occi.networkinterface.mac="00:11:22:33:44:55";'}

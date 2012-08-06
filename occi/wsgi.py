@@ -26,6 +26,9 @@ Created on 22.11.2011
 
 '''
 
+# disabling 'Too many local variables' pylint check (Needed here :-/).
+# pylint: disable=R0914
+
 from occi import VERSION
 from occi.backend import KindBackend, MixinBackend, ActionBackend
 from occi.exceptions import HTTPError

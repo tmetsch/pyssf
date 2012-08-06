@@ -295,7 +295,8 @@ class NonePersistentRegistry(Registry):
         return result
 
     def get_resource(self, key, extras):
-        if self.resources[key].extras != self.get_extras(extras):
+        if self.resources[key].extras is not None and self.resources[key]\
+                                            .extras != self.get_extras(extras):
             raise KeyError
         return self.resources[key]
 

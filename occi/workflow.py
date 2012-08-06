@@ -404,11 +404,7 @@ def create_id(kind):
 
     kind -- The kind which this id should be created for.
     '''
-    if hasattr(kind, 'location'):
-        key = kind.location
-        key += str(uuid.uuid4())
-    else:
-        key = str(uuid.uuid4())
+    key = kind.location + str(uuid.uuid4())
     return key
 
 
