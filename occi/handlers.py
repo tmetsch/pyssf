@@ -140,7 +140,6 @@ class BaseHandler(object):
 
         entity = rendering.to_entity(self.headers, self.body, def_kind,
             self.extras)
-
         return entity
 
     def parse_entities(self):

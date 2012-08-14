@@ -55,7 +55,8 @@ def _to_entity(data, def_kind, registry, extras):
     '''
     Extract an entity from the HTTP data object.
 
-    kind -- The kind definition.
+    data -- The http data object
+    def_kind -- A given kind definition.
     registry -- The registry.
     extras -- Passed on extra object.
     '''

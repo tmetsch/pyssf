@@ -92,7 +92,8 @@ def _parse_body(environ):
     '''
     try:
         length = int(environ.get('CONTENT_LENGTH', '0'))
-        return StringIO.StringIO(environ['wsgi_input'].read(length))
+        body = StringIO.StringIO(environ['wsgi.input'].read(length))
+        return body.getvalue()
     except (KeyError, ValueError):
         return ''
 
@@ -232,7 +233,8 @@ class Application(object):
             del handler
         except HTTPError as err:
             status = err.code
-            headers = {CONTENT_TYPE: 'text/plain'}
+            headers = {CONTENT_TYPE: 'text/plain',
+                       'Content-Length': len(err.message)}
             body = err.message
             logging.error(body)
 
@@ -243,6 +245,7 @@ class Application(object):
         code = RETURN_CODES[status]
 
         # headers.items() because we need a list of sets...& unicode handling
+        # for wsgi since it is not supported :-/
         response(code, [(str(k), str(v)) for k, v in headers.items()])
         return [str(body), ]
 
