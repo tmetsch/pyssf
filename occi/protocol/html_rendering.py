@@ -259,6 +259,7 @@ class HTMLRendering(Rendering):
         tmp += '\t\t<div id="breadcrumb"><a href="/">&raquo;</a> /</div>\n'
 
         # body
+        tmp += '\t\t<div id="entity">\n'
         for cat in categories:
             tmp += '\t\t<h2><a name="' + cat.scheme + '-' + cat.term + '">'
             tmp += repr(cat).upper() + ': ' + cat.term + '</a></h2>\n'
@@ -300,7 +301,7 @@ class HTMLRendering(Rendering):
                 tmp += '</td></tr>\n'
             tmp += '\t\t</table>\n'
 
-        tmp += '\t</body>\n</html>'
+        tmp += '\t\t</div>\n\t</body>\n</html>'
         return {'Content-Type': self.mime_type}, tmp
 
     def to_action(self, headers, body, extras):
