@@ -86,7 +86,7 @@ def _from_entity(entity):
     # actions
     actions = []
     for action in entity.actions:
-        tmp = {'kind': _from_category(action), 'link': entity.identifier + \
+        tmp = {'kind': _from_category(action), 'link': entity.identifier +
                '?action=' + action.term}
         actions.append(tmp)
     data['actions'] = actions

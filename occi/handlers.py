@@ -118,7 +118,7 @@ class BaseHandler(object):
         '''
         attr = ATTRIBUTE
         cat = CATEGORY
-        if  attr not in self.headers:
+        if attr not in self.headers:
             # stupid pep8 - have to break in two lines :-/
             if cat not in self.headers and self.body == '':
                 return [], {}
