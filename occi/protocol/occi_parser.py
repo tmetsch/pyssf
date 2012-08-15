@@ -250,7 +250,7 @@ def get_attributes(attribute_string):
     try:
         tmp = _strip_all(attribute_string)
         key = _strip_all(tmp.split('=')[0])
-        value = tmp.split('=')[1]
+        value = tmp[tmp.find('=') + 1:]
         if value.find('"') is not -1:
             value = _strip_all(value)
     except IndexError:
