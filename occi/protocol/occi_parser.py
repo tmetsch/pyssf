@@ -247,14 +247,13 @@ def get_attributes(attribute_string):
     '''
     Retrieve the attributes from the HTTP X-OCCI-Attribute rendering.
     '''
-    try:
-        tmp = _strip_all(attribute_string)
-        key = _strip_all(tmp.split('=')[0])
-        value = tmp[tmp.find('=') + 1:]
-        if value.find('"') is not -1:
-            value = _strip_all(value)
-    except IndexError:
-        raise AttributeError('Could not determine the given attributes')
+    tmp = _strip_all(attribute_string)
+    if tmp.find('=') == -1:
+        raise AttributeError('Mailformed Attribute description!')
+    key = _strip_all(tmp[:tmp.find('=')])
+    value = tmp[tmp.find('=') + 1:]
+    if value.find('"') is not -1:
+        value = _strip_all(value)
 
     return key, value
 

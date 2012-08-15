@@ -245,3 +245,4 @@ class TestParser(unittest.TestCase):
                           ('foo', 'some stuff'))
         self.assertEquals(parser.get_attributes('foo = "bar"'),
                           ('foo', 'bar'))
+        self.assertEquals(parser.get_attributes('foo="foo=bar"'), ('foo', 'foo=bar'))
