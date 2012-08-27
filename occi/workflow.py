@@ -146,8 +146,13 @@ def update_entity(old, new, registry, extras):
 
     # call all the backends who are associated with this entity.kind...
     backends = registry.get_all_backends(old, extras)
+    new_backends = registry.get_all_backends(new, extras)
     for backend in backends:
         backend.update(old, new, extras)
+    for backend in unique(new_backends, backends):
+        # for added mixins called create!
+        backend.create(old, extras)
+
     del new
 
 

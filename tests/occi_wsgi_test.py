@@ -29,7 +29,6 @@ Created on Nov 24, 2011
 # disabling 'Too few public methods' pylint check (for the mock obj.)
 # disabling 'Invalid name' pylint check (We need longer names here)
 # pylint: disable=R0904,R0201,R0903,C0103
-import StringIO
 
 from occi.backend import ActionBackend, KindBackend, MixinBackend
 from occi.extensions.infrastructure import COMPUTE, IPNETWORKINTERFACE, START
@@ -38,7 +37,9 @@ from occi.protocol.occi_rendering import TextOcciRendering, \
     TextUriListRendering, TextPlainRendering
 from occi.registry import NonePersistentRegistry
 from occi.wsgi import Application
+
 import unittest
+import StringIO
 
 
 class MockResponse(object):
