@@ -124,8 +124,13 @@ def replace_entity(old, new, registry, extras):
 
     # call all the backends who are associated with this entity.kind...
     backends = registry.get_all_backends(old, extras)
+    new_backends = registry.get_all_backends(new, extras)
     for backend in backends:
         backend.replace(old, new, extras)
+    for backend in unique(new_backends, backends):
+        backend.create(new, extras)
+    for backend in unique(backends, new_backends):
+        backend.delete(old, extras)
     del new
 
 
