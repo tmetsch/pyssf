@@ -46,10 +46,11 @@ class EntityWorkflowTest(unittest.TestCase):
     def setUp(self):
         self.test_kind = Kind('http://example.com#', 'test')
         self.link_kind = Kind('http://example.com#link', 'link')
-        mixins = []
+        mixy = Mixin('http://example.com#', 'mixy')
+        maxy = Mixin('http://example.com#', 'maxy')
         self.action = Action('http://example.com#', 'action')
-        self.src_entity = Resource(None, self.test_kind, mixins, [])
-        self.trg_entity = Resource('/foo/trg', self.test_kind, mixins, [])
+        self.src_entity = Resource(None, self.test_kind, [mixy], [])
+        self.trg_entity = Resource('/foo/trg', self.test_kind, [maxy], [])
         self.link1 = Link('/link/1', self.link_kind, [], self.src_entity,
                           self.trg_entity)
         self.src_entity.links = [self.link1]
@@ -59,6 +60,8 @@ class EntityWorkflowTest(unittest.TestCase):
         self.registry.set_backend(self.test_kind, KindBackend(), None)
         self.registry.set_backend(self.link_kind, KindBackend(), None)
         self.registry.set_backend(self.action, ActionBackend(), None)
+        self.registry.set_backend(mixy, MixinBackend(), None)
+        self.registry.set_backend(maxy, MixinBackend(), None)
 
     def tearDown(self):
         for item in self.registry.get_resources(None):
