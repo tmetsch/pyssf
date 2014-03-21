@@ -49,6 +49,11 @@ def create_entity(key, entity, registry, extras):
     '''
     entity.identifier = key
 
+    # call all the backends who are associated with this entity.kind...
+    backends = registry.get_all_backends(entity, extras)
+    for backend in backends:
+        backend.create(entity, extras)
+
     # if it is an resource we create make sure we create the links properly
     if isinstance(entity, Resource):
         # if it's a resource - set/create links properly.
@@ -65,11 +70,6 @@ def create_entity(key, entity, registry, extras):
             registry.add_resource(link.identifier, link, extras)
     elif isinstance(entity, Link):
         entity.source.links.append(entity)
-
-    # call all the backends who are associated with this entity.kind...
-    backends = registry.get_all_backends(entity, extras)
-    for backend in backends:
-        backend.create(entity, extras)
 
     registry.add_resource(key, entity, extras)
 

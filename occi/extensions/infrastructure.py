@@ -96,7 +96,7 @@ ONLINE = Action('http://schemas.ogf.org/occi/infrastructure/storage/action#',
                 'online', 'Bring storage online')
 
 OFFLINE = Action('http://schemas.ogf.org/occi/infrastructure/storage/action#',
-              'offline', 'Bring storage offline')
+                 'offline', 'Bring storage offline')
 
 BACKUP = Action('http://schemas.ogf.org/occi/infrastructure/storage/action#',
                 'backup', 'Backup storage resource')

@@ -27,9 +27,9 @@ class JsonRenderingTest(unittest.TestCase):
 
         self.kind = Kind('http://example.com/foo#', 'bar',
                          ['http://schemeas.ogf.org/occi/core#'],
-                          [action], 'Some bla bla',
-                          {'foo': 'required', 'foo2': 'immutable', 'bar': ''},
-                          '/foo/')
+                         [action], 'Some bla bla',
+                         {'foo': 'required', 'foo2': 'immutable', 'bar': ''},
+                         '/foo/')
         self.mixin = Mixin('http://example.com/foo#', 'mixin')
         self.action = Action('http://example.com/foo#', 'action')
 

@@ -25,7 +25,7 @@ The setuptools script.
 from distutils.core import setup
 
 setup(name='pyssf',
-      version='0.4.7',
+      version='0.4.8',
       description='Service Sharing Facility',
       license='LGPL',
       keywords='OCCI, Cloud Computing, Datacenter Software',

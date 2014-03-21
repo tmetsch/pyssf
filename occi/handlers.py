@@ -107,7 +107,7 @@ class BaseHandler(object):
         rendering = self.get_renderer(CONTENT_TYPE)
 
         action, attr = rendering.to_action(self.headers, self.body,
-            self.extras)
+                                           self.extras)
 
         return action, attr
 
@@ -126,7 +126,7 @@ class BaseHandler(object):
         rendering = self.get_renderer(CONTENT_TYPE)
 
         categories, attributes = rendering.get_filters(self.headers, self.body,
-            self.extras)
+                                                       self.extras)
 
         return categories, attributes
 
@@ -139,7 +139,7 @@ class BaseHandler(object):
         rendering = self.get_renderer(CONTENT_TYPE)
 
         entity = rendering.to_entity(self.headers, self.body, def_kind,
-            self.extras)
+                                     self.extras)
         return entity
 
     def parse_entities(self):
@@ -277,8 +277,8 @@ class ResourceHandler(BaseHandler):
 
                 workflow.create_entity(key, entity, self.registry, self.extras)
 
-                heads = {'Location': self.registry.get_hostname()
-                                           + entity.identifier}
+                heads = {'Location': self.registry.get_hostname() +
+                         entity.identifier}
                 return self.response(201, heads)
             except AttributeError as attr:
                 raise HTTPError(400, str(attr))
@@ -350,8 +350,8 @@ class CollectionHandler(BaseHandler):
                 workflow.create_entity(workflow.create_id(entity.kind),
                                        entity, self.registry, self.extras)
 
-                heads = {'Location': self.registry.get_hostname()
-                                           + entity.identifier}
+                heads = {'Location': self.registry.get_hostname() +
+                         entity.identifier}
                 return self.response(201, heads)
             except AttributeError as attr:
                 raise HTTPError(400, str(attr))

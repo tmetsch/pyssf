@@ -52,7 +52,7 @@ class Category(object):
         if instance is None or not isinstance(instance, Category):
             return False
         if self.term == instance.term and self.scheme == instance.scheme \
-            and self.extras == instance.extras:
+                and self.extras == instance.extras:
             return True
         else:
             return False

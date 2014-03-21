@@ -116,8 +116,7 @@ class ApplicationTest(unittest.TestCase):
         app = Application()
 
         response = MockResponse()
-        environ = {
-                   'SERVER_NAME': 'foo',
+        environ = {'SERVER_NAME': 'foo',
                    'SERVER_PORT': '8888',
                    'PATH_INFO': '/-/',
                    'REQUEST_METHOD': 'GET',
@@ -127,8 +126,7 @@ class ApplicationTest(unittest.TestCase):
                    'HTTP_LINK': '*/*',
                    'HTTP_CATEGORY': '*/*',
                    'HTTP_X_OCCI_ATTRIBUTE': '*/*',
-                   'HTTP_X_OCCI_LOCATION': '*/*'
-                   }
+                   'HTTP_X_OCCI_LOCATION': '*/*'}
         app.__call__(environ, response)
 
         environ.pop('QUERY_STRING')

@@ -484,7 +484,7 @@ class TextUriListRendering(Rendering):
 
     mime_type = 'text/uri-list'
     error = 'Unable to handle this request with the text/uri-list' \
-                ' rendering.'
+            ' rendering.'
 
     def to_entity(self, headers, body, def_kind, extras):
         raise AttributeError(self.error)

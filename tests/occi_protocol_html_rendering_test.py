@@ -46,9 +46,9 @@ class TestHTMLRendering(unittest.TestCase):
         action = Action('http://example.com/foo#', 'action')
         self.kind = Kind('http://example.com/foo#', 'bar',
                          'http://schemeas.ogf.org/occi/core#',
-                          [action], 'Some bla bla',
-                          {'foo': 'required', 'foo2': 'immutable', 'bar': ''},
-                          '/foo/')
+                         [action], 'Some bla bla',
+                         {'foo': 'required', 'foo2': 'immutable', 'bar': ''},
+                         '/foo/')
         mixin = Mixin('http://example.com/foo#', 'mixin')
         action = Action('http://example.com/foo#', 'action')
         self.target = Resource('/foo/target', self.kind, [], [])
@@ -101,7 +101,7 @@ class TestHTMLRendering(unittest.TestCase):
         '''
         self.parser.to_action({'Query_String':
                                'action=action?scheme=http://example.com/foo'},
-                               'foobar', None)
+                              'foobar', None)
 
     #==========================================================================
     # Test for failure

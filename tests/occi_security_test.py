@@ -99,7 +99,7 @@ class SecurityChecksTest(unittest.TestCase):
         unittest.TestCase.setUp(self)
 
         self.my_registry.set_renderer('text/occi',
-                                 TextOcciRendering(self.my_registry))
+                                      TextOcciRendering(self.my_registry))
 
         tmp = Entity('foo', '', COMPUTE, [])
         self.my_registry.add_resource('foo', tmp, None)
@@ -186,10 +186,10 @@ class SecurityChecksTest(unittest.TestCase):
         app(env2, Response())
 
         # check that they can't list and see each others VMs
-        self.assertTrue(len(app.registry.get_resource_keys({'sec':
-                                                         {'id': 'foo'}})) == 2)
-        self.assertTrue(len(app.registry.get_resource_keys({'sec':
-                                                         {'id': 'bar'}})) == 2)
+        self.assertTrue(len(app.registry.get_resource_keys(
+            {'sec': {'id': 'foo'}})) == 2)
+        self.assertTrue(len(app.registry.get_resource_keys(
+            {'sec': {'id': 'bar'}})) == 2)
         self.assertTrue(len(app.registry.resources) == 3)
 
         env1_list = self.env.copy()
@@ -217,10 +217,8 @@ class SecurityChecksTest(unittest.TestCase):
         env1['PATH_INFO'] = '/-/'
         env1['REQUEST_METHOD'] = 'POST'
         env1['CONTENT_TYPE'] = 'text/occi'
-        env1['HTTP_CATEGORY'] = occi_parser.get_category_str(Mixin('foo',
-                                                                   'bar',
-                                                        location='/bar/'),
-                                                             app.registry)
+        env1['HTTP_CATEGORY'] = occi_parser.get_category_str(
+            Mixin('foo', 'bar', location='/bar/'), app.registry)
         app(env1, Response())
 
         # check that they can't list and see each others categories

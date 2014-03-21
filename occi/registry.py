@@ -250,7 +250,7 @@ class NonePersistentRegistry(Registry):
             if repr(category) == 'kind' and isinstance(back, KindBackend):
                 return back
             if repr(category) == 'action' and isinstance(back,
-                                                       ActionBackend):
+                                                         ActionBackend):
                 return back
             if repr(category) == 'mixin' and isinstance(back, MixinBackend):
                 return back
@@ -295,8 +295,8 @@ class NonePersistentRegistry(Registry):
         return result
 
     def get_resource(self, key, extras):
-        if self.resources[key].extras is not None and self.resources[key]\
-                                            .extras != self.get_extras(extras):
+        if self.resources[key].extras is not None and \
+                self.resources[key].extras != self.get_extras(extras):
             raise KeyError
         return self.resources[key]
 
@@ -316,7 +316,7 @@ class NonePersistentRegistry(Registry):
             if self.resources[key].extras is None:
                 result.append(key)
             elif self.resources[key].extras is not None and \
-                 self.resources[key].extras == self.get_extras(extras):
+                    self.resources[key].extras == self.get_extras(extras):
                 result.append(key)
         return result
 
@@ -326,6 +326,6 @@ class NonePersistentRegistry(Registry):
             if item.extras is None:
                 result.append(item)
             elif item.extras is not None and \
-                 item.extras == self.get_extras(extras):
+                    item.extras == self.get_extras(extras):
                 result.append(item)
         return result

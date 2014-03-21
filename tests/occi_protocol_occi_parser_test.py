@@ -52,10 +52,10 @@ class TestParser(unittest.TestCase):
     start_action = Action('http://schemas.ogf.org/occi/infrastructure#',
                           'start')
     compute = Kind('http://schemas.ogf.org/occi/infrastructure#',
-                       'compute', title='A OCCI compute...',
-                       attributes={'occi.compute.cores': '',
-                                   'occi.compute.state': 'immutable',
-                                   'occi.compute.memory': 'required'},
+                   'compute', title='A OCCI compute...',
+                   attributes={'occi.compute.cores': '',
+                               'occi.compute.state': 'immutable',
+                               'occi.compute.memory': 'required'},
                    related=[Resource.kind],
                    actions=[start_action])
     network_link = Kind('http://schemas.ogf.org/occi/infrastructure#',
@@ -64,7 +64,7 @@ class TestParser(unittest.TestCase):
                         )
     ipnetwork_mixin = Mixin('http://schemas.ogf.org/occi/infrastructure/'
                             'networkinterface#',
-                           'ipnetworkinterface')
+                            'ipnetworkinterface')
 
     source = Resource('/1', compute, [])
     target = Resource('/2', compute, [])
