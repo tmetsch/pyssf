@@ -122,14 +122,16 @@ def _set_hostname(environ, registry):
     environ -- The WSGI environ.
     registry -- The OCCI registry.
     '''
+    scheme = environ.get("wsgi.url_scheme")
+    host = scheme + "://"
     # set hostname
     if 'HTTP_HOST' in environ.keys():
-        registry.set_hostname('http://' + environ['HTTP_HOST'])
+        host += environ['HTTP_HOST']
     else:
         # WSGI - could be that HTTP_HOST is not available...
-        host = 'http://' + environ.get('SERVER_NAME') + ':'
+        host += environ.get('SERVER_NAME') + ':'
         host += environ.get('SERVER_PORT')
-        registry.set_hostname(host)
+    registry.set_hostname(host)
 
 
 class Application(object):
